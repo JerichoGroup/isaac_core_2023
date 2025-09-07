@@ -1,3 +1,7 @@
+out_data/
+/app
+.*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -5,6 +9,9 @@ __pycache__/
 
 # C extensions
 *.so
+
+# for pycharm users
+.idea
 
 # Distribution / packaging
 .Python

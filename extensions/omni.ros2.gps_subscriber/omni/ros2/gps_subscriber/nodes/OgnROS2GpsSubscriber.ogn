@@ -1,0 +1,42 @@
+{
+    "ROS2GpsSubscriber": {
+        "version": 1,
+        "description": "Subscriber geographic_msgs/msg/GeoPointStamped to a user specified topic",
+        "language": "Python",
+        "metadata": {
+            "uiName": "ROS2 Gps Subscriber"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "Execution Input",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Exec In"
+                }
+            },
+            "topic_name": {
+                "type": "string",
+                "description": "topic to subscribe ros2 messages",
+                "default": "/mavros/global_position/gp_origin",
+                "metadata": {
+                    "uiName": "Topic Name"
+                }
+            }
+        },
+        "outputs": {
+            "gps": {
+                "type": "double[3]",
+                "description": "GPS for the odometry sync",
+                "default": [
+                    -1.0,
+                    -1.0,
+                    -1.0
+                ],
+                "metadata": {
+                    "uiName": "GPS"
+                }
+            }
+        }
+    }
+}

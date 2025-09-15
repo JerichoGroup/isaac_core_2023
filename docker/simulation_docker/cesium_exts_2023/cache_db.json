@@ -1,0 +1,18 @@
+{
+    "links_since_last_prune": 1,
+    "links": {
+        "cesium.omniverse-0.24.0+105.1.lx64.r": [
+            "/home/ofer/.local/share/ov/data/Kit/Isaac-Sim/2023.1/exts/3/cesium.omniverse-0.24.0+105.1.lx64.r"
+        ],
+        "cesium.usd.plugins-0.6.0+105.1.lx64.r": [
+            "/home/ofer/.local/share/ov/data/Kit/Isaac-Sim/2023.1/exts/3/cesium.usd.plugins-0.6.0+105.1.lx64.r"
+        ],
+        "cesium.omniverse-0.25.0+106.5.lx64.r": [
+            "/home/ofer/.local/share/ov/data/Kit/Isaac-Sim Full/4.5/exts/3/cesium.omniverse-0.25.0+106.5.lx64.r"
+        ],
+        "cesium.usd.plugins-0.7.0+106.5.lx64.r": [
+            "/home/ofer/.local/share/ov/data/Kit/Isaac-Sim Full/4.5/exts/3/cesium.usd.plugins-0.7.0+106.5.lx64.r"
+        ]
+    },
+    "last_prune_date": "2025-07-06T17:02:59.403193"
+}

@@ -1,0 +1,1 @@
+omni.ui_query-1.1.7+d02c707b {"package": {"packageId": "omni.ui_query-1.1.7+d02c707b", "id": "omni.ui_query-1.1.7", "name": "omni.ui_query", "version": "1.1.7", "metadata": "d02c707b", "archivePath": "http://d4i3qtqj3r0z5.cloudfront.net/omni.ui_query-bab2945db9bda927.zip", "publish": {"date": 1734046298}, "target": {"kitHash": ["d02c707b"]}}, "dependencies": {"omni.ui": {}}}

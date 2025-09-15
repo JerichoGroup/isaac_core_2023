@@ -1,0 +1,67 @@
+{
+    "ROS2SubscribeIMU": {
+        "version": 1,
+        "description": "Read sensor_msgs IMU",
+        "language": "Python",
+        "metadata": {
+            "uiName": "ROS2 Subscribe IMU"
+        },
+        "inputs": {
+            "topicName": {
+                "type": "string",
+                "description": "The name of the topic publishing sensor_msgs IMU",
+                "default": "",
+                "metadata": {
+                    "uiName": "Topic Name"
+                }
+            },
+            "execIn": {
+                "type": "execution",
+                "description": "Execution Input",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Exec In"
+                }
+            }
+        },
+        "outputs": {
+            "orientation": {
+                "type": "quatf[4]",
+                "description": "Quaternion describing the orientation part of the message",
+                "default": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "metadata": {
+                    "uiName": "Orientation"
+                }
+            },
+            "angular_velocity": {
+                "type": "vectorf[3]",
+                "description": "Angular Velocity in rad/sec reported by the IMU sensor",
+                "default": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "metadata": {
+                    "uiName": "Angular Velocity"
+                }
+            },
+            "linear_acceleration": {
+                "type": "vectorf[3]",
+                "description": "Linear Acceleration in m/s2 reported by the IMU sensor",
+                "default": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "metadata": {
+                    "uiName": "Linear Acceleration"
+                }
+            }
+        }
+    }
+}

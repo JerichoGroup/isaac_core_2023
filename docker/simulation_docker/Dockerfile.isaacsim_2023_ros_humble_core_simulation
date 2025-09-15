@@ -1,0 +1,18 @@
+FROM isaacsim_2023_ros_humble:core_base
+ENV NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    OMNI_ENV_PRIVACY_CONSENT=1 \
+    RMW_IMPLEMENTATION=rmw_fastrtps_cpp \
+    FASTRTPS_DEFAULT_PROFILES_FILE=/root/IsaacSim-ros_workspaces/humble_ws/fastdds.xml \
+    XAUTHORITY=/root/.Xauthority \
+    ISAACSIM_PYTHON=/isaac-sim/python.sh \
+    ISAACSIM=/isaac-sim/runapp.sh \
+    ISAACSIM_PATH=/isaac-sim/
+
+COPY . /root/isaac_core_2023
+COPY ./extensions/. /isaac-sim/exts
+COPY ./docker/simulation_docker/cesium_exts_2023/. /isaac-sim/exts/
+
+WORKDIR /root/isaac_core_2023
+
+CMD ["/bin/bash"]

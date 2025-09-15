@@ -1,0 +1,46 @@
+{
+  "ROS2AbsolutePoseSubscriber": {
+    "version": 1,
+    "description": "Subscribe to geometry_msgs/Pose and output absolute world position + orientation",
+    "language": "Python",
+    "metadata": {
+      "uiName": "ROS2 Absolute Pose Subscriber"
+    },
+    "inputs": {
+      "execIn": {
+        "type": "execution",
+        "description": "Tick input for processing",
+        "default": 0,
+        "metadata": {
+          "uiName": "Exec In"
+        }
+      },
+      "topic_name": {
+        "type": "string",
+        "description": "ROS2 topic to subscribe to",
+        "default": "/sim/odom",
+        "metadata": {
+          "uiName": "Topic Name"
+        }
+      }
+    },
+    "outputs": {
+      "position": {
+        "type": "vectorf[3]",
+        "description": "World-space position of camera",
+        "default": [0.0, 0.0, 0.0],
+        "metadata": {
+          "uiName": "Position"
+        }
+      },
+      "orientation": {
+        "type": "quatf[4]",
+        "description": "Orientation of camera (quaternion)",
+        "default": [0.0, 0.0, 0.0, 1.0],
+        "metadata": {
+          "uiName": "Orientation"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,237 @@
+#usda 1.0
+(
+    customLayerData = {
+        dictionary cameraSettings = {
+            dictionary Front = {
+                double3 position = (5, 0, 0)
+                double radius = 5
+            }
+            dictionary Perspective = {
+                double3 position = (-168.1162262333783, -78.07836797375415, 185.80519125884163)
+                double3 target = (-168.1387070615373, -78.23424507804461, 185.73847341740034)
+            }
+            dictionary Right = {
+                double3 position = (0, -5, 0)
+                double radius = 5
+            }
+            dictionary Top = {
+                double3 position = (0, 0, 5)
+                double radius = 5
+            }
+            string boundCamera = "/OmniverseKit_Persp"
+        }
+        dictionary navmeshSettings = {
+            double agentHeight = 180
+            double agentRadius = 20
+            bool excludeRigidBodies = 1
+            uint64 ver = 1
+            double voxelCeiling = 460
+        }
+        dictionary omni_layer = {
+            string authoring_layer = "./earth.usda"
+            dictionary locked = {
+            }
+            dictionary muteness = {
+            }
+        }
+        int refinementOverrideImplVersion = 0
+        dictionary renderSettings = {
+            float3 "rtx:debugView:pixelDebug:textColor" = (0, 1e18, 0)
+            float3 "rtx:fog:fogColor" = (0.75, 0.75, 0.75)
+            float3 "rtx:index:regionOfInterestMax" = (0, 0, 0)
+            float3 "rtx:index:regionOfInterestMin" = (0, 0, 0)
+            float3 "rtx:iray:environment_dome_ground_position" = (0, 0, 0)
+            float3 "rtx:iray:environment_dome_ground_reflectivity" = (0, 0, 0)
+            float3 "rtx:iray:environment_dome_rotation_axis" = (3.4028235e38, 3.4028235e38, 3.4028235e38)
+            float3 "rtx:post:backgroundZeroAlpha:backgroundDefaultColor" = (0, 0, 0)
+            float3 "rtx:post:colorcorr:contrast" = (1, 1, 1)
+            float3 "rtx:post:colorcorr:gain" = (1, 1, 1)
+            float3 "rtx:post:colorcorr:gamma" = (1, 1, 1)
+            float3 "rtx:post:colorcorr:offset" = (0, 0, 0)
+            float3 "rtx:post:colorcorr:saturation" = (1, 1, 1)
+            float3 "rtx:post:colorgrad:blackpoint" = (0, 0, 0)
+            float3 "rtx:post:colorgrad:contrast" = (1, 1, 1)
+            float3 "rtx:post:colorgrad:gain" = (1, 1, 1)
+            float3 "rtx:post:colorgrad:gamma" = (1, 1, 1)
+            float3 "rtx:post:colorgrad:lift" = (0, 0, 0)
+            float3 "rtx:post:colorgrad:multiply" = (1, 1, 1)
+            float3 "rtx:post:colorgrad:offset" = (0, 0, 0)
+            float3 "rtx:post:colorgrad:whitepoint" = (1, 1, 1)
+            float3 "rtx:post:lensDistortion:lensFocalLengthArray" = (10, 30, 50)
+            float3 "rtx:post:lensFlares:anisoFlareFalloffX" = (450, 475, 500)
+            float3 "rtx:post:lensFlares:anisoFlareFalloffY" = (10, 10, 10)
+            float3 "rtx:post:lensFlares:cutoffPoint" = (2, 2, 2)
+            float3 "rtx:post:lensFlares:haloFlareFalloff" = (10, 10, 10)
+            float3 "rtx:post:lensFlares:haloFlareRadius" = (75, 75, 75)
+            float3 "rtx:post:lensFlares:isotropicFlareFalloff" = (50, 50, 50)
+            float3 "rtx:post:tonemap:whitepoint" = (1, 1, 1)
+            float3 "rtx:raytracing:inscattering:singleScatteringAlbedo" = (0.9, 0.9, 0.9)
+            float3 "rtx:raytracing:inscattering:transmittanceColor" = (0.5, 0.5, 0.5)
+            float3 "rtx:sceneDb:ambientLightColor" = (0.1, 0.1, 0.1)
+        }
+    }
+    endTimeCode = 100
+    metersPerUnit = 1
+    startTimeCode = 0
+    timeCodesPerSecond = 60
+    upAxis = "Z"
+)
+
+def Xform "Environment"
+{
+    token visibility = "inherited"
+    quatd xformOp:orient = (1, 0, 0, 0)
+    double3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (0, 0, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+    def DomeLight "DomeLight" (
+        prepend apiSchemas = ["ShapingAPI"]
+    )
+    {
+        float inputs:intensity = 1000
+        float inputs:shaping:cone:angle = 180
+        float inputs:shaping:cone:softness
+        float inputs:shaping:focus
+        color3f inputs:shaping:focusTint
+        asset inputs:shaping:ies:file
+        asset inputs:texture:file = @../../assets/sunflowers_puresky_4k.exr@
+        token inputs:texture:format = "latlong"
+        quatd xformOp:orient = (1, 0, 0, 0)
+        double3 xformOp:scale = (1, 1, 1)
+        double3 xformOp:translate = (0, 0, 0)
+        uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+    }
+}
+
+def CesiumDataPrim "Cesium"
+{
+    prepend rel cesium:selectedIonServer = </telem293005_1_075/CesiumServers/IonOfficial>
+}
+
+def CesiumTilesetPrim "telem293005_1_075"
+{
+    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+    string cesium:ionAccessToken = ""
+    int64 cesium:ionAssetId = 0
+    rel cesium:ionServerBinding = None
+    uniform token cesium:sourceType = "url"
+    string cesium:url = "http://10.20.15.122:8088/telem293005_1_075/tileset.json"
+    float3[] extent = [(16224.691, 94121.93, -1593.8441), (24527.625, 104044.13, -157.4398)]
+    token visibility = "inherited"
+
+    def "CesiumServers"
+    {
+        def CesiumIonServerPrim "IonOfficial"
+        {
+            string cesium:displayName = "ion.cesium.com"
+            string cesium:ionServerApiUrl = "https://api.cesium.com/"
+            int64 cesium:ionServerApplicationId = 413
+            string cesium:ionServerUrl = "https://ion.cesium.com/"
+        }
+    }
+}
+
+def CesiumTilesetPrim "telem293005_2_095"
+{
+    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+    string cesium:ionAccessToken = ""
+    int64 cesium:ionAssetId = 0
+    rel cesium:ionServerBinding = None
+    uniform token cesium:sourceType = "url"
+    string cesium:url = "http://10.20.15.122:8088/telem293005_2_095/tileset.json"
+    float3[] extent = [(26212.277, 115199.75, -2208.4358), (28498.61, 121011.914, 193.53667)]
+    token visibility = "inherited"
+}
+
+def CesiumTilesetPrim "telem_15052024"
+{
+    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+    string cesium:ionAccessToken = ""
+    int64 cesium:ionAssetId = 0
+    rel cesium:ionServerBinding = None
+    uniform token cesium:sourceType = "url"
+    string cesium:url = "http://10.20.15.122:8088/telem_15052024/tileset.json"
+    float3[] extent = [(24129.043, 112383.38, -3389.0857), (36630.375, 123872.09, 213.48553)]
+    token visibility = "inherited"
+}
+
+def CesiumTilesetPrim "telem_18042024"
+{
+    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+    string cesium:ionAccessToken = ""
+    int64 cesium:ionAssetId = 0
+    rel cesium:ionServerBinding = None
+    uniform token cesium:sourceType = "url"
+    string cesium:url = "http://10.20.15.122:8088/telem_18042024/tileset.json"
+    float3[] extent = [(12726.513, 91944.81, -1001.3225), (21776.924, 102955.02, -307.58746)]
+    token visibility = "inherited"
+}
+
+def CesiumTilesetPrim "telem_20240516_074212"
+{
+    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+    string cesium:ionAccessToken = ""
+    int64 cesium:ionAssetId = 0
+    rel cesium:ionServerBinding = None
+    uniform token cesium:sourceType = "url"
+    string cesium:url = "http://10.20.15.122:8088/telem_20240516_074212/tileset.json"
+    float3[] extent = [(19870.104, 107449.68, -1506.0347), (27907.404, 113332.96, -202.1126)]
+    token visibility = "inherited"
+}
+
+def CesiumTilesetPrim "telem_24042024"
+{
+    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+    string cesium:ionAccessToken = ""
+    int64 cesium:ionAssetId = 0
+    rel cesium:ionServerBinding = None
+    uniform token cesium:sourceType = "url"
+    string cesium:url = "http://10.20.15.122:8088/telem_24042024/tileset.json"
+    float3[] extent = [(21579.82, 109802.81, -1423.9512), (30133.053, 118961.97, -589.98193)]
+    token visibility = "inherited"
+}
+
+def CesiumTilesetPrim "Tulkarem_11_22"
+{
+    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+    string cesium:ionAccessToken = ""
+    int64 cesium:ionAssetId = 0
+    rel cesium:ionServerBinding = None
+    uniform token cesium:sourceType = "url"
+    string cesium:url = "http://10.20.15.122:8088/Tulkarem_11_22/tileset.json"
+    float3[] extent = [(-23706.975, 2277.349, -533.15125), (-6132.8315, 19534.115, 26.139288)]
+    token visibility = "inherited"
+}
+
+def CesiumTilesetPrim "telem_250424"
+{
+    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+    string cesium:ionAccessToken = ""
+    int64 cesium:ionAssetId = 0
+    rel cesium:ionServerBinding = None
+    uniform token cesium:sourceType = "url"
+    string cesium:url = "http://10.20.15.122:8088/telem_250424/tileset.json"
+    float3[] extent = [(18681.709, 101595.21, -2161.1357), (28805.775, 110692.98, 180.50586)]
+    token visibility = "inherited"
+}
+
+def CesiumTilesetPrim "nablus"
+{
+    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+    string cesium:ionAccessToken = ""
+    int64 cesium:ionAssetId = 0
+    rel cesium:ionServerBinding = None
+    uniform token cesium:sourceType = "url"
+    string cesium:url = "http://10.20.15.122:8088/nablus/tileset.json"
+    float3[] extent = [(-7982.7725, -5877.865, -751.89636), (8347.764, 3756.5452, 699.53015)]
+}
+
+def CesiumGeoreferencePrim "NablusCesiumGeoreference"
+{
+    matrix4d cesium:ecefToUsdTransform = ( (-0.5772336982984184, -0.4354349110063949, 0.6907949737987268, 0), (0.816578996514563, -0.3078057421526901, 0.4883178959951203, 0), (0, 0.8459622115524339, 0.5332428495772966, 0), (4.656612873077393e-10, 19280.982657559216, -6372580.310832208, 1) )
+    double cesium:georeferenceOrigin:height = 516.7
+    double cesium:georeferenceOrigin:latitude = 32.22481
+    double cesium:georeferenceOrigin:longitude = 35.25621
+}
+

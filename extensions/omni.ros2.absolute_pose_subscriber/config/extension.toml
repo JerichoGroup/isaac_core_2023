@@ -1,0 +1,20 @@
+[package]
+version = "1.0.0"
+category = "ROS2"
+title = "ROS2 Absolute Pose Subscriber"
+description = "Subscribe to geometry_msgs/Pose and position a camera using absolute GPS data"
+authors = ["Mr_Blum"]
+repository = ""
+readme = "docs/README.md"
+keywords = ["ros2", "gps", "pose", "camera"]
+
+[[python.module]]
+name = "omni.ros2.absolute_pose_subscriber"
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+
+[dependencies]
+"omni.kit.test" = {}
+"omni.graph" = {}

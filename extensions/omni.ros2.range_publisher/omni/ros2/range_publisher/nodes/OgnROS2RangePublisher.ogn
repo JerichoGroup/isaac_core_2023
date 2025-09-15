@@ -1,0 +1,70 @@
+{
+    "ROS2RangePublisher": {
+        "version": 1,
+        "description": "Publish Sensor_msgs/msg/Range to a user specified topic",
+        "language": "Python",
+        "metadata": {
+            "uiName": "ROS2 Range Publisher"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "Execution Input",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Exec In"
+                }
+            },
+            "publishRateHZ": {
+                "type": "int",
+                "description": "hz to publish ros2 messages",
+                "default": 50,
+                "metadata": {
+                    "uiName": "Publish Rate HZ"
+                }
+            },
+            "topicName": {
+                "type": "string",
+                "description": "topic to publish ros2 messages",
+                "default": "/omni/rangefinder_pub",
+                "metadata": {
+                    "uiName": "ROS2 topic to publish to"
+                }
+            },
+            "minRange": {
+                "type": "float",
+                "description": "minimum range of the laser sensor",
+                "default": 0.2,
+                "metadata": {
+                    "uiName": "Min Range"
+                }
+            },
+            "maxRange": {
+                "type": "float",
+                "description": "maximum range of the laser sensor",
+                "default": 180.0,
+                "metadata": {
+                    "uiName": "Max Range"
+                }
+            },
+            "range": {
+                "type": "float",
+                "description": "the range value in meters",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Range"
+                }
+            },
+            "frameID": {
+                "type": "string",
+                "description": "current frame id",
+                "default": "range_sensor_frame",
+                "metadata": {
+                    "uiName": "Frame ID"
+                }
+            }
+        },
+        "outputs": {
+        }
+    }
+}

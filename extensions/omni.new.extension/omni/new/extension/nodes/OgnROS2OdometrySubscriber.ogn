@@ -1,0 +1,79 @@
+{
+    "ROS2OdometrySubscriber": {
+        "version": 1,
+        "description": "This node receives nav_msgs/Odometry",
+        "language": "Python",
+        "metadata": {
+            "uiName": "ROS2OdometrySubscribe"
+        },
+        "inputs": {
+            "execIn": {
+                "type": "execution",
+                "description": "execution input",
+                "default": 0,
+                "metadata": {
+                    "uiName": "Exec In"
+                }
+            },
+            "topicName": {
+                "type": "string",
+                "description": "topic name",
+                "default": "",
+                "metadata": {
+                    "uiName": "Topic Name"
+                }
+            }
+        },
+        "outputs": {
+            "position": {
+                "type": "vectorf[3]",
+                "description": "Position reported by the odometry topic",
+                "default": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "metadata": {
+                    "uiName": "Position"
+                }
+            },
+            "orientation": {
+                "type": "quatf[4]",
+                "description": "Orientation Reported by the odometry topic",
+                "default": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "metadata": {
+                    "uiName": "Orientation"
+                }
+            },
+            "linear": {
+                "type": "vectorf[3]",
+                "description": "Linear Velocity reported by odometry topic",
+                "default": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "metadata": {
+                    "uiName": "Linear"
+                }
+            },
+            "angular": {
+                "type": "vectorf[3]",
+                "description": "Angular Velocity reported by odometry topic",
+                "default": [
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "metadata": {
+                    "uiName": "Angular"
+                }
+            }
+        }
+    }
+}

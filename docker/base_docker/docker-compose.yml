@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  isaacsim_2023_ros_humble_base:
+    build:
+      context: .
+      dockerfile: ./Dockerfile.isaacsim_2023_ros_humble_core_base
+    image: isaacsim_2023_ros_humble:core_base
+    container_name: isaacsim_2023_ros_humble_core_base
+
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    environment:
+      - DISPLAY=${DISPLAY}
+      - ROS_DOMAIN_ID=13
+
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${HOME}/.Xauthority:/root/.Xauthority:ro
+
+    network_mode: host
+
+    privileged: true
+
+    stdin_open: true
+
+    tty: true
+
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["/root/isaacsim_warmup.sh"]

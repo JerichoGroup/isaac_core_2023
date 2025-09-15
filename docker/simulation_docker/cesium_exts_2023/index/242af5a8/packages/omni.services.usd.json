@@ -1,0 +1,1 @@
+omni.services.usd-1.1.0 {"package": {"packageId": "omni.services.usd-1.1.0", "id": "omni.services.usd-1.1.0", "name": "omni.services.usd", "version": "1.1.0", "metadata": "", "archivePath": "http://d4i3qtqj3r0z5.cloudfront.net/omni.services.usd-1.1.0.zip", "publish": {"date": 1665847439}}, "dependencies": {"omni.services.core": {}, "omni.usd": {}}}

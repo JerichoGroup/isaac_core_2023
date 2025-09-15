@@ -1,0 +1,22 @@
+
+[package]
+    trusted = 0
+    archiveSubdir = "cesium.usd.plugins"
+    archivePath = "https://github.com/CesiumGS/cesium-omniverse/releases/download/v0.24.0/CesiumGS-cesium-omniverse-linux-x86_64-v0.24.0.zip"
+    repository = "https://github.com/CesiumGS/cesium-omniverse/tree/v0.24.0"
+    githubRelease = "https://github.com/CesiumGS/cesium-omniverse/releases/tag/v0.24.0"
+
+    [package.authors]
+        0 = "https://github.com/CesiumGS"
+
+    [package.publish]
+        date = 1734633387
+        buildNumber = "Cesium for Omniverse v0.24.0"
+
+    [package.target]
+
+        [package.target.platform]
+            0 = "linux-x86_64"
+
+        [package.target.config]
+            0 = "release"

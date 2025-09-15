@@ -1,0 +1,69 @@
+FROM nvcr.io/nvidia/isaac-sim:2023.1.1
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=en_US.UTF-8 \
+    LC_ALL=en_US.UTF-8 \
+    ISAACSIM_PATH=/isaac-sim \
+    ISAACSIM_WS=/root/IsaacSim-ros_workspaces \
+    OMNI_CONFIG_FILE=/isaac-sim/apps/omni.isaac.sim.python.kit \
+    ACCEPT_EULA=Y \
+    NVIDIA_VISIBLE_DEVICES=all \
+    NVIDIA_DRIVER_CAPABILITIES=all \
+    OMNI_ENV_PRIVACY_CONSENT=1 \
+    RMW_IMPLEMENTATION=rmw_fastrtps_cpp \
+    XAUTHORITY=/root/.Xauthority
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    wget \
+    git \
+    locales \
+    gnupg2 \
+    lsb-release \
+    sudo \
+    libbrotli1 \
+    libbrotli-dev \
+    libfreetype6-dev \
+    libx11-dev \
+    libxrandr-dev \
+    libxinerama-dev \
+    libxcursor-dev \
+    libxi-dev \
+    python3-pip \
+    vulkan-tools \
+    build-essential \
+    && locale-gen en_US.UTF-8 \
+    && update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key | apt-key add - && \
+    echo "deb http://packages.ros.org/ros2/ubuntu $(lsb_release -cs) main" > /etc/apt/sources.list.d/ros2.list
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3-rosdep \
+    python3-rosinstall \
+    python3-rosinstall-generator \
+    python3-wstool \
+    python3-colcon-common-extensions \
+    ros-humble-ackermann-msgs \
+    ros-humble-moveit \
+    ros-humble-moveit-resources-panda-moveit-config \
+    ros-humble-desktop \
+    ros-humble-rmw-fastrtps-cpp \
+    ros-humble-rmw-cyclonedds-cpp \
+    ros-humble-vision-msgs \
+    ros-humble-geographic-msgs \
+    python3-rosdep python3-rosinstall \
+    build-essential \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip numpy toml
+
+RUN git clone https://github.com/isaac-sim/IsaacSim-ros_workspaces.git /root/IsaacSim-ros_workspaces
+
+RUN bash -c "source /opt/ros/humble/setup.bash \
+    && cd /root/IsaacSim-ros_workspaces/humble_ws \
+    && colcon build"
+
+COPY ./isaacsim_warmup.sh /root/isaacsim_warmup.sh

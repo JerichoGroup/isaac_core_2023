@@ -33,4 +33,4 @@ docker compose -f $COMPOSE_FILE down
 sleep 10
 
 echo "Done! Image committed with initialized extensions. You can now run:"
-echo "docker compose up"
+echo "./run_docker.sh"

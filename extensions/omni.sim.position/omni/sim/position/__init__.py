@@ -5,11 +5,11 @@ import omni.ext
 
 
 #==================== The OmniSimTemplateExtension class ====================
-class OmniSimTemplateExtension(omni.ext.IExt):
+class OmniSimPositionExtension(omni.ext.IExt):
 
     def on_startup(self, ext_id):
-        print("[omni.sim.template] Extension startup", flush=True)
+        print("[omni.sim.position] Extension startup", flush=True)
 
 
     def on_shutdown(self):
-        print("[omni.sim.template] Extension shutdown", flush=True)
+        print("[omni.sim.position] Extension shutdown", flush=True)

@@ -1,2 +1,2 @@
-# OmniGraph Extension [omni.sim.template]
-This extension is a template for all future users to use to see the expected extension structure that isaacsim expects
+# OmniGraph Extension [omni.sim.position]
+This extension binds all the omni graph nodes that read or parse position data from all kind of sources

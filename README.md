@@ -21,47 +21,76 @@ This repository provides a clean foundation for simulation projects, with ready-
 ## Repository Structure
 
 ```
-Isaac_core/
-├── Docker/
-│   ├── build_base_image.sh
-│   ├── build_simulation_image.sh
-│   ├── docker-compose.yml
-│   ├── docker-compose.isaacsim_2023_ros_humble_base
+Isaac_core
+│
+├── Run_docker.sh
+├── Run_sim.sh
+├── Take_pictures.py  # (config inside: usda path, path to save, positions list)
+│
+├── Docker
+│   ├── Build_base_image.sh
+│   ├── Build_simulation_image.sh
+│   ├── Base_docker
+│   ├── Docker-compose.yml
+│   ├── Dockerfile.isaacsim_2023_ros_humble_base
 │   ├── isaacsim_warmup.sh
-│   └── simulation_docker_exts
-├── Extensions/
-│   ├── Omni/
-│   │   ├── Config/
-│   │   ├── Data/
-│   │   ├── Fonts/
-│   │   ├── Scripts/
-│   │   └── Ros_to_global_position/
-│   ├── Omni.simComponents/
-│   │   ├── Config/
-│   │   ├── Data/
-│   │   ├── Fonts/
-│   │   ├── Scripts/
-│   │   └── global_position_to_local_position/
-│   └── Omni.simComponents.servo/
-├── Simulation/
-│   ├── Sim_app.py
-│   ├── Take_pictures.py
+│   └── Simulation_docker
+│       ├── Docker-compose.yml
+│       ├── Dockerfile.isaacsim_2023_ros_humble_simulation
+│       └── cesium_exts_2023
+│
+├── Extensions
+│   ├── Omni.sim.position
+│   │   ├── Config
+│   │   ├── Data
+│   │   ├── Docs
+│   │   └── Omni
+│   │       ├── Ros_to_global_position
+│   │       └── udp_to_global_position
+│   ├── Omni.sim.math
+│   │   ├── Config
+│   │   ├── Data
+│   │   ├── Docs
+│   │   └── Omni
+│   │       └── global_position_to_local_position
+│   ├── Omni.sim.sensors
+│   │   ├── Config
+│   │   ├── Data
+│   │   ├── Docs
+│   │   └── Omni
+│   │       └── Range_publisher
+│   └── servo… (in the future)
+│
+├── Config
+│   └── config.yml
+│
+├── Simulation
 │   ├── core_parser.py
 │   ├── omniverse_utils.py
-│   └── Script_nodes/
-│       └── bbox_publisher.py
-├── Usd/
-│   ├── Assets/
-│   │   ├── Start_camera.usda
-│   │   ├── barbara_camera.usda
-│   │   ├── Max_camera.usda
-│   │   ├── Driving.usda
-│   │   └── Driving_omni.usda
-│   └── publishers/
-│       └── Data_publisher.usda
-├── config/
-├── Run.sh
-├── Run_sim.sh
+│   ├── Sim_app.py
+│   ├── Script_nodes
+│   └── bbox_publisher.py
+│
+├── Usd
+│   ├── Assets
+│   │   └── Sunflower_puresky_4k.exr
+│   ├── Cameras
+│   │   ├── Sat_camera.usda
+│   │   ├── Mavros_camera.usda
+│   │   └── udp_camera.usda
+│   ├── Controllable_cars
+│   │   ├── Driving_car.usda
+│   │   └── udp_oshkosh.usda
+│   ├── publishers
+│   │   └── Data_publisher.usda  # (bbox + distance sensor)
+│   └── Maps
+│       ├── Earth
+│       │   └── Earth.usda
+│       ├── Nablus
+│       │   └── Nablus.usda
+│       └── Telem
+│           └── Telem.usda
+│
 ├── README.md
 ```
 

@@ -5,15 +5,15 @@ This repository provides a clean foundation for simulation projects, with ready-
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
 1. [Repository Structure](#repository-structure)  
-2. [System Requirements](#🧰-system-requirements)  
-3. [Docker Workflow (Optional)](#🐳-docker-workflow-optional)  
-4. [Running the Simulation](#🚀-running-the-simulation)  
-5. [Simulation Flags](#⚙️-simulation-flags)  
-6. [ROS 2 Topics](#📡-ros-2-topics)  
-7. [Key Scripts](#🧠-key-scripts)  
+2. [System Requirements](#system-requirements)  
+3. [Docker Workflow (Optional)](#docker-workflow-optional)  
+4. [Running the Simulation](#running-the-simulation)  
+5. [Simulation Flags](#simulation-flags)  
+6. [ROS 2 Topics](#ros-2-topics)  
+7. [Key Scripts](#key-scripts)  
 8. [Using the Environment for Development](#🛠️-using-the-environment-for-development)  
 
 ---
@@ -67,7 +67,7 @@ Isaac_core/
 
 ---
 
-## 🧰 System Requirements
+## System Requirements
 
 - **NVIDIA GPU** — Driver **535+** recommended for Isaac Sim 2023.1+  
 - **Ubuntu 22.04 LTS or later**
@@ -126,7 +126,7 @@ sudo apt install ros-humble-desktop
 
 ---
 
-## 🐳 Docker Workflow (Optional)
+## Docker Workflow (Optional)
 
 <details>
 <summary>Architecture Overview</summary>
@@ -157,7 +157,7 @@ Step 2: Build the simulation image with extensions
 
 ---
 
-## 🚀 Running the Simulation
+## Running the Simulation
 
 ### Run Inside Docker
 
@@ -174,7 +174,7 @@ xhost +
 
 ---
 
-## ⚙️ Simulation Flags
+## Simulation Flags
 
 | Flag                     | Description                          |
 |--------------------------|--------------------------------------|
@@ -193,7 +193,7 @@ xhost +
 
 ---
 
-## 📡 ROS 2 Topics
+## ROS 2 Topics
 
 | Topic                     | Type                     | Description                 |
 |--------------------------|--------------------------|-----------------------------|
@@ -212,7 +212,7 @@ ros2 topic echo /robot/odom
 
 ---
 
-## 🧠 Key Scripts
+## Key Scripts
 
 Located in `Simulation/`:
 
@@ -234,7 +234,7 @@ python3 Simulation/Take_pictures.py \
 
 ---
 
-## 🛠️ Using the Environment for Development
+## Using the Environment for Development
 
 1. **Standalone ROS 2 Nodes**  
    Run your own nodes to extract metadata, control objects, or visualize data.

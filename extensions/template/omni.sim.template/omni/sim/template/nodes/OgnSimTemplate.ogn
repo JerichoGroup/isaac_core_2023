@@ -1,0 +1,37 @@
+{
+  "OgnSimTemplate": {
+    "version": 1,
+    "description": "Greets the user and outputs the current frame ID.",
+    "language": "Python",
+    "metadata": {
+      "uiName": "Sim Template Node"
+    },
+    "inputs": {
+      "execIn": {
+        "type": "execution",
+        "description": "Exec input to trigger greeting",
+        "metadata": {
+          "uiName": "Exec In"
+        }
+      },
+      "name": {
+        "type": "string",
+        "description": "Name to greet",
+        "default": "Isaac User",
+        "metadata": {
+          "uiName": "Name"
+        }
+      }
+    },
+    "outputs": {
+      "frame_id": {
+        "type": "int",
+        "description": "Current simulation frame ID",
+        "default": 0,
+        "metadata": {
+          "uiName": "Frame ID"
+        }
+      }
+    }
+  }
+}

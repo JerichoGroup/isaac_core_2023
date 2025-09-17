@@ -7,7 +7,7 @@ This repository provides a clean foundation for simulation projects, with ready-
 
 ## 📑 Table of Contents
 
-1. [Repository Structure](#📁-repository-structure)  
+1. [Repository Structure](#repository-structure)  
 2. [System Requirements](#🧰-system-requirements)  
 3. [Docker Workflow (Optional)](#🐳-docker-workflow-optional)  
 4. [Running the Simulation](#🚀-running-the-simulation)  

@@ -7,7 +7,7 @@ description = "This extension binds all the omni graph nodes that read position 
 authors = ["Mr_Blum"]
 repository = ""
 readme = "docs/README.md"
-keywords = ["position", "local", "global", "udp", "ros", "place", "lla", "lat", "lon", "alt", "roll", "pitch", "yaw"]
+keywords = ["position", "local", "global", "udp", "ros", "place", "lla", "lat", "lon", "alt", "roll", "pitch", "yaw", "mavros"]
 
 [[python.module]]
 name = "omni.sim.position"

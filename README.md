@@ -18,7 +18,7 @@ This repository provides a clean foundation for simulation projects, with ready-
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 Isaac_core/

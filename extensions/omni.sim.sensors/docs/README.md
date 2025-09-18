@@ -1,2 +1,3 @@
-# OmniGraph Extension [omni.sim.template]
-This extension is a template for all future users to use to see the expected extension structure that isaacsim expects
+
+# OmniGraph Extension [omni.ros2.range_publisher]
+ROS2 Omnigraph node to publish range messages on user specified topic

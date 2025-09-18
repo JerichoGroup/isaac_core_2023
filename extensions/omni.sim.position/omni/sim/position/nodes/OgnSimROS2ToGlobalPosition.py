@@ -7,8 +7,8 @@ import rclpy
 from typing import Any, Tuple
 from sensor_msgs.msg import NavSatFix
 from geometry_msgs.msg import PoseStamped
-from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from rclpy.executors import ExternalShutdownException
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from omni.sim.position.ogn.OgnSimROS2ToGlobalPositionDatabase import OgnSimROS2ToGlobalPositionDatabase
 
 
@@ -67,7 +67,7 @@ class OgnSimROS2ToGlobalPositionInternalState:
 
 
 # ==================== Helper - quaternion to Euler ====================
-def quaternion_to_euler(x, y, z, w) -> tuple[float, float, float]:
+def quaternion_to_euler(x, y, z, w) -> Tuple[float, float, float]:
     """Convert quaternion to roll, pitch, yaw (in radians)"""
 
     t0 = +2.0 * (w * x + y * z)

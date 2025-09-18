@@ -1,30 +1,17 @@
 [package]
-# Semantic Versioning is used: https://semver.org/
-version = "0.1.0"
+version = "1.0.0"
+icon = "data/sensors_pic.png"
+category = "SIM"
+title = "Sensors"
+description = "This extension binds all sensors/motors/etc omni graph nodes"
+authors = ["Mr_Blum and sinimini"]
+repository = ""
+readme = "docs/README.md"
+keywords = ["sensors", "laser", "range", "distance", "servo", "motors"]
 
-# Icon for gui
-icon = "data/laser_icon.png"
+[[python.module]]
+name = "omni.sim.sensors"
 
-# Lists people or organizations that are considered the "authors" of the package.
-authors = []
-
-# The title and description fields are primarly for displaying extension info in UI
-title = "ROS2 Range Publisher"
-description="ROS2 range message publisher with omnigraph node."
-
-# Path (relative to the root) or content of readme markdown file for UI.
-readme  = "docs/README.md"
-
-# URL of the extension source repository.
-repository="https://gitlab-master.nvidia.com/omniverse/kit-extensions/example"
-
-# Categories for UI.
-category = "ROS2"
-
-# Keywords for the extension
-keywords = ["range", "ros2", "omnigraph"]
-
-# Watch the .ogn files for hot reloading (only works for Python files)
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]
 exclude = ["Ogn*Database.py"]
@@ -32,7 +19,3 @@ exclude = ["Ogn*Database.py"]
 [dependencies]
 "omni.kit.test" = {}
 "omni.graph" = {}
-
-# Main python module this extension provides, it will be publicly available as "import omni.ros2.range_publisher".
-[[python.module]]
-name = "omni.ros2.range_publisher"

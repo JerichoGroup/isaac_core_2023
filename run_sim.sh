@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 USD_PATH="--usd-path $PWD/usd/maps/earth/earth.usda"
-COM="--com-udp
+COM="--com-udp"
 
 RUN_SIMULATION="ISAACSIM_PYTHON ./simulation/main_sim.py $USD_PATH $COM"
 

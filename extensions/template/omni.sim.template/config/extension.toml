@@ -1,0 +1,21 @@
+[package]
+version = "1.0.0"
+icon = "data/template_pic.png"
+category = "SIM"
+title = "Template"
+description = "This is a template for isaacsim 2023.1.1 extensions"
+authors = ["Mr_Blum"]
+repository = ""
+readme = "docs/README.md"
+keywords = ["template", "example", "sim", "learn"]
+
+[[python.module]]
+name = "omni.sim.template"
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+
+[dependencies]
+"omni.kit.test" = {}
+"omni.graph" = {}

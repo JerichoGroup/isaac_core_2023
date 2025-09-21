@@ -1,0 +1,54 @@
+{
+  "ROS2ToGlobalPosition": {
+    "version": 1,
+    "description": "Subscribe to ROS2 topics to extract global position and orientation (lat, lon, alt, roll, pitch, yaw)",
+    "language": "Python",
+    "metadata": {
+      "uiName": "ROS2 to Global Position"
+    },
+    "inputs": {
+      "execIn": {
+        "type": "execution",
+        "description": "Execution trigger to read ROS2 messages",
+        "default": 0,
+        "metadata": {
+          "uiName": "Exec In"
+        }
+      },
+      "lla_topic": {
+        "type": "string",
+        "description": "ROS 2 topic for NavSatFix (lat, lon, alt)",
+        "default": "/mavros/global_position/global",
+        "metadata": {
+          "uiName": "LLA Topic"
+        }
+      },
+      "orientation_topic": {
+        "type": "string",
+        "description": "ROS 2 topic for PoseStamped (orientation)",
+        "default": "/mavros/local_position/pose",
+        "metadata": {
+          "uiName": "Orientation Topic"
+        }
+      }
+    },
+    "outputs": {
+      "global_position": {
+        "type": "vectord[3]",
+        "description": "Global position [lat, lon, alt]",
+        "default": [0.0, 0.0, 0.0],
+        "metadata": {
+          "uiName": "Global Position"
+        }
+      },
+      "global_orientation": {
+        "type": "vectord[3]",
+        "description": "Global orientation [roll, pitch, yaw]",
+        "default": [0.0, 0.0, 0.0],
+        "metadata": {
+          "uiName": "Global Orientation"
+        }
+      }
+    }
+  }
+}

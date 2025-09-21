@@ -1,0 +1,21 @@
+[package]
+version = "1.0.0"
+icon = "data/position_pic.png"
+category = "SIM"
+title = "Position"
+description = "This extension binds all the omni graph nodes that read position data"
+authors = ["Mr_Blum"]
+repository = ""
+readme = "docs/README.md"
+keywords = ["position", "local", "global", "udp", "ros", "place", "lla", "lat", "lon", "alt", "roll", "pitch", "yaw", "mavros"]
+
+[[python.module]]
+name = "omni.sim.position"
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+
+[dependencies]
+"omni.kit.test" = {}
+"omni.graph" = {}

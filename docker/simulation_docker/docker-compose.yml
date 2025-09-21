@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  isaac_sim_2023_ros_humble:
+    build:
+      context: ../..
+      dockerfile: ./docker/simulation_docker/Dockerfile.isaacsim_2023_ros_humble_core_simulation
+    image: isaacsim_2023_ros_humble:core_simulation
+    container_name: isaacsim_2023_ros_humble_core_simulation
+
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+    environment:
+      - DISPLAY=${DISPLAY}
+      - ROS_DOMAIN_ID=13
+
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${HOME}/.Xauthority:/root/.Xauthority:ro
+      - ../..:/root/isaac_core_2023
+
+    working_dir: /root/isaac_core_2023
+
+    network_mode: host
+
+    privileged: true
+
+    stdin_open: true
+
+    tty: true
+
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["./docker/simulation_docker/run_sim_in_docker.sh"]
+    # command: ["sleep infinity"]

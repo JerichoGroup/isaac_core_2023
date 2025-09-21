@@ -1,0 +1,46 @@
+{
+  "UDPToGlobalPosition": {
+    "version": 1,
+    "description": "Listen to a UDP port for pose data and output global position and orientation (lat, lon, alt, roll, pitch, yaw)",
+    "language": "Python",
+    "metadata": {
+      "uiName": "UDP to Global Position"
+    },
+    "inputs": {
+      "execIn": {
+        "type": "execution",
+        "description": "Tick input for processing",
+        "default": 0,
+        "metadata": {
+          "uiName": "Exec In"
+        }
+      },
+      "udp_port": {
+        "type": "int",
+        "description": "UDP port to listen on for pose data",
+        "default": 33333,
+        "metadata": {
+          "uiName": "UDP Port"
+        }
+      }
+    },
+    "outputs": {
+      "global_position": {
+        "type": "vectord[3]",
+        "description": "Global position [lat, lon, alt]",
+        "default": [0.0, 0.0, 0.0],
+        "metadata": {
+          "uiName": "Global Position"
+        }
+      },
+      "global_orientation": {
+        "type": "vectord[3]",
+        "description": "Global orientation [roll, pitch, yaw]",
+        "default": [0.0, 0.0, 0.0],
+        "metadata": {
+          "uiName": "Global Orientation"
+        }
+      }
+    }
+  }
+}

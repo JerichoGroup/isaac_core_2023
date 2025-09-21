@@ -1,0 +1,69 @@
+{
+  "SimROS2RangePublisher": {
+    "version": 1,
+    "description": "Publish sensor_msgs/msg/Range to a user-specified ROS2 topic",
+    "language": "Python",
+    "metadata": {
+      "uiName": "Sim ROS2 Range Publisher"
+    },
+    "inputs": {
+      "execIn": {
+        "type": "execution",
+        "description": "Execution trigger to publish range data",
+        "default": 0,
+        "metadata": {
+          "uiName": "Exec In"
+        }
+      },
+      "publishRateHZ": {
+        "type": "int",
+        "description": "Rate (Hz) to publish ROS2 messages",
+        "default": 50,
+        "metadata": {
+          "uiName": "Publish Rate HZ"
+        }
+      },
+      "topicName": {
+        "type": "string",
+        "description": "ROS2 topic to publish range messages",
+        "default": "/omni/rangefinder_pub",
+        "metadata": {
+          "uiName": "Topic Name"
+        }
+      },
+      "minRange": {
+        "type": "float",
+        "description": "Minimum range of the sensor",
+        "default": 0.2,
+        "metadata": {
+          "uiName": "Min Range"
+        }
+      },
+      "maxRange": {
+        "type": "float",
+        "description": "Maximum range of the sensor",
+        "default": 180.0,
+        "metadata": {
+          "uiName": "Max Range"
+        }
+      },
+      "range": {
+        "type": "float",
+        "description": "Current range value in meters",
+        "default": 0.0,
+        "metadata": {
+          "uiName": "Range"
+        }
+      },
+      "frameID": {
+        "type": "string",
+        "description": "Frame ID for the sensor",
+        "default": "range_sensor_frame",
+        "metadata": {
+          "uiName": "Frame ID"
+        }
+      }
+    },
+    "outputs": {}
+  }
+}

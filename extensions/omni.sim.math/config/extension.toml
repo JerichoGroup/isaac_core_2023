@@ -1,0 +1,21 @@
+[package]
+version = "1.0.0"
+icon = "data/math_pic.png"
+category = "SIM"
+title = "Math"
+description = "This is a Math extension that binds all the pure math omni graph nodes"
+authors = ["Mr_Blum"]
+repository = ""
+readme = "docs/README.md"
+keywords = ["math", "calculation", "function", "equation", "numbers", "formula"]
+
+[[python.module]]
+name = "omni.sim.math"
+
+[fswatcher.patterns]
+include = ["*.ogn", "*.py"]
+exclude = ["Ogn*Database.py"]
+
+[dependencies]
+"omni.kit.test" = {}
+"omni.graph" = {}

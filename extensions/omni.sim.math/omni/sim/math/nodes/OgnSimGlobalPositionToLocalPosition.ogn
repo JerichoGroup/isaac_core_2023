@@ -1,0 +1,70 @@
+{
+  "GlobalPositionToLocalPosition": {
+    "version": 1,
+    "description": "Convert global position and orientation to local ENU coordinates and quaternion.",
+    "language": "Python",
+    "metadata": {
+      "uiName": "Global Position to Local Position"
+    },
+    "inputs": {
+      "execIn": {
+        "type": "execution",
+        "description": "Tick input for processing",
+        "default": 0,
+        "metadata": {
+          "uiName": "Exec In"
+        }
+      },
+      "enu_reference": {
+        "type": "vectord[3]",
+        "description": "ENU reference point [lat, lon, alt]",
+        "default": [32.22481, 35.25621, 516.7],
+        "metadata": {
+          "uiName": "ENU Reference"
+        }
+      },
+      "global_position": {
+        "type": "vectord[3]",
+        "description": "Global position [lat, lon, alt]",
+        "default": [32.22481, 35.25621, 516.7],
+        "metadata": {
+          "uiName": "Global Position"
+        }
+      },
+      "global_orientation": {
+        "type": "vectord[3]",
+        "description": "Global orientation [roll, pitch, yaw]",
+        "default": [0.0, 0.0, 0.0],
+        "metadata": {
+          "uiName": "Global Orientation"
+        }
+      }
+    },
+    "outputs": {
+      "global_position": {
+        "type": "vectord[3]",
+        "description": "Echo of input global position",
+        "default": [0.0, 0.0, 0.0],
+        "metadata": {
+          "uiName": "Global Position"
+        }
+      },
+      "local_position": {
+        "type": "vectorf[3]",
+        "description": "Local ENU position [x, y, z]",
+        "default": [0.0, 0.0, 0.0],
+        "metadata": {
+          "uiName": "Local Position"
+        }
+      },
+      "local_orientation": {
+        "type": "quatf[4]",
+        "description": "Local orientation quaternion [qx, qy, qz, qw]",
+        "default": [0.0, 0.0, 0.0, 1.0],
+        "metadata": {
+          "uiName": "Local Orientation"
+        }
+      }
+    }
+  }
+}

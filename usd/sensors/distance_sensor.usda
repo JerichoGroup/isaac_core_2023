@@ -186,7 +186,7 @@ def compute(db: og.Database):
 
 
 """
-            custom token inputs:scriptPath = "/home/ofer/clones/isaac_core_2023/simulation/script_nodes/sensor_node.py"
+            custom token inputs:scriptPath = "../../../../../../simulation/script_nodes/sensor_node.py"
             custom bool inputs:usePath = 1
             token node:type = "omni.graph.scriptnode.ScriptNode"
             int node:typeVersion = 2

@@ -95,7 +95,7 @@ def Xform "Environment"
         float inputs:shaping:focus
         color3f inputs:shaping:focusTint
         asset inputs:shaping:ies:file
-        asset inputs:texture:file = @/home/ofer/clones/isaac_core_2023/usd/assets/sunflowers_puresky_4k.exr@
+        asset inputs:texture:file = @./usd/assets/sunflowers_puresky_4k.exr@
         token inputs:texture:format = "latlong"
         quatd xformOp:orient = (1, 0, 0, 0)
         double3 xformOp:scale = (1, 1, 1)

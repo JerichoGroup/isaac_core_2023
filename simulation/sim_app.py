@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 # ==================== additional isaacsim imports ====================
 import omni.usd
 import omni.graph.core as og
+import sim_utils
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
 from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd
@@ -40,6 +41,7 @@ class Simulation:
         self.stage = omni.usd.get_context().get_stage()
         self._add_external_usds(usds_to_add)
         self._set_viewport()
+        self._update_laser_sensor()
 
 
     def _enable_extensions(self) -> None:
@@ -89,6 +91,47 @@ class Simulation:
         for paths in usds_to_add.values():
 
             add_usd_to_stage(paths[0], paths[1])
+
+
+    def _update_laser_sensor(self) -> None:
+        """Configure the laser sensor graph and link it to the camera"""
+
+        if "range_sensor" not in self.usds_to_add:
+            return
+
+        graph_path = f"{self.usds_to_add['range_sensor'][1]}/ActionGraph"
+
+        laser_node_path = f"{graph_path}/laser_depth_node"
+        laser_node_prim = self.stage.GetPrimAtPath(laser_node_path)
+
+        if self.stage.GetPrimAtPath(graph_path):
+            self._update_laser_params(graph_path)
+
+            # Link laser to active camera (ROS or UDP)
+            for cam_key in ["com_ros", "com_udp"]:
+                if cam_key in self.usds_to_add:
+                    cam_path = f"{self.usds_to_add[cam_key][1]}/Xform/{self.usds_to_add[cam_key][2]}"
+                    laser_node_prim.GetAttribute("inputs:camera_xform_path").Set(cam_path)
+                    break
+
+
+    def _update_laser_params(self, graph_path: str) -> None:
+        """Set laser sensor parameters from sim_utils"""
+
+        range_node_prim = self.stage.GetPrimAtPath(f"{graph_path}/ros2_range_publisher")
+        laser_node_prim = self.stage.GetPrimAtPath(f"{graph_path}/laser_depth_node")
+
+        laser_cfg = sim_utils.LASER_PARAMS
+
+        range_node_prim.GetAttribute("inputs:publishRateHZ").Set(laser_cfg.get("publish_rate_hz", 30))
+        range_node_prim.GetAttribute("inputs:topicName").Set(laser_cfg.get("topic_name", "/range"))
+        range_node_prim.GetAttribute("inputs:minRange").Set(laser_cfg.get("min_range", 0.2))
+        range_node_prim.GetAttribute("inputs:maxRange").Set(laser_cfg.get("max_range", 180.0))
+        range_node_prim.GetAttribute("inputs:frameID").Set(laser_cfg.get("frame_id", "range_sensor_frame"))
+
+        laser_node_prim.GetAttribute("inputs:min_range").Set(laser_cfg.get("min_range", 0.2))
+        laser_node_prim.GetAttribute("inputs:max_range").Set(laser_cfg.get("max_range", 180.0))
+
 
 
     def run_simulation(self) -> None:

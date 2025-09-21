@@ -4,12 +4,21 @@
 import os
 import argparse
 
+
 # ==================== simulation constants ====================
 DEFAULT_LAUNCH_CONFIG = {
     "width": 1280,
     "height": 720,
     "sync_loads": True,
     "headless": False  # will be overridden dynamically
+}
+
+LASER_PARAMS = {
+    "publish_rate_hz": 50,
+    "topic_name": "/omni/rangefinder_pub",
+    "min_range": 0.2,
+    "max_range": 180.0,
+    "frame_id": "range_sensor_frame"
 }
 
 OPTIONAL_USDS = {
@@ -22,6 +31,11 @@ OPTIONAL_USDS = {
         "usd/cameras/udp_camera.usda",
         "/Environment/udp_receiver",
         "main_camera_01"
+    ),
+    "range_sensor": (
+        "usd/sensors/distance_sensor.usda",
+        "/Environment/distance_sensor",
+        "distance_sensor"
     )
 }
 
@@ -39,6 +53,7 @@ def parse_arguments():
     parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
     parser.add_argument("--com-ros", default=False, action="store_true", help="Enable communication via ROS")
     parser.add_argument("--com-udp", default=False, action="store_true", help="Enable communication via UDP")
+    parser.add_argument("--range-sensor", default=False, action="store_true", help="Add a range sensor to the simulation")
 
     args, _ = parser.parse_known_args()
     return args

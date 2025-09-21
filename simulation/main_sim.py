@@ -6,8 +6,6 @@ import json
 import sim_utils
 
 
-
-
 # ==================== the main simulation func ====================
 def main():
     args = sim_utils.parse_arguments()

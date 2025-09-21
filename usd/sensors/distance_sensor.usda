@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (-8.035370170339343, 52.05392576975353, 37.28748215782719)
-                double3 target = (-7.396263252315502, 49.06995678998443, 35.3809041881015)
+                double3 target = (-7.396263252315501, 49.06995678998443, 35.380904188101496)
             }
             dictionary Right = {
                 double3 position = (0, -5, 0)
@@ -24,7 +24,7 @@
             double agentHeight = 180
             double agentRadius = 20
             bool excludeRigidBodies = 1
-            int ver = 1
+            uint64 ver = 1
             double voxelCeiling = 460
         }
         dictionary omni_layer = {
@@ -186,7 +186,7 @@ def compute(db: og.Database):
 
 
 """
-            custom token inputs:scriptPath = "../../../scripts/sensor_node.py"
+            custom token inputs:scriptPath = "/home/ofer/clones/isaac_core_2023/simulation/script_nodes/sensor_node.py"
             custom bool inputs:usePath = 1
             token node:type = "omni.graph.scriptnode.ScriptNode"
             int node:typeVersion = 2
@@ -281,6 +281,25 @@ def compute(db: og.Database):
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
             uniform float2 ui:nodegraph:node:pos = (746.6378, 319.7201)
+        }
+
+        def OmniGraphNode "sim_ros2_range_publisher" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </World/ActionGraph/laser_depth_node.outputs:execOut>
+            custom string inputs:frameID
+            custom float inputs:maxRange
+            custom float inputs:minRange
+            custom int inputs:publishRateHZ
+            custom float inputs:range
+            prepend float inputs:range.connect = </World/ActionGraph/laser_depth_node.outputs:range>
+            custom string inputs:topicName
+            token node:type = "omni.sim.sensors.SimROS2RangePublisher"
+            int node:typeVersion = 1
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (556.2915, 292.009)
         }
     }
 }

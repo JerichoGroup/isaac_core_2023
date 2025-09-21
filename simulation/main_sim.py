@@ -18,8 +18,8 @@ def main():
 
     usds_to_add = sim_utils.get_usds_to_add(args, sim_utils.PROJECT_HOME_DIR)
 
-    print(f"usd_path: {args.usd_path}")
     simulation = Simulation(args.usd_path, usds_to_add)
+
     simulation.run_simulation()
 
 

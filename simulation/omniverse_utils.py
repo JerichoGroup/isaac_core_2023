@@ -33,7 +33,7 @@ def add_usd_to_stage(usd_path: str, prim_path: str) -> None:
     root_prim.GetReferences().AddReference(usd_path)
 
 
-def open_usd(usd_path: str, kit: SimulationApp) -> None:
+def open_usd_stage(usd_path: str, kit: SimulationApp) -> None:
     """opens a single usd as the base of the stage"""
 
     try:

@@ -24,7 +24,7 @@ import omni.graph.core as og
 import sim_utils
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
-from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd
+from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage
 
 
 # ==================== the Simulation class ====================
@@ -37,7 +37,7 @@ class Simulation:
         self.usds_to_add = usds_to_add
         self._enable_extensions()
         self._configure_settings()
-        open_usd(usd_path, kit)
+        open_usd_stage(usd_path, kit)
         self.stage = omni.usd.get_context().get_stage()
         self._add_external_usds(usds_to_add)
         self._set_viewport()
@@ -135,7 +135,7 @@ class Simulation:
 
 
     def run_simulation(self) -> None:
-        """manages and runs the simulation"""
+        """manages and runs the simulation loop"""
 
         kit.update()
 

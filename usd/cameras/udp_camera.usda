@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (5, 5, 5)
-                double3 target = (-3.978038431995401e-8, -3.978038254359717e-8, 7.956076863990802e-8)
+                double3 target = (-3.978038431995401e-8, -3.978038254359717e-8, 7.95607677517296e-8)
             }
             dictionary Right = {
                 double3 position = (0, -500, 0)
@@ -161,33 +161,6 @@ def Xform "Root"
         }
     }
 
-    def Mesh "gps_indicator" (
-        prepend apiSchemas = ["CesiumGlobeAnchorSchemaAPI"]
-    )
-    {
-        prepend rel cesium:anchor:georeferenceBinding = </CesiumGeoreference>
-        double cesium:anchor:height = 2249.999999999463
-        double cesium:anchor:latitude = 39.736400999999994
-        double cesium:anchor:longitude = -105.25737
-        double3 cesium:anchor:position = (-1292934.4950404565, -4740026.104285267, 4056960.1513377777)
-        float3[] extent = [(-50, -50, -50), (50, 50, 50)]
-        int[] faceVertexCounts = [4, 4, 4, 4, 4, 4]
-        int[] faceVertexIndices = [0, 1, 3, 2, 4, 6, 7, 5, 6, 2, 3, 7, 4, 5, 1, 0, 4, 0, 2, 6, 5, 7, 3, 1]
-        normal3f[] normals = [(0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, 1), (0, 0, -1), (0, 0, -1), (0, 0, -1), (0, 0, -1), (0, 1, 0), (0, 1, 0), (0, 1, 0), (0, 1, 0), (0, -1, 0), (0, -1, 0), (0, -1, 0), (0, -1, 0), (-1, 0, 0), (-1, 0, 0), (-1, 0, 0), (-1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0), (1, 0, 0)] (
-            interpolation = "faceVarying"
-        )
-        point3f[] points = [(-50, -50, 50), (50, -50, 50), (-50, 50, 50), (50, 50, 50), (-50, -50, -50), (50, -50, -50), (-50, 50, -50), (50, 50, -50)]
-        texCoord2f[] primvars:st = [(0, 0), (1, 0), (1, 1), (0, 1), (1, 0), (1, 1), (0, 1), (0, 0), (0, 1), (0, 0), (1, 0), (1, 1), (0, 0), (1, 0), (1, 1), (0, 1), (0, 0), (1, 0), (1, 1), (0, 1), (1, 0), (1, 1), (0, 1), (0, 0)] (
-            interpolation = "faceVarying"
-        )
-        uniform token subdivisionScheme = "none"
-        token visibility = "invisible"
-        quatd xformOp:orient = (0.9999999992166704, 0.00001758329152791013, 0.000035461064637220785, -8.605204745137064e-13)
-        double3 xformOp:scale = (0.9999999999999994, 0.9999999999999993, 0.999999999999998)
-        double3 xformOp:translate = (0, 0, 0)
-        uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:translate", "xformOp:orient", "xformOp:scale"]
-    }
-
     def OmniGraph "ROS2CameraImageExport"
     {
         token evaluationMode = "Automatic"
@@ -319,7 +292,6 @@ def Xform "Root"
             custom uint inputs:execIn
             prepend uint inputs:execIn.connect = </Root/ROS2CameraImageExport/setCamera.outputs:execOut>
             custom string inputs:frameId = "sim_camera"
-            prepend string inputs:frameId.connect = </Root/ROS2CameraImageExport/to_string.outputs:converted>
             custom string inputs:nodeNamespace
             custom uint64 inputs:queueSize
             custom token inputs:renderProductPath
@@ -348,7 +320,6 @@ def Xform "Root"
             custom uint inputs:execIn
             uint inputs:execIn.connect = </Root/ROS2CameraImageExport/setCamera.outputs:execOut>
             custom string inputs:frameId = "camera_senor_link"
-            prepend string inputs:frameId.connect = </Root/ROS2CameraImageExport/to_string.outputs:converted>
             custom string inputs:nodeNamespace
             custom uint64 inputs:queueSize
             custom token inputs:renderProductPath
@@ -377,7 +348,6 @@ def Xform "Root"
             custom uint inputs:execIn
             uint inputs:execIn.connect = </Root/ROS2CameraImageExport/setCamera.outputs:execOut>
             custom string inputs:frameId = "sim_camera"
-            prepend string inputs:frameId.connect = </Root/ROS2CameraImageExport/to_string.outputs:converted>
             custom string inputs:nodeNamespace
             custom uint64 inputs:queueSize
             custom token inputs:renderProductPath
@@ -393,107 +363,6 @@ def Xform "Root"
             token node:type = "omni.isaac.ros2_bridge.ROS2CameraHelper"
             int node:typeVersion = 2
             uniform float2 ui:nodegraph:node:pos = (-512.98706, -396.7076)
-        }
-
-        def OmniGraphNode "read_variable" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom rel inputs:graph = </Root/ROS2CameraImageExport> (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            string relType = "target"
-                        }
-                    }
-                }
-            )
-            custom token inputs:targetPath
-            custom token inputs:variableName = "frame_counter"
-            token node:type = "omni.graph.core.ReadVariable"
-            int node:typeVersion = 2
-            custom token outputs:value
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-2712.5903, 425.2562)
-        }
-
-        def OmniGraphNode "write_variable" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </Root/ROS2CameraImageExport/onPhysicsStep.outputs:step>
-            custom rel inputs:graph = </Root/ROS2CameraImageExport> (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            string relType = "target"
-                        }
-                    }
-                }
-            )
-            custom token inputs:targetPath
-            custom token inputs:value (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            int64 attrValue = 0
-                            string resolvedType = "int64"
-                        }
-                    }
-                }
-            )
-            prepend token inputs:value.connect = </Root/ROS2CameraImageExport/add.outputs:sum>
-            custom token inputs:variableName = "frame_counter"
-            token node:type = "omni.graph.core.WriteVariable"
-            int node:typeVersion = 2
-            custom uint outputs:execOut (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom token outputs:value
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-2158.9636, 414.70926)
-        }
-
-        def OmniGraphNode "constant_int" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom int inputs:value = 1
-            token node:type = "omni.graph.nodes.ConstantInt"
-            int node:typeVersion = 1
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-2723.0806, 558.6316)
-        }
-
-        def OmniGraphNode "add" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom token inputs:a
-            prepend token inputs:a.connect = </Root/ROS2CameraImageExport/read_variable.outputs:value>
-            custom token inputs:b
-            prepend token inputs:b.connect = </Root/ROS2CameraImageExport/constant_int.inputs:value>
-            token node:type = "omni.graph.nodes.Add"
-            int node:typeVersion = 2
-            custom token outputs:sum
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-2467.832, 467.83316)
-        }
-
-        def OmniGraphNode "to_string" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom token inputs:value
-            prepend token inputs:value.connect = </Root/ROS2CameraImageExport/write_variable.outputs:value>
-            token node:type = "omni.graph.nodes.ToString"
-            int node:typeVersion = 1
-            custom string outputs:converted
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-1703.9575, 448.37302)
         }
 
         def OmniGraphNode "ros2_context" (

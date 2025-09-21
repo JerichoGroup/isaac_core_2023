@@ -9,12 +9,13 @@ This repository provides a clean foundation for simulation projects, with ready-
 
 1. [Repository Structure](#repository-structure)  
 2. [System Requirements](#system-requirements)  
-3. [Docker Workflow (Optional)](#docker-workflow-optional)  
-4. [Running the Simulation](#running-the-simulation)  
-5. [Simulation Flags](#simulation-flags)  
-6. [ROS 2 Topics](#ros-2-topics)  
-7. [Key Scripts](#key-scripts)  
-8. [Using the Environment for Development](#🛠️-using-the-environment-for-development)  
+3. [Docker Workflow (Optional)](#docker-workflow-optional)
+4. [Repo](#what-the-repo-does-and-how-to-develop-in-it)
+5. [Running the Simulation](#running-the-simulation)  
+6. [Simulation Flags](#simulation-flags)  
+7. [ROS 2 Topics](#ros-2-topics)  
+8. [Key Scripts](#key-scripts)  
+9. [Using the Environment for Development](#🛠️-using-the-environment-for-development)  
 
 ---
 
@@ -185,6 +186,21 @@ Step 2: Build the simulation image with extensions
 ```
 
 ---
+
+## what the repo does and how to develop in it
+
+Isaac Core provides a modular simulation framework built around Isaac Sim 2023.1.1 and ROS 2 Humble. It allows developers to launch custom USD scenes, inject optional components (cameras, sensors, vehicles), and stream data through ROS topics in real time.
+
+The simulation logic is centralized in `Sim_app.py`, which dynamically loads USD assets based on CLI flags and configures the scene with extensions, viewport settings, and sensor graphs. Optional modules like range sensors or ROS cameras are injected via a clean argument parser and resolved through `sim_utils.py`.
+
+USD assets are organized by type (maps, vehicles, cameras, publishers), and can be composed at runtime to build complex environments. The repo supports Cesium tilesets, and includes utilities for patching USD files or rewriting attributes dynamically.
+
+Development is designed to be flexible:
+- Add new USDs to the `Usd/` folder and reference them via `--usd_path`
+- Extend the simulation by adding new nodes to `Script_nodes/` or new extensions under `Extensions/`
+- Use `omniverse_utils.py` to manipulate the stage, set camera views, or inject references
+- Configure simulation behavior through constants in `sim_utils.py`, including sensor parameters and launch settings
+
 
 ## Running the Simulation
 

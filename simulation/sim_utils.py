@@ -21,6 +21,7 @@ LASER_PARAMS = {
     "frame_id": "range_sensor_frame"
 }
 
+# <flag_name>: (<usd_path>, <prim_path in sim>, <prim name>)
 OPTIONAL_USDS = {
     "com_ros": (
         "usd/cameras/ros_camera.usda",

@@ -39,7 +39,7 @@ class Simulation:
         open_usd(usd_path, kit)
         self.stage = omni.usd.get_context().get_stage()
         self._add_external_usds(usds_to_add)
-        set_camera_viewport(f"{usds_to_add['ros_camera'][1]}/Xform/{usds_to_add['ros_camera'][2]}")
+        self._set_viewport()
 
 
     def _enable_extensions(self) -> None:
@@ -66,6 +66,23 @@ class Simulation:
         kit.update()
 
 
+    def _set_viewport(self) -> None:
+        """sets the viewport for either a ros or udp camera"""
+
+        if "com_ros" in self.usds_to_add:
+            cam_key = "com_ros"
+        elif "com_udp" in self.usds_to_add:
+            cam_key = "com_udp"
+        else:
+            cam_key = None
+
+        if cam_key:
+            cam_path = f"{self.usds_to_add[cam_key][1]}/Xform/{self.usds_to_add[cam_key][2]}"
+            set_camera_viewport(cam_path)
+        else:
+            carb.log_warn("No communication camera found — skipping viewport setup")
+
+
     def _add_external_usds(self, usds_to_add: str) -> None:
         """load all the relevant usds on top of the opened stage"""
 
@@ -74,7 +91,7 @@ class Simulation:
             add_usd_to_stage(paths[0], paths[1])
 
 
-    def _run_simulation(self) -> None:
+    def run_simulation(self) -> None:
         """manages and runs the simulation"""
 
         kit.update()

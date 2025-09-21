@@ -3,55 +3,26 @@
 # ==================== imports ====================
 import os
 import json
-import argparse
+import sim_utils
 
 
-# ==================== Helper - get user arguments ====================
-def parse_arguments() -> tuple:
-    """get the simulation optional args from the user"""
-
-    parser = argparse.ArgumentParser("Launch flying camera simulation environment")
-
-    parser.add_argument("--usd-path", type=str, default="usd/maps/earth/earth.usda", help="Path to usd file, should be relative to your default assets folder")
-    parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
-
-    args, _ = parser.parse_known_args()
-
-    return args.usd_path, args.headless, args.odom, args.add_cars, args.add_range_sensor, args.generate_data
-
-
-# ==================== define the simulation consts and launch config env var ====================
-USD_PATH, HEADLESS = parse_arguments()
-LAUNCH_CONFIG = {
-    "width": 1280,
-    "height": 720,
-    "sync_loads": True,
-    "headless": HEADLESS
-}
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
-USDS_TO_ADD = {
-    "ros_camera": (
-        f"{PROJECT_HOME_DIR}/usd/ros_utils/ros_camera.usda",
-        "/Environment/ros_camera",
-        "main_camera_01"
-    )
-}
-os.environ["LAUNCH_CONFIG"] = json.dumps(LAUNCH_CONFIG)     # make LAUNCH_CONFIG available to the sim_app
-
-
-# ==================== import the sim app after initializing the launch config ====================
-from sim_app import Simulation
 
 
 # ==================== the main simulation func ====================
 def main():
+    args = sim_utils.parse_arguments()
 
-    print(f"usd_path: {USD_PATH}")
+    cur_launch_config = sim_utils.DEFAULT_LAUNCH_CONFIG.copy()
+    cur_launch_config["headless"] = args.headless
+    os.environ["LAUNCH_CONFIG"] = json.dumps(cur_launch_config)
 
-    simulation = Simulation(USD_PATH, USDS_TO_ADD)
+    from sim_app import Simulation          # import sim app after setting the launch config
 
-    simulation._run_simulation()
+    usds_to_add = sim_utils.get_usds_to_add(args, sim_utils.PROJECT_HOME_DIR)
+
+    print(f"usd_path: {args.usd_path}")
+    simulation = Simulation(args.usd_path, usds_to_add)
+    simulation.run_simulation()
 
 
 # ==================== run the main ====================

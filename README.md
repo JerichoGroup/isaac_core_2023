@@ -175,7 +175,7 @@ OUTPUTS_ROS_HRZ = 0.0           # TODO
 RESOLUTION_WIDTH = 1280
 RESOLUTION_HEIGHT = 720
 CAMERA_FOV = 78.1               # degrees           
-FOCAL_LENGTH = 22.7885          # mm, computed from FOV and sensor size             
+FOCAL_LENGTH = 22.7885          # mm             
 ```
 
 ---

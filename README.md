@@ -29,6 +29,7 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 - **Docker 20.10+ & Docker Compose v2 (and NVIDIA Container Toolkit)**
 - **ROS 2 Humble** — Installed automatically inside the base Docker image.  
   Optional: install locally for development outside Docker.
+- **Setup Extensions**
 
 <details>
 <summary>Install NVIDIA Driver</summary>
@@ -75,6 +76,14 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 
 sudo apt update
 sudo apt install ros-humble-desktop
+```
+</details>
+
+<details>
+<summary>Setup Extensions</summary>
+
+```bash
+cp -r extensions/* $ISAACSIM_PATH/exts/
 ```
 </details>
 
@@ -161,7 +170,7 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 under simulation/consts.py you can change:
 ```bash
 GIMBAL_ANGLE = 0.0              # TODO
-TILESETS_HTTP_SERVER_URL = 0.0  # TODO
+TILESETS_HTTP_SERVER_URL = 0.0  
 OUTPUTS_ROS_HRZ = 0.0           # TODO
 RESOLUTION_WIDTH = 1280
 RESOLUTION_HEIGHT = 720

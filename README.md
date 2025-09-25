@@ -14,12 +14,10 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 
 1. [System Requirements](#system-requirements)  
 1. [Docker Workflow (Optional)](#docker-workflow-optional)
-1. [Repo](#what-the-repo-does-and-how-to-develop-in-it)
 1. [Running the Simulation](#running-the-simulation)  
 1. [Simulation Flags](#simulation-flags)  
-1. [ROS 2 Topics](#ros-2-topics)  
-1. [Key Scripts](#key-scripts)  
-1. [Using the Environment for Development](#🛠️-using-the-environment-for-development)  
+1. [ROS2 outputs topics](#ros2-outputs-topics)  
+1. [Take pictures](#take-pictures)  
 
 ---
 
@@ -28,8 +26,7 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 
 - **NVIDIA GPU** — Driver **535+** recommended for Isaac Sim 2023.1+  
 - **Ubuntu 22.04 LTS or later**
-- **Docker 20.10+ & Docker Compose v2**
-- **Vulkan Tools & NVIDIA Container Toolkit**
+- **Docker 20.10+ & Docker Compose v2 (and NVIDIA Container Toolkit)**
 - **ROS 2 Humble** — Installed automatically inside the base Docker image.  
   Optional: install locally for development outside Docker.
 
@@ -113,20 +110,24 @@ Step 2: Build the simulation image with extensions
 ```
 
 ---
+<details>
+<summary>what the repo does and how to develop in it</summary>
 
-## what the repo does and how to develop in it
+Isaac Core provides a modular simulation framework built around Isaac Sim 2023.1.1 and ROS 2 Humble. It allows developers
+to launch custom USD scenes, inject optional components (cameras, sensors, vehicles), and stream data through ROS topics in real time.
 
-Isaac Core provides a modular simulation framework built around Isaac Sim 2023.1.1 and ROS 2 Humble. It allows developers to launch custom USD scenes, inject optional components (cameras, sensors, vehicles), and stream data through ROS topics in real time.
+The simulation logic is centralized in `Sim_app.py`, which dynamically loads USD assets based on CLI flags
+and configures the scene with extensions, viewport settings, and sensor graphs. Optional modules like range sensors or ROS cameras are injected via a clean argument parser and resolved through `sim_utils.py`.
 
-The simulation logic is centralized in `Sim_app.py`, which dynamically loads USD assets based on CLI flags and configures the scene with extensions, viewport settings, and sensor graphs. Optional modules like range sensors or ROS cameras are injected via a clean argument parser and resolved through `sim_utils.py`.
-
-USD assets are organized by type (maps, vehicles, cameras, publishers), and can be composed at runtime to build complex environments. The repo supports Cesium tilesets, and includes utilities for patching USD files or rewriting attributes dynamically.
+USD assets are organized by type (maps, vehicles, cameras, publishers), and can be composed at runtime to build complex environments.
+The repo supports Cesium tilesets, and includes utilities for patching USD files or rewriting attributes dynamically.
 
 Development is designed to be flexible:
 - Add new USDs to the `Usd/` folder and reference them via `--usd_path`
 - Extend the simulation by adding new nodes to `Script_nodes/` or new extensions under `Extensions/`
 - Use `omniverse_utils.py` to manipulate the stage, set camera views, or inject references
 - Configure simulation behavior through constants in `sim_utils.py`, including sensor parameters and launch settings
+</details>
 
 
 ## Running the Simulation
@@ -171,14 +172,16 @@ CAMERA_FOV = 0.0                # TODO
 
 ## ROS2 outputs topics
 
-| Topic                               | Type                       | Description                   |
-|-------------------------------------|----------------------------|-------------------------------|
-| `/isaac_core/odom`                  | `nav_msgs/Odometry`        | Robot odometry and position   |
-| `/isaac_core/laser_distance_sensor` | `sensor_msgs/LaserScan`    | Simulated laser range data    |
-| `/isaac_core/camera/image_raw`      | `sensor_msgs/Image`        | Camera feed from simulation   |
-| `/robot/laser/scan`                 | `sensor_msgs/LaserScan`    | LIDAR data                    |
+| Topic                               | Type                        | Description                 |
+|-------------------------------------|-----------------------------|-----------------------------|
+| `/isaac_core/odom`  (TODO)          | `geometry_msgs/PoseStamped` | Camera's odometry           |
+| `/isaac_core/gps`  (TODO)           | `sensor_msgs/NavSatFix`     | Camera's lat, lon, alt      |
+| `/isaac_core/laser_distance_sensor` | `sensor_msgs/Range`         | Simulated laser range data  |
+| `/isaac_core/camera/image_raw`      | `sensor_msgs/Image`         | Camera feed from simulation |
+| `/isaac_core/bbox`  (TODO)          | `TODO`                      | BBOX data                   |
 
 
 ---
 
-## Take pictures (TODO)
+## Take pictures
+TODO

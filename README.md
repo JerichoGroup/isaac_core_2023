@@ -18,6 +18,7 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 1. [Simulation Flags](#simulation-flags)  
 1. [ROS2 outputs topics](#ros2-outputs-topics)  
 1. [Take pictures](#take-pictures)  
+1. [Auto completion in vscode](#auto-completion-in-vscode)  
 
 ---
 
@@ -194,3 +195,25 @@ CAMERA_FOV = 0.0                # TODO
 
 ## Take pictures
 TODO
+
+# Auto completion in vscode
+<details>
+<summary>Expand to show more on setup</summary>
+`.vscode` folder is unique for each machine depending on the extensions installed, in order to get the right folder follow those steps:
+1. Open isaac sim
+1. window
+1. Extensions
+1. Plus button for new extension
+1. New extension Template project (call it a random name)
+1. Copy .vscode folder from that project and paste it in this directory
+
+`app` - It is a folder link to the location of your *Omniverse Kit* based app.
+If `app` folder link doesn't exist or broken it can be created again. For better developer experience it is recommended to create a folder link named `app` to the *Omniverse Kit* app installed from *Omniverse Launcher*. Convenience script to use is included.
+
+Run:
+```
+./link_app.sh --path $ISAACSIM_PATH
+```
+
+Now reopen vscode in this folder an wait 30 seconds ~ for auto-completion.
+</details>

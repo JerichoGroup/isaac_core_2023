@@ -29,6 +29,7 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 - **Docker 20.10+ & Docker Compose v2 (and NVIDIA Container Toolkit)**
 - **ROS 2 Humble** — Installed automatically inside the base Docker image.  
   Optional: install locally for development outside Docker.
+- **Setup Extensions**
 
 <details>
 <summary>Install NVIDIA Driver</summary>
@@ -75,6 +76,14 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 
 sudo apt update
 sudo apt install ros-humble-desktop
+```
+</details>
+
+<details>
+<summary>Setup Extensions</summary>
+
+```bash
+cp -r extensions/* $ISAACSIM_PATH/exts/
 ```
 </details>
 

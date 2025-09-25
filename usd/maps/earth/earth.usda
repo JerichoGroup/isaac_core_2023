@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (-168.1162262333783, -78.07836797375415, 185.80519125884163)
-                double3 target = (-168.1387070615373, -78.23424507804461, 185.73847341740034)
+                double3 target = (-168.13870706153727, -78.23424507804458, 185.73847341740031)
             }
             dictionary Right = {
                 double3 position = (0, -5, 0)
@@ -106,125 +106,7 @@ def Xform "Environment"
 
 def CesiumDataPrim "Cesium"
 {
-    prepend rel cesium:selectedIonServer = </telem293005_1_075/CesiumServers/IonOfficial>
-}
-
-def CesiumTilesetPrim "telem293005_1_075"
-{
-    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
-    string cesium:ionAccessToken = ""
-    int64 cesium:ionAssetId = 0
-    rel cesium:ionServerBinding = None
-    uniform token cesium:sourceType = "url"
-    string cesium:url = "http://10.20.15.122:8088/telem293005_1_075/tileset.json"
-    float3[] extent = [(16224.691, 94121.93, -1593.8441), (24527.625, 104044.13, -157.4398)]
-    token visibility = "inherited"
-
-    def "CesiumServers"
-    {
-        def CesiumIonServerPrim "IonOfficial"
-        {
-            string cesium:displayName = "ion.cesium.com"
-            string cesium:ionServerApiUrl = "https://api.cesium.com/"
-            int64 cesium:ionServerApplicationId = 413
-            string cesium:ionServerUrl = "https://ion.cesium.com/"
-        }
-    }
-}
-
-def CesiumTilesetPrim "telem293005_2_095"
-{
-    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
-    string cesium:ionAccessToken = ""
-    int64 cesium:ionAssetId = 0
-    rel cesium:ionServerBinding = None
-    uniform token cesium:sourceType = "url"
-    string cesium:url = "http://10.20.15.122:8088/telem293005_2_095/tileset.json"
-    float3[] extent = [(26212.277, 115199.75, -2208.4358), (28498.61, 121011.914, 193.53667)]
-    token visibility = "inherited"
-}
-
-def CesiumTilesetPrim "telem_15052024"
-{
-    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
-    string cesium:ionAccessToken = ""
-    int64 cesium:ionAssetId = 0
-    rel cesium:ionServerBinding = None
-    uniform token cesium:sourceType = "url"
-    string cesium:url = "http://10.20.15.122:8088/telem_15052024/tileset.json"
-    float3[] extent = [(24129.043, 112383.38, -3389.0857), (36630.375, 123872.09, 213.48553)]
-    token visibility = "inherited"
-}
-
-def CesiumTilesetPrim "telem_18042024"
-{
-    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
-    string cesium:ionAccessToken = ""
-    int64 cesium:ionAssetId = 0
-    rel cesium:ionServerBinding = None
-    uniform token cesium:sourceType = "url"
-    string cesium:url = "http://10.20.15.122:8088/telem_18042024/tileset.json"
-    float3[] extent = [(12726.513, 91944.81, -1001.3225), (21776.924, 102955.02, -307.58746)]
-    token visibility = "inherited"
-}
-
-def CesiumTilesetPrim "telem_20240516_074212"
-{
-    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
-    string cesium:ionAccessToken = ""
-    int64 cesium:ionAssetId = 0
-    rel cesium:ionServerBinding = None
-    uniform token cesium:sourceType = "url"
-    string cesium:url = "http://10.20.15.122:8088/telem_20240516_074212/tileset.json"
-    float3[] extent = [(19870.104, 107449.68, -1506.0347), (27907.404, 113332.96, -202.1126)]
-    token visibility = "inherited"
-}
-
-def CesiumTilesetPrim "telem_24042024"
-{
-    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
-    string cesium:ionAccessToken = ""
-    int64 cesium:ionAssetId = 0
-    rel cesium:ionServerBinding = None
-    uniform token cesium:sourceType = "url"
-    string cesium:url = "http://10.20.15.122:8088/telem_24042024/tileset.json"
-    float3[] extent = [(21579.82, 109802.81, -1423.9512), (30133.053, 118961.97, -589.98193)]
-    token visibility = "inherited"
-}
-
-def CesiumTilesetPrim "Tulkarem_11_22"
-{
-    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
-    string cesium:ionAccessToken = ""
-    int64 cesium:ionAssetId = 0
-    rel cesium:ionServerBinding = None
-    uniform token cesium:sourceType = "url"
-    string cesium:url = "http://10.20.15.122:8088/Tulkarem_11_22/tileset.json"
-    float3[] extent = [(-23706.975, 2277.349, -533.15125), (-6132.8315, 19534.115, 26.139288)]
-    token visibility = "inherited"
-}
-
-def CesiumTilesetPrim "telem_250424"
-{
-    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
-    string cesium:ionAccessToken = ""
-    int64 cesium:ionAssetId = 0
-    rel cesium:ionServerBinding = None
-    uniform token cesium:sourceType = "url"
-    string cesium:url = "http://10.20.15.122:8088/telem_250424/tileset.json"
-    float3[] extent = [(18681.709, 101595.21, -2161.1357), (28805.775, 110692.98, 180.50586)]
-    token visibility = "inherited"
-}
-
-def CesiumTilesetPrim "nablus"
-{
-    rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
-    string cesium:ionAccessToken = ""
-    int64 cesium:ionAssetId = 0
-    rel cesium:ionServerBinding = None
-    uniform token cesium:sourceType = "url"
-    string cesium:url = "http://10.20.15.122:8088/nablus/tileset.json"
-    float3[] extent = [(-7982.7725, -5877.865, -751.89636), (8347.764, 3756.5452, 699.53015)]
+    prepend rel cesium:selectedIonServer = </tilesets/telem293005_1_075/CesiumServers/IonOfficial>
 }
 
 def CesiumGeoreferencePrim "NablusCesiumGeoreference"
@@ -233,5 +115,120 @@ def CesiumGeoreferencePrim "NablusCesiumGeoreference"
     double cesium:georeferenceOrigin:height = 516.7
     double cesium:georeferenceOrigin:latitude = 32.22481
     double cesium:georeferenceOrigin:longitude = 35.25621
+}
+
+def Xform "tilesets"
+{
+    quatd xformOp:orient = (1, 0, 0, 0)
+    double3 xformOp:scale = (1, 1, 1)
+    double3 xformOp:translate = (0, 0, 0)
+    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+    def CesiumTilesetPrim "telem293005_1_075"
+    {
+        rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+        string cesium:ionAccessToken = ""
+        int64 cesium:ionAssetId = 0
+        rel cesium:ionServerBinding = None
+        uniform token cesium:sourceType = "url"
+        string cesium:url = "http://10.20.15.122:8088/telem293005_1_075/tileset.json"
+        float3[] extent = [(16224.691, 94121.93, -1593.8441), (24527.625, 104044.13, -157.4398)]
+        token visibility = "inherited"
+    }
+
+    def CesiumTilesetPrim "telem293005_2_095"
+    {
+        rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+        string cesium:ionAccessToken = ""
+        int64 cesium:ionAssetId = 0
+        rel cesium:ionServerBinding = None
+        uniform token cesium:sourceType = "url"
+        string cesium:url = "http://10.20.15.122:8088/telem293005_2_095/tileset.json"
+        float3[] extent = [(26212.277, 115199.75, -2208.4358), (28498.61, 121011.914, 193.53667)]
+        token visibility = "inherited"
+    }
+
+    def CesiumTilesetPrim "telem_15052024"
+    {
+        rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+        string cesium:ionAccessToken = ""
+        int64 cesium:ionAssetId = 0
+        rel cesium:ionServerBinding = None
+        uniform token cesium:sourceType = "url"
+        string cesium:url = "http://10.20.15.122:8088/telem_15052024/tileset.json"
+        float3[] extent = [(24129.043, 112383.38, -3389.0857), (36630.375, 123872.09, 213.48553)]
+        token visibility = "inherited"
+    }
+
+    def CesiumTilesetPrim "telem_18042024"
+    {
+        rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+        string cesium:ionAccessToken = ""
+        int64 cesium:ionAssetId = 0
+        rel cesium:ionServerBinding = None
+        uniform token cesium:sourceType = "url"
+        string cesium:url = "http://10.20.15.122:8088/telem_18042024/tileset.json"
+        float3[] extent = [(12726.513, 91944.81, -1001.3225), (21776.924, 102955.02, -307.58746)]
+        token visibility = "inherited"
+    }
+
+    def CesiumTilesetPrim "telem_20240516_074212"
+    {
+        rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+        string cesium:ionAccessToken = ""
+        int64 cesium:ionAssetId = 0
+        rel cesium:ionServerBinding = None
+        uniform token cesium:sourceType = "url"
+        string cesium:url = "http://10.20.15.122:8088/telem_20240516_074212/tileset.json"
+        float3[] extent = [(19870.104, 107449.68, -1506.0347), (27907.404, 113332.96, -202.1126)]
+        token visibility = "inherited"
+    }
+
+    def CesiumTilesetPrim "telem_24042024"
+    {
+        rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+        string cesium:ionAccessToken = ""
+        int64 cesium:ionAssetId = 0
+        rel cesium:ionServerBinding = None
+        uniform token cesium:sourceType = "url"
+        string cesium:url = "http://10.20.15.122:8088/telem_24042024/tileset.json"
+        float3[] extent = [(21579.82, 109802.81, -1423.9512), (30133.053, 118961.97, -589.98193)]
+        token visibility = "inherited"
+    }
+
+    def CesiumTilesetPrim "Tulkarem_11_22"
+    {
+        rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+        string cesium:ionAccessToken = ""
+        int64 cesium:ionAssetId = 0
+        rel cesium:ionServerBinding = None
+        uniform token cesium:sourceType = "url"
+        string cesium:url = "http://10.20.15.122:8088/Tulkarem_11_22/tileset.json"
+        float3[] extent = [(-23706.975, 2277.349, -533.15125), (-6132.8315, 19534.115, 26.139288)]
+        token visibility = "inherited"
+    }
+
+    def CesiumTilesetPrim "telem_250424"
+    {
+        rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+        string cesium:ionAccessToken = ""
+        int64 cesium:ionAssetId = 0
+        rel cesium:ionServerBinding = None
+        uniform token cesium:sourceType = "url"
+        string cesium:url = "http://10.20.15.122:8088/telem_250424/tileset.json"
+        float3[] extent = [(18681.709, 101595.21, -2161.1357), (28805.775, 110692.98, 180.50586)]
+        token visibility = "inherited"
+    }
+
+    def CesiumTilesetPrim "nablus"
+    {
+        rel cesium:georeferenceBinding = </NablusCesiumGeoreference>
+        string cesium:ionAccessToken = ""
+        int64 cesium:ionAssetId = 0
+        rel cesium:ionServerBinding = None
+        uniform token cesium:sourceType = "url"
+        string cesium:url = "http://10.20.15.122:8088/nablus/tileset.json"
+        float3[] extent = [(-7982.7725, -5877.865, -751.89636), (8347.764, 3756.5452, 699.53015)]
+    }
 }
 

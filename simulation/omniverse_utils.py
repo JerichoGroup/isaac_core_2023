@@ -1,4 +1,4 @@
-""""this file defines some helper functions to manage the isaacsim simulation app"""
+"""this file defines some helper functions to manage the isaacsim simulation app"""
 
 # ==================== imports ====================
 import sys

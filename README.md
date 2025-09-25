@@ -1,101 +1,28 @@
-# Isaac Core
+# Isaac Core 🌎📸
 
-A modular Docker-based development environment for running **Isaac Sim 4.5** with **ROS 2 Humble**.  
-This repository provides a clean foundation for simulation projects, with ready-to-use Docker images, scripts, and ROS 2 integrations.
+A tool aimed for simulating camera image view from a real 3dTiles scanning of the relevant location from a gps and orientation inputs.
+<br>
+This can be used to simulate areal unmaned vehicles. 
+<br>
+This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
+<br>
+<img src="isaac_core_example.png" alt="Logo" width="1000"/>
 
 ---
 
 ## Table of Contents
 
-1. [Repository Structure](#repository-structure)  
-2. [System Requirements](#system-requirements)  
-3. [Docker Workflow (Optional)](#docker-workflow-optional)
-4. [Repo](#what-the-repo-does-and-how-to-develop-in-it)
-5. [Running the Simulation](#running-the-simulation)  
-6. [Simulation Flags](#simulation-flags)  
-7. [ROS 2 Topics](#ros-2-topics)  
-8. [Key Scripts](#key-scripts)  
-9. [Using the Environment for Development](#🛠️-using-the-environment-for-development)  
+1. [System Requirements](#system-requirements)  
+1. [Docker Workflow (Optional)](#docker-workflow-optional)
+1. [Repo](#what-the-repo-does-and-how-to-develop-in-it)
+1. [Running the Simulation](#running-the-simulation)  
+1. [Simulation Flags](#simulation-flags)  
+1. [ROS 2 Topics](#ros-2-topics)  
+1. [Key Scripts](#key-scripts)  
+1. [Using the Environment for Development](#🛠️-using-the-environment-for-development)  
 
 ---
 
-## Repository Structure
-
-```
-Isaac_core
-│
-├── Run_docker.sh
-├── Run_sim.sh
-├── Take_pictures.py  # (config inside: usda path, path to save, positions list)
-│
-├── Docker
-│   ├── Build_base_image.sh
-│   ├── Build_simulation_image.sh
-│   ├── Base_docker
-│   ├── Docker-compose.yml
-│   ├── Dockerfile.isaacsim_2023_ros_humble_base
-│   ├── isaacsim_warmup.sh
-│   └── Simulation_docker
-│       ├── Docker-compose.yml
-│       ├── Dockerfile.isaacsim_2023_ros_humble_simulation
-│       └── cesium_exts_2023
-│
-├── Extensions
-│   ├── Omni.sim.position
-│   │   ├── Config
-│   │   ├── Data
-│   │   ├── Docs
-│   │   └── Omni
-│   │       ├── Ros_to_global_position
-│   │       └── udp_to_global_position
-│   ├── Omni.sim.math
-│   │   ├── Config
-│   │   ├── Data
-│   │   ├── Docs
-│   │   └── Omni
-│   │       └── global_position_to_local_position
-│   ├── Omni.sim.sensors
-│   │   ├── Config
-│   │   ├── Data
-│   │   ├── Docs
-│   │   └── Omni
-│   │       └── Range_publisher
-│   └── servo… (in the future)
-│
-├── Config
-│   └── config.yml
-│
-├── Simulation
-│   ├── core_parser.py
-│   ├── omniverse_utils.py
-│   ├── Sim_app.py
-│   ├── Script_nodes
-│   └── bbox_publisher.py
-│
-├── Usd
-│   ├── Assets
-│   │   └── Sunflower_puresky_4k.exr
-│   ├── Cameras
-│   │   ├── Sat_camera.usda
-│   │   ├── Mavros_camera.usda
-│   │   └── udp_camera.usda
-│   ├── Controllable_cars
-│   │   ├── Driving_car.usda
-│   │   └── udp_oshkosh.usda
-│   ├── publishers
-│   │   └── Data_publisher.usda  # (bbox + distance sensor)
-│   └── Maps
-│       ├── Earth
-│       │   └── Earth.usda
-│       ├── Nablus
-│       │   └── Nablus.usda
-│       └── Telem
-│           └── Telem.usda
-│
-├── README.md
-```
-
----
 
 ## System Requirements
 
@@ -208,94 +135,50 @@ Development is designed to be flexible:
 
 ```bash
 xhost +
-./Run.sh
+./run_docker.sh
 ```
 
 ### Run Locally on Your Host
 
 ```bash
-./Run_sim.sh
+ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.usda --com-ros
 ```
 
 ---
 
 ## Simulation Flags
 
-| Flag                     | Description                          |
-|--------------------------|--------------------------------------|
-| `--usd_path <file.usda>` | Load a specific USD scene file       |
-| `--headless`             | Run Isaac Sim without GUI            |
-| `--record <path>`        | Record simulation data to a folder   |
-| `--hrz <number>`         | Set target simulation Hz             |
-| `--camera <...>`         | Select which camera to use (TODO)    |
-| `--TODO`                 | Placeholder for future features      |
+| Flag                     | Description                                                  |
+|--------------------------|--------------------------------------------------------------|
+| `--usd-path <file.usda>` | Load a specific USDA scene file                              |
+| `--headless`             | Run Isaac Sim without GUI                                    |
+| `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ros       |
+| `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp       |
+| `--range-sensor`         | Add range sensor to simulation (output is on ros topic)      |
 
-**Example:**
-
+## Special configurations
+under simulation/consts.py you can change:
 ```bash
-./Run_sim.sh --usd_path Usd/Assets/Driving_omni.usda --headless --hrz 60
+GIMBAL_ANGLE = 0.0              # TODO
+TILESETS_HTTP_SERVER_URL = 0.0  # TODO
+OUTPUTS_ROS_HRZ = 0.0           # TODO
+RESOLUTION_WIDTH = 1280
+RESOLUTION_HEIGHT = 720
+CAMERA_FOV = 0.0                # TODO
 ```
 
 ---
 
-## ROS 2 Topics
+## ROS2 outputs topics
 
-| Topic                     | Type                     | Description                 |
-|--------------------------|--------------------------|-----------------------------|
-| `/robot/odom`            | `nav_msgs/Odometry`      | Robot odometry and position |
-| `/robot/cmd_vel`         | `geometry_msgs/Twist`    | Command robot velocities    |
-| `/robot/camera/image_raw`| `sensor_msgs/Image`      | Camera feed from simulation |
-| `/robot/laser/scan`      | `sensor_msgs/LaserScan`  | LIDAR data                  |
-| `/robot/joint_states`    | `sensor_msgs/JointState` | Robot joint states          |
+| Topic                               | Type                       | Description                   |
+|-------------------------------------|----------------------------|-------------------------------|
+| `/isaac_core/odom`                  | `nav_msgs/Odometry`        | Robot odometry and position   |
+| `/isaac_core/laser_distance_sensor` | `sensor_msgs/LaserScan`    | Simulated laser range data    |
+| `/isaac_core/camera/image_raw`      | `sensor_msgs/Image`        | Camera feed from simulation   |
+| `/robot/laser/scan`                 | `sensor_msgs/LaserScan`    | LIDAR data                    |
 
-Inspect topics with:
-
-```bash
-ros2 topic list
-ros2 topic echo /robot/odom
-```
 
 ---
 
-## Key Scripts
-
-Located in `Simulation/`:
-
-- `Sim_app.py` — Main simulation launcher and orchestrator  
-- `Take_pictures.py` — Capture images from simulation cameras  
-  - Configurable USD path, save path, and camera positions  
-- `core_parser.py` — Helpers for parsing and processing simulation data  
-- `omniverse_utils.py` — Utility functions for Isaac Sim & USD assets  
-- `Script_nodes/` — ROS 2 nodes (e.g., `bbox_publisher.py`)
-
-**Example (Take Pictures):**
-
-```bash
-python3 Simulation/Take_pictures.py \
-  --usd Usd/Assets/Start_camera.usda \
-  --output ./captures \
-  --positions config/positions.json
-```
-
----
-
-## Using the Environment for Development
-
-1. **Standalone ROS 2 Nodes**  
-   Run your own nodes to extract metadata, control objects, or visualize data.
-
-2. **Fork and Extend**  
-   Add your own simulation logic, custom extensions, or ROS packages.
-
-3. **Keep the Base Lean**  
-   Avoid cluttering the main repo; keep base images modular for easy reuse.
-
-4. **Tips**  
-   - Test new extensions in a separate branch  
-   - Use ROS 2 commands to debug simulation state  
-   - Record data for reproducible experiments  
-
----
-
-This guide enables you to **build, run, and extend Isaac Core simulations** effectively.  
-Happy simulating 🚀
+## Take pictures (TODO)

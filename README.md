@@ -170,11 +170,12 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 under simulation/consts.py you can change:
 ```bash
 GIMBAL_ANGLE = 0.0              # TODO
-TILESETS_HTTP_SERVER_URL = 0.0  
+TILESETS_HTTP_SERVER_URL = "http://10.20.15.122:8088"
 OUTPUTS_ROS_HRZ = 0.0           # TODO
 RESOLUTION_WIDTH = 1280
 RESOLUTION_HEIGHT = 720
-CAMERA_FOV = 0.0                # TODO
+CAMERA_FOV = 78.1               # degrees           
+FOCAL_LENGTH = 22.7885          # mm, computed from FOV and sensor size             
 ```
 
 ---

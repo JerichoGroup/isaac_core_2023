@@ -152,19 +152,16 @@ class Simulation:
         laser_node_prim.GetAttribute("inputs:max_range").Set(laser_cfg.get("max_range", 180.0))
 
 
-    def _update_tileset_url(self, prim, base_url: str) -> None:
-        """
-        Set cesium:url for a single prim
-        """
-
+    def _update_tileset_url(self, prim, url: str) -> None:
+        
         attr = prim.GetAttribute("cesium:url")
         
         if attr:
-            new_url = f"{base_url}/{prim.GetName()}/tileset.json"
+            new_url = f"{url}/{prim.GetName()}/tileset.json"
             attr.Set(new_url)
 
 
-    def _set_cesium_tilesets_url(self, base_url: str, root_path: str = "/tilesets") -> None:
+    def _set_cesium_tilesets_url(self, url: str, root_path: str = "/tilesets") -> None:
         """
         Update all cesium:url attributes under a root path (default: /tilesets)
         """
@@ -176,7 +173,7 @@ class Simulation:
             return
         
         for prim in tilesets.GetChildren():
-            self._update_tileset_url(prim, base_url)
+            self._update_tileset_url(prim, url)
         
         carb.log_info("Cesium tilesets URLs updated")
 

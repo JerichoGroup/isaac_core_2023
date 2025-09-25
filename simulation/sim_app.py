@@ -6,6 +6,8 @@ import sys
 import json
 import omni
 import carb
+import consts
+import math
 from omni.isaac.kit import SimulationApp
 
 
@@ -22,7 +24,6 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 import omni.usd
 import omni.graph.core as og
 import sim_utils
-import consts
 
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
@@ -49,6 +50,7 @@ class Simulation:
         self._set_viewport()
         self._update_laser_sensor()
         self._set_cesium_tilesets_url(consts.TILESETS_HTTP_SERVER_URL)
+        self._configure_camera()
 
 
     def _enable_extensions(self) -> None:
@@ -108,6 +110,19 @@ class Simulation:
             add_usd_to_stage(paths[0], paths[1])
 
 
+    def _get_camera_path(self) -> str:
+        """
+        Returns the camera path based on the communication method (ROS2 or UDP).
+        """
+
+        for cam_key in ["com_ros", "com_udp"]:
+            if cam_key in self.usds_to_add:
+                return f"{self.usds_to_add[cam_key][1]}/Xform/{self.usds_to_add[cam_key][2]}"
+
+        carb.log_warn("No communication camera found — defaulting to main_camera_01")
+        return "/World/main_camera_01"
+
+
     def _update_laser_sensor(self) -> None:
         """
         Configure the laser sensor graph and link it to the camera
@@ -125,11 +140,9 @@ class Simulation:
             self._update_laser_params(graph_path)
 
             # Link laser to active camera (ROS or UDP)
-            for cam_key in ["com_ros", "com_udp"]:
-                if cam_key in self.usds_to_add:
-                    cam_path = f"{self.usds_to_add[cam_key][1]}/Xform/{self.usds_to_add[cam_key][2]}"
-                    laser_node_prim.GetAttribute("inputs:camera_xform_path").Set(cam_path)
-                    break
+            cam_path = self._get_camera_path()
+            laser_node_prim.GetAttribute("inputs:camera_xform_path").Set(cam_path)
+                    
 
 
     def _update_laser_params(self, graph_path: str) -> None:
@@ -176,6 +189,51 @@ class Simulation:
             self._update_tileset_url(prim, url)
         
         carb.log_info("Cesium tilesets URLs updated")
+
+
+
+    def _calculate_horizontal_aperture_from_fov(self, focal_length_mm: float, fov_deg: float) -> float:
+
+        fov_rad = math.radians(fov_deg)
+        sensor_horizontal_mm = 2 * focal_length_mm * math.tan(fov_rad / 2)
+
+        return sensor_horizontal_mm
+
+
+    def _apply_camera_intrinsics(self, camera_path: str, horizontal_ap_mm: float, focal_length_mm: float) -> None:
+        """
+        Applies horizontal aperture and focal length to the camera prim.
+        Vertical aperture is derived from resolution aspect ratio. (isaac sim calculates this automaticaly)
+        """
+
+        camera_prim = self.stage.GetPrimAtPath(camera_path)
+        
+        if not camera_prim or not camera_prim.IsValid():
+            carb.log_warn(f"Camera prim not found at path: {camera_path}")
+            return
+
+        camera_prim.GetAttribute("horizontalAperture").Set(horizontal_ap_mm)
+        camera_prim.GetAttribute("focalLength").Set(focal_length_mm)
+
+        carb.log_info(f"Camera intrinsics applied: horizontal_ap={horizontal_ap_mm:.2f}mm, focal={focal_length_mm:.2f}mm")
+
+
+    def _configure_camera(self) -> None:
+        """
+        Configures the active camera using constants defined in consts.py.
+        """
+        camera_path = self._get_camera_path()
+
+        horizontal_aperture = self._calculate_horizontal_aperture_from_fov(
+            focal_length_mm=consts.FOCAL_LENGTH,
+            fov_deg=consts.CAMERA_FOV
+        )
+
+        self._apply_camera_intrinsics(
+            camera_path=camera_path,
+            horizontal_ap_mm=horizontal_aperture,
+            focal_length_mm=consts.FOCAL_LENGTH
+        )
 
 
     def run_simulation(self) -> None:

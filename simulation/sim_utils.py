@@ -4,11 +4,12 @@
 import os
 import argparse
 
+from consts import RESOLUTION_HEIGHT, RESOLUTION_WIDTH
 
 # ==================== simulation constants ====================
 DEFAULT_LAUNCH_CONFIG = {
-    "width": 1280,
-    "height": 720,
+    "width": RESOLUTION_WIDTH,
+    "height": RESOLUTION_HEIGHT,
     "sync_loads": True,
     "headless": False  # will be overridden dynamically
 }

@@ -61,8 +61,9 @@ sudo apt install vulkan-tools nvidia-container-toolkit
 </details>
 
 <details>
-<summary>Install ROS 2 Humble (local, optional)</summary>
+<summary>Install ROS 2 Humble and other dependencies (if you want to work locally without docker)</summary>
 
+Install ros2 humble
 ```bash
 sudo apt update && sudo apt install locales
 sudo locale-gen en_US en_US.UTF-8
@@ -77,16 +78,49 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 
 sudo apt update
 sudo apt install ros-humble-desktop
+
 ```
-</details>
-
-<details>
-<summary>Setup Extensions</summary>
-
+Install Isaac sim ros2 workspace
 ```bash
+sudo apt install ros-humble-rmw-fastrtps-cpp ros-humble-rmw-cyclonedds-cpp python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential python3-colcon-common-extensions ros-humble-vision-msgs
+git clone https://github.com/isaac-sim/IsaacSim-ros_workspaces.git ~/IsaacSim-ros_workspaces
+cd ~/IsaacSim-ros_workspaces/humble_ws
+rosdep install -i --from-path src --rosdistro humble -y
+colcon build
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+```
+Add to ~/.bashrc;
+```bash
+# vim ~/.bashrc
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export ROS_DOMAIN_ID=13
+source ~/IsaacSim-ros_workspaces/humble_ws/install/setup.bash
+```
+
+Modify Omniverse config file
+```bash
+OMNI_CONFIG_FILE="$ISAACSIM_PATH/apps/omni.isaac.sim.python.kit"
+if [ -f "$OMNI_CONFIG_FILE" ]; then
+    echo "Updating Omniverse config file..."
+    if ! grep -q 'cesium.omniverse' "$OMNI_CONFIG_FILE"; then
+        echo -e '\n[dependencies]\n"cesium.omniverse" = {}\n"cesium.usd.plugins" = {}\n"omni.anim.curve" = {}' >> "$OMNI_CONFIG_FILE"
+    fi
+
+    if ! grep -q 'useFabricSceneDelegate' "$OMNI_CONFIG_FILE"; then
+        echo -e '\n[settings.app]\nuseFabricSceneDelegate = true' >> "$OMNI_CONFIG_FILE"
+    fi
+fi
+```
+Install in isaac sim gui the extensions: cesium, ros2 bridge
+<br>
+And run:
+```bash
+mkdir -p "$ISAACSIM_PATH/exts"
+cp -r ~/.local/share/ov/data/exts/v2/cesium.* "$ISAACSIM_PATH/exts"
 cp -r extensions/* $ISAACSIM_PATH/exts/
 ```
 </details>
+
 
 ---
 

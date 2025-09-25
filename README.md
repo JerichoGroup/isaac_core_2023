@@ -18,6 +18,7 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 1. [Simulation Flags](#simulation-flags)  
 1. [ROS2 outputs topics](#ros2-outputs-topics)  
 1. [Take pictures](#take-pictures)  
+1. [Auto completion in vscode](#auto-completion-in-vscode)  
 
 ---
 
@@ -60,8 +61,9 @@ sudo apt install vulkan-tools nvidia-container-toolkit
 </details>
 
 <details>
-<summary>Install ROS 2 Humble (local, optional)</summary>
+<summary>Install ROS 2 Humble and other dependencies (if you want to work locally without docker)</summary>
 
+Install ros2 humble
 ```bash
 sudo apt update && sudo apt install locales
 sudo locale-gen en_US en_US.UTF-8
@@ -76,16 +78,49 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 
 sudo apt update
 sudo apt install ros-humble-desktop
+
 ```
-</details>
-
-<details>
-<summary>Setup Extensions</summary>
-
+Install Isaac sim ros2 workspace
 ```bash
+sudo apt install ros-humble-rmw-fastrtps-cpp ros-humble-rmw-cyclonedds-cpp python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential python3-colcon-common-extensions ros-humble-vision-msgs
+git clone https://github.com/isaac-sim/IsaacSim-ros_workspaces.git ~/IsaacSim-ros_workspaces
+cd ~/IsaacSim-ros_workspaces/humble_ws
+rosdep install -i --from-path src --rosdistro humble -y
+colcon build
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+```
+Add to ~/.bashrc;
+```bash
+# vim ~/.bashrc
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+export ROS_DOMAIN_ID=13
+source ~/IsaacSim-ros_workspaces/humble_ws/install/setup.bash
+```
+
+Modify Omniverse config file
+```bash
+OMNI_CONFIG_FILE="$ISAACSIM_PATH/apps/omni.isaac.sim.python.kit"
+if [ -f "$OMNI_CONFIG_FILE" ]; then
+    echo "Updating Omniverse config file..."
+    if ! grep -q 'cesium.omniverse' "$OMNI_CONFIG_FILE"; then
+        echo -e '\n[dependencies]\n"cesium.omniverse" = {}\n"cesium.usd.plugins" = {}\n"omni.anim.curve" = {}' >> "$OMNI_CONFIG_FILE"
+    fi
+
+    if ! grep -q 'useFabricSceneDelegate' "$OMNI_CONFIG_FILE"; then
+        echo -e '\n[settings.app]\nuseFabricSceneDelegate = true' >> "$OMNI_CONFIG_FILE"
+    fi
+fi
+```
+Install in isaac sim gui the extensions: cesium, ros2 bridge
+<br>
+And run:
+```bash
+mkdir -p "$ISAACSIM_PATH/exts"
+cp -r ~/.local/share/ov/data/exts/v2/cesium.* "$ISAACSIM_PATH/exts"
 cp -r extensions/* $ISAACSIM_PATH/exts/
 ```
 </details>
+
 
 ---
 
@@ -194,3 +229,25 @@ CAMERA_FOV = 0.0                # TODO
 
 ## Take pictures
 TODO
+
+# Auto completion in vscode
+<details>
+<summary>Expand to show more on setup</summary>
+`.vscode` folder is unique for each machine depending on the extensions installed, in order to get the right folder follow those steps:
+1. Open isaac sim
+1. window
+1. Extensions
+1. Plus button for new extension
+1. New extension Template project (call it a random name)
+1. Copy .vscode folder from that project and paste it in this directory
+
+`app` - It is a folder link to the location of your *Omniverse Kit* based app.
+If `app` folder link doesn't exist or broken it can be created again. For better developer experience it is recommended to create a folder link named `app` to the *Omniverse Kit* app installed from *Omniverse Launcher*. Convenience script to use is included.
+
+Run:
+```
+./link_app.sh --path $ISAACSIM_PATH
+```
+
+Now reopen vscode in this folder an wait 30 seconds ~ for auto-completion.
+</details>

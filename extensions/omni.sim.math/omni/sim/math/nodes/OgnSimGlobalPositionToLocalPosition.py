@@ -158,7 +158,16 @@ class OgnSimGlobalPositionToLocalPosition:
         global_position = db.inputs.global_position
         global_orientation = db.inputs.global_orientation
         state: OgnSimGlobalPositionToLocalPositionInternalState = db.internal_state
-        if state.converter is None or not np.array_equal(state.geo_reference, reference):
+
+        if (
+            global_position is None or
+            len(global_position) != 3 or
+            np.allclose(global_position, [0.0, 0.0, 0.0])
+        ):
+            carb.log_wan("SIM | GPTLP | Skipping compute — no valid global position yet")
+            return True
+        
+        if state.converter is None or state.geo_reference != tuple(reference):
             state.define_converter(reference)
 
         enu = state.converter.convert_lla_enu(global_position[0], global_position[1], global_position[2])

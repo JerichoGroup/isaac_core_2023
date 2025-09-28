@@ -235,6 +235,7 @@ TODO
 <details>
 <summary>Expand to show more on setup</summary>
 `.vscode` folder is unique for each machine depending on the extensions installed, in order to get the right folder follow those steps:
+
 1. Open isaac sim
 1. window
 1. Extensions

@@ -143,6 +143,7 @@ class OgnSimUDPToGlobalPosition:
         state.create_parser(port)
 
         pose = state.parser.get_cur_data()
+        carb.log_error(f"SIM | UTGP | Current Pose: {pose}")    
 
         if pose is not None:
             db.outputs.global_position = [pose.lat, pose.lon, pose.alt]

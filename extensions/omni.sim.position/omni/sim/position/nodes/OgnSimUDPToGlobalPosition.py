@@ -62,7 +62,7 @@ class PacketGetter:
         self._header1 = header1
         self._header2 = header2
         self._packet_size = packet_size
-        self._last_good_packet = PoseData(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        self._last_good_packet = None
         self._sock = self.define_socket(port)
 
 
@@ -76,7 +76,7 @@ class PacketGetter:
         return sock
 
 
-    def get_cur_data(self) -> PoseData:
+    def get_cur_data(self) -> PoseData | None:
         """Listen for incoming UDP packets and return parsed data"""
 
         try:
@@ -144,8 +144,9 @@ class OgnSimUDPToGlobalPosition:
 
         pose = state.parser.get_cur_data()
 
-        db.outputs.global_position = [pose.lat, pose.lon, pose.alt]
-        db.outputs.global_orientation = [pose.roll, pose.pitch, pose.yaw]
+        if pose is not None:
+            db.outputs.global_position = [pose.lat, pose.lon, pose.alt]
+            db.outputs.global_orientation = [pose.roll, pose.pitch, pose.yaw]
 
         return True
 

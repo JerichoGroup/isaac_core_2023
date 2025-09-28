@@ -62,6 +62,7 @@ class Simulation:
         enable_extension("omni.sim.math")
         enable_extension("omni.sim.sensors")
         enable_extension("omni.isaac.ros2_bridge")
+        enable_extension("cesium.omniverse")
 
 
     def _configure_settings(self) -> None:

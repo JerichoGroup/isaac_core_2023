@@ -51,7 +51,7 @@ def quaternion_from_euler(roll: float, pitch: float, yaw: float):
 def is_invalid_global_position(global_position: Tuple[float, float, float], state: OgnSimGlobalPositionToLocalPositionInternalState) -> bool:
     """Check if the global position is valid; if not, log a warning once and return True to skip processing"""
 
-    if (global_position is None or np.allclose(global_position, [0.0, 0.0, 0.0])):
+    if global_position is None or np.allclose(global_position, [0.0, 0.0, 0.0]):
         if not state.warned_no_data:
             carb.log_warn("SIM | GPTLP | Skipping compute — no valid global position yet")
             state.warned_no_data = True

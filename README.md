@@ -199,7 +199,7 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 | `--headless`             | Run Isaac Sim without GUI                                    |
 | `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ros       |
 | `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp       |
-| `--range-sensor`         | Add range sensor to simulation (output is on ros topic)      |
+| `--distance-sensor`         | Add range sensor to simulation (output is on ros topic)      |
 
 ---
 

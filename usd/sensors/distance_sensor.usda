@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (-8.035370170339343, 52.05392576975353, 37.28748215782719)
-                double3 target = (-7.396263252315501, 49.06995678998443, 35.380904188101496)
+                double3 target = (-7.3962632523155, 49.069956789984424, 35.38090418810149)
             }
             dictionary Right = {
                 double3 position = (0, -5, 0)
@@ -186,7 +186,7 @@ def compute(db: og.Database):
 
 
 """
-            custom token inputs:scriptPath = "../../../../../../simulation/script_nodes/sensor_node.py"
+            custom token inputs:scriptPath = "../../../simulation/script_nodes/sensor_node.py"
             custom bool inputs:usePath = 1
             token node:type = "omni.graph.scriptnode.ScriptNode"
             int node:typeVersion = 2

@@ -47,6 +47,20 @@ def quaternion_from_euler(roll: float, pitch: float, yaw: float):
     return qx, qy, qz, qw
 
 
+# =================== Helper - global position validation ====================
+def is_invalid_global_position(global_position: Tuple[float, float, float], state: OgnSimGlobalPositionToLocalPositionInternalState) -> bool:
+    """Check if the global position is valid; if not, log a warning once and return True to skip processing"""
+
+    if (global_position is None or len(global_position) != 3 or np.allclose(global_position, [0.0, 0.0, 0.0])):
+        if not state.warned_no_data:
+            carb.log_warn("SIM | GPTLP | Skipping compute — no valid global position yet")
+            state.warned_no_data = True
+        return True
+    
+    state.warned_no_data = False
+    return False
+
+
 # ==================== The Transformer class ====================
 class Transformer:
     """
@@ -160,14 +174,8 @@ class OgnSimGlobalPositionToLocalPosition:
         global_orientation = db.inputs.global_orientation
         state: OgnSimGlobalPositionToLocalPositionInternalState = db.internal_state
 
-        # Validate inputs and warn if no valid global position yet
-        if (global_position is None or len(global_position) != 3 or np.allclose(global_position, [0.0, 0.0, 0.0])):
-            if not state.warned_no_data:
-                carb.log_warn("SIM | GPTLP | Skipping compute — no valid global position yet")
-                state.warned_no_data = True
+        if is_invalid_global_position(global_position, state):
             return True
-
-        state.warned_no_data = False
         
         if state.converter is None or state.geo_reference != tuple(reference):
             state.define_converter(reference)

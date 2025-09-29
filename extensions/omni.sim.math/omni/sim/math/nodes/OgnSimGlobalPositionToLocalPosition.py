@@ -19,6 +19,7 @@ class OgnSimGlobalPositionToLocalPositionInternalState():
 
         self.geo_reference = None
         self.converter = None
+        self.warned_no_data = False
 
 
     def define_converter(self, geo_reference: Tuple[float, float, float]) -> None:
@@ -159,13 +160,14 @@ class OgnSimGlobalPositionToLocalPosition:
         global_orientation = db.inputs.global_orientation
         state: OgnSimGlobalPositionToLocalPositionInternalState = db.internal_state
 
-        if (
-            global_position is None or
-            len(global_position) != 3 or
-            np.allclose(global_position, [0.0, 0.0, 0.0])
-        ):
-            carb.log_wan("SIM | GPTLP | Skipping compute — no valid global position yet")
+        # Validate inputs and warn if no valid global position yet
+        if (global_position is None or len(global_position) != 3 or np.allclose(global_position, [0.0, 0.0, 0.0])):
+            if not state.warned_no_data:
+                carb.log_warn("SIM | GPTLP | Skipping compute — no valid global position yet")
+                state.warned_no_data = True
             return True
+
+        state.warned_no_data = False
         
         if state.converter is None or state.geo_reference != tuple(reference):
             state.define_converter(reference)

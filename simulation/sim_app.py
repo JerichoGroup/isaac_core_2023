@@ -4,6 +4,7 @@
 import os
 import sys
 import json
+from attr import attr
 import omni
 import carb
 import consts
@@ -51,6 +52,7 @@ class Simulation:
         self._update_laser_sensor()
         self._set_cesium_tilesets_url(consts.TILESETS_HTTP_SERVER_URL)
         self._configure_camera()
+        self._set_camera_gimbal_pitch(consts.GIMBAL_PITCH_DEG)
 
 
     def _enable_extensions(self) -> None:
@@ -88,15 +90,9 @@ class Simulation:
         sets the viewport for either a ros or udp camera
         """
 
-        if "com_ros" in self.usds_to_add:
-            cam_key = "com_ros"
-        elif "com_udp" in self.usds_to_add:
-            cam_key = "com_udp"
-        else:
-            cam_key = None
-
-        if cam_key:
-            cam_path = f"{self.usds_to_add[cam_key][1]}/Xform/{self.usds_to_add[cam_key][2]}"
+        cam_path = self._get_camera_path()
+        
+        if cam_path:
             set_camera_viewport(cam_path)
         else:
             carb.log_warn("No communication camera found — skipping viewport setup")
@@ -118,10 +114,10 @@ class Simulation:
 
         for cam_key in ["com_ros", "com_udp"]:
             if cam_key in self.usds_to_add:
-                return f"{self.usds_to_add[cam_key][1]}/Xform/{self.usds_to_add[cam_key][2]}"
+                return f"{self.usds_to_add[cam_key][1]}/Xform/default_camera_rotation/{self.usds_to_add[cam_key][2]}"
 
         carb.log_warn("No communication camera found — defaulting to main_camera_01")
-        return "/World/main_camera_01"
+        return None
 
 
     def _update_laser_sensor(self) -> None:
@@ -235,6 +231,34 @@ class Simulation:
             horizontal_ap_mm=horizontal_aperture,
             focal_length_mm=consts.FOCAL_LENGTH
         )
+
+
+    def _set_camera_gimbal_pitch(self, pitch_deg: float) -> None:
+        """
+        Safely sets the gimbal pitch (X-axis rotation) for the camera.
+        Uses the existing 'xformOp:rotateYXZ' attribute on the camera prim.
+        No pxr required.
+        """
+        pitch_deg = max(-90.0, min(90.0, pitch_deg))
+
+        camera_path = self._get_camera_path()
+        camera_prim = self.stage.GetPrimAtPath(camera_path)
+
+        if not camera_prim or not camera_prim.IsValid():
+            carb.log_warn(f"[sim_app] Camera prim not found at path: {camera_path}")
+            return
+
+        rotate_attr = camera_prim.GetAttribute("xformOp:rotateYXZ")
+
+        current_rotation = rotate_attr.Get()
+        if current_rotation is None or len(current_rotation) != 3:
+            carb.log_warn(f"[sim_app] Invalid rotation value on {camera_path} — skipping gimbal pitch")
+            return
+
+        new_rotation = (pitch_deg, current_rotation[1], current_rotation[2])
+        rotate_attr.Set(new_rotation)
+        carb.log_info(f"[sim_app] Gimbal pitch set to {pitch_deg}° on {camera_path}")
+
 
 
     def run_simulation(self) -> None:

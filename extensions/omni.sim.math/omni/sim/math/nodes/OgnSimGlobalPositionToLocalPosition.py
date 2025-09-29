@@ -19,6 +19,7 @@ class OgnSimGlobalPositionToLocalPositionInternalState():
 
         self.geo_reference = None
         self.converter = None
+        self.warned_no_data = False
 
 
     def define_converter(self, geo_reference: Tuple[float, float, float]) -> None:
@@ -44,6 +45,20 @@ def quaternion_from_euler(roll: float, pitch: float, yaw: float):
     qz = cr * cp * sy - sr * sp * cy
     qw = cr * cp * cy + sr * sp * sy
     return qx, qy, qz, qw
+
+
+# =================== Helper - global position validation ====================
+def is_invalid_global_position(global_position: Tuple[float, float, float], state: OgnSimGlobalPositionToLocalPositionInternalState) -> bool:
+    """Check if the global position is valid; if not, log a warning once and return True to skip processing"""
+
+    if global_position is None or np.allclose(global_position, [0.0, 0.0, 0.0]):
+        if not state.warned_no_data:
+            carb.log_warn("SIM | GPTLP | Skipping compute — no valid global position yet")
+            state.warned_no_data = True
+        return True
+    
+    state.warned_no_data = False
+    return False
 
 
 # ==================== The Transformer class ====================
@@ -158,7 +173,11 @@ class OgnSimGlobalPositionToLocalPosition:
         global_position = db.inputs.global_position
         global_orientation = db.inputs.global_orientation
         state: OgnSimGlobalPositionToLocalPositionInternalState = db.internal_state
-        if state.converter is None or not np.array_equal(state.geo_reference, reference):
+
+        if is_invalid_global_position(global_position, state):
+            return True
+        
+        if state.converter is None or state.geo_reference != tuple(reference):
             state.define_converter(reference)
 
         enu = state.converter.convert_lla_enu(global_position[0], global_position[1], global_position[2])

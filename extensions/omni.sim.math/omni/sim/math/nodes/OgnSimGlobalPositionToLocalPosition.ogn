@@ -44,7 +44,7 @@
       "global_position": {
         "type": "vectord[3]",
         "description": "Echo of input global position",
-        "default": [0.0, 0.0, 0.0],
+        "default": [32.22481, 35.25621, 516.7],
         "metadata": {
           "uiName": "Global Position"
         }

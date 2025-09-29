@@ -6,7 +6,7 @@ This can be used to simulate areal unmaned vehicles.
 <br>
 This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 <br>
-<img src="isaac_core_example.png" alt="Logo" width="1000"/>
+<img src="readme_images/isaac_core_example.png" alt="Logo" width="1000"/>
 
 ---
 
@@ -201,17 +201,25 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 | `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp       |
 | `--range-sensor`         | Add range sensor to simulation (output is on ros topic)      |
 
+---
+
 ## Special configurations
 under simulation/consts.py you can change:
 ```bash
-GIMBAL_ANGLE = 0.0              # TODO
+GIMBAL_ANGLE = 0.0                                          # Range: -90 to +90
 TILESETS_HTTP_SERVER_URL = "http://10.20.15.122:8088"
-OUTPUTS_ROS_HRZ = 0.0           # TODO
-RESOLUTION_WIDTH = 1280
-RESOLUTION_HEIGHT = 720
-CAMERA_FOV = 78.1               # degrees           
-FOCAL_LENGTH = 22.7885          # mm             
+OUTPUTS_ROS_HRZ = 0.0                                       # TODO
+RESOLUTION_WIDTH = 1280                         
+RESOLUTION_HEIGHT = 720                         
+CAMERA_FOV = 78.1                                           # degrees           
+FOCAL_LENGTH = 22.7885                                      # mm             
 ```
+
+### Gimbal Angle (Reference Image)
+
+The gimbal angle is based on the following photo:
+
+<img src="readme_images/gimbal_angle_example.png" alt="Gimbal Angle Reference" width="500"/>
 
 ---
 
@@ -235,6 +243,7 @@ TODO
 <details>
 <summary>Expand to show more on setup</summary>
 `.vscode` folder is unique for each machine depending on the extensions installed, in order to get the right folder follow those steps:
+
 1. Open isaac sim
 1. window
 1. Extensions

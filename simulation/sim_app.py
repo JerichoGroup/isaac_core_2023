@@ -219,6 +219,7 @@ class Simulation:
         """
         Configures the active camera using constants defined in consts.py.
         """
+
         camera_path = self._get_camera_path()
 
         horizontal_aperture = self._calculate_horizontal_aperture_from_fov(
@@ -237,10 +238,13 @@ class Simulation:
         """
         Sets the gimbal pitch for the camera.
 
-        :param pitch_deg: Desired pitch angle in degrees (range: -90 to +90)
+        Args:
+            pitch_deg (float): Desired pitch angle in degrees (range: -90 to +90)
         """
+
         if not (-90.0 <= pitch_deg <= 90.0):
-            raise ValueError("Pitch angle must be between -90 and +90 degrees.")
+            carb.log_error("SIM | GPTLP | Invalid input for global position")
+            raise ValueError("Invalid global position")
 
         camera_path = self._get_camera_path()
         camera_prim = self.stage.GetPrimAtPath(camera_path)

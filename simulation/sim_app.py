@@ -206,7 +206,7 @@ class Simulation:
         camera_prim = self.stage.GetPrimAtPath(camera_path)
         
         if not camera_prim or not camera_prim.IsValid():
-            carb.log_warn(f"Camera prim not found at path: {camera_path}")
+            carb.log_error(f"Camera prim not found at path: {camera_path}")
             return
 
         camera_prim.GetAttribute("horizontalAperture").Set(horizontal_ap_mm)
@@ -235,17 +235,18 @@ class Simulation:
 
     def _set_camera_gimbal_pitch(self, pitch_deg: float) -> None:
         """
-        Safely sets the gimbal pitch (X-axis rotation) for the camera.
-        Uses the existing 'xformOp:rotateYXZ' attribute on the camera prim.
-        No pxr required.
+        Sets the gimbal pitch for the camera.
+
+        :param pitch_deg: Desired pitch angle in degrees (range: -90 to +90)
         """
-        pitch_deg = max(-90.0, min(90.0, pitch_deg))
+        if not (-90.0 <= pitch_deg <= 90.0):
+            raise ValueError("Pitch angle must be between -90 and +90 degrees.")
 
         camera_path = self._get_camera_path()
         camera_prim = self.stage.GetPrimAtPath(camera_path)
 
         if not camera_prim or not camera_prim.IsValid():
-            carb.log_warn(f"[sim_app] Camera prim not found at path: {camera_path}")
+            carb.log_error(f"[sim_app] Camera prim not found at path: {camera_path}")
             return
 
         rotate_attr = camera_prim.GetAttribute("xformOp:rotateYXZ")

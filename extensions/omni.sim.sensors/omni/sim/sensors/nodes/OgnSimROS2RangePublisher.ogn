@@ -26,7 +26,7 @@
       "topicName": {
         "type": "string",
         "description": "ROS2 topic to publish range messages",
-        "default": "/omni/rangefinder_pub",
+        "default": "/isaac_core/range_distance_sensor",
         "metadata": {
           "uiName": "Topic Name"
         }

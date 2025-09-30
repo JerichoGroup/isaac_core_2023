@@ -199,20 +199,26 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 | `--headless`             | Run Isaac Sim without GUI                                    |
 | `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ros       |
 | `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp       |
-| `--range-sensor`         | Add range sensor to simulation (output is on ros topic)      |
+| `--distance-sensor`         | Add range sensor to simulation (output is on ros topic)      |
 
 ---
 
 ## Special configurations
 under simulation/consts.py you can change:
 ```bash
-GIMBAL_ANGLE = 0.0                                          # Range: -90 to +90
+GIMBAL_PITCH_DEG = 0.0                                      # Range: -90 to +90
 TILESETS_HTTP_SERVER_URL = "http://10.20.15.122:8088"
-OUTPUTS_ROS_HRZ = 0.0                                       # TODO
-RESOLUTION_WIDTH = 1280                         
-RESOLUTION_HEIGHT = 720                         
+MAX_OUTPUTS_ROS_HRZ = 30.0                                  
+RESOLUTION_WIDTH = 1280
+RESOLUTION_HEIGHT = 720
 CAMERA_FOV = 78.1                                           # degrees           
-FOCAL_LENGTH = 22.7885                                      # mm             
+FOCAL_LENGTH = 22.7885                                      # mm, computed from FOV and sensor size
+
+# Laser consts
+LASER_TOPIC_NAME = "/isaac_core/range_distance_sensor"
+LASER_MIN_RANGE = 0.2
+LASER_MAX_RANGE = 180.0
+INDEX_FRAME = "range_sensor_frame"                          # TODO: must remove in the future
 ```
 
 ### Gimbal Angle (Reference Image)
@@ -229,7 +235,7 @@ The gimbal angle is based on the following photo:
 |-------------------------------------|-----------------------------|-----------------------------|
 | `/isaac_core/odom`  (TODO)          | `geometry_msgs/PoseStamped` | Camera's odometry           |
 | `/isaac_core/gps`  (TODO)           | `sensor_msgs/NavSatFix`     | Camera's lat, lon, alt      |
-| `/isaac_core/laser_distance_sensor` | `sensor_msgs/Range`         | Simulated laser range data  |
+| `/isaac_core/range_distance_sensor"` | `sensor_msgs/Range`         | Simulated laser range data  |
 | `/isaac_core/camera/image_raw`      | `sensor_msgs/Image`         | Camera feed from simulation |
 | `/isaac_core/bbox`  (TODO)          | `TODO`                      | BBOX data                   |
 

@@ -1,12 +1,12 @@
 """this file defines some simulation constants and launch configuration"""
 
-# ==================== imports ====================
+# ===================== Imports ======================== #
 import os
 import argparse
-
 from consts import RESOLUTION_HEIGHT, RESOLUTION_WIDTH
 
-# ==================== simulation constants ====================
+
+# =============== Simulation constants ================= #
 DEFAULT_LAUNCH_CONFIG = {
     "width": RESOLUTION_WIDTH,
     "height": RESOLUTION_HEIGHT,
@@ -14,13 +14,6 @@ DEFAULT_LAUNCH_CONFIG = {
     "headless": False  # will be overridden dynamically
 }
 
-LASER_PARAMS = {
-    "publish_rate_hz": 50,
-    "topic_name": "/omni/rangefinder_pub",
-    "min_range": 0.2,
-    "max_range": 180.0,
-    "frame_id": "range_sensor_frame"
-}
 
 # <flag_name>: (<usd_path>, <prim_path in sim>, <prim name>)
 OPTIONAL_USDS = {
@@ -34,20 +27,24 @@ OPTIONAL_USDS = {
         "/Environment/udp_receiver",
         "main_camera_01"
     ),
-    "range_sensor": (
+    "distance_sensor": (
         "usd/sensors/distance_sensor.usda",
         "/Environment/distance_sensor",
         "distance_sensor"
     )
 }
 
+
+# =============== Project directory =================== #
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
 
-# ==================== Helper - get user arguments ====================
+# ============ Helper - get user arguments ============ #
 def parse_arguments():
-    """get the simulation optional args from the user"""
+    """
+    get the simulation optional args from the user
+    """
 
     parser = argparse.ArgumentParser("Launch flying camera simulation environment")
 
@@ -55,15 +52,17 @@ def parse_arguments():
     parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
     parser.add_argument("--com-ros", default=False, action="store_true", help="Enable communication via ROS")
     parser.add_argument("--com-udp", default=False, action="store_true", help="Enable communication via UDP")
-    parser.add_argument("--range-sensor", default=False, action="store_true", help="Add a range sensor to the simulation")
+    parser.add_argument("--distance-sensor", default=False, action="store_true", help="Add a distance sensor to the simulation")
 
     args, _ = parser.parse_known_args()
     return args
 
 
-# ==================== Helper - get usds to add ====================
-def get_usds_to_add(args, project_home_dir):
-    """build the usds to add dict from the user args and the optional usds"""
+# ============= Helper - get usds to add ============== #
+def get_usds_to_add(args, project_home_dir: str) -> dict:
+    """
+    build the usds to add dict from the user args and the optional usds
+    """
 
     usds = {}
     for key, (path, prim_path, name) in OPTIONAL_USDS.items():

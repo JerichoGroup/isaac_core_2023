@@ -1,10 +1,9 @@
 """this file defines the sim app class"""
 
-# ==================== imports ====================
+# =========================== Imports ============================== #
 import os
 import sys
 import json
-from attr import attr
 import omni
 import carb
 import consts
@@ -12,29 +11,28 @@ import math
 from omni.isaac.kit import SimulationApp
 
 
-# ==================== define the sim app kit ====================
+# ==================== Define the sim app kit ====================== #
 LAUNCH_CONFIG = json.loads(os.environ["LAUNCH_CONFIG"])
 kit = SimulationApp(launch_config=LAUNCH_CONFIG)
 
 
-# ==================== make isaacsim imports available for the imported modules ====================
+# ==== Make isaacsim imports available for the imported modules ==== #
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 
-# ==================== additional isaacsim imports ====================
+# ================= Additional isaacsim imports ==================== #
 import omni.usd
 import omni.graph.core as og
-import sim_utils
 
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
-from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage
+from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage, get_prim_at_path
 
 
-# ==================== the Simulation class ====================
+# ===================== The Simulation class ======================= #
 class Simulation:
     """
-    this calss defines a generic simulation app
+    this class defines a generic simulation app
     """
 
     def __init__(self, usd_path: str, usds_to_add: dict) -> None:
@@ -91,11 +89,10 @@ class Simulation:
         """
 
         cam_path = self._get_camera_path()
+        cam_prim = get_prim_at_path(cam_path)
+
+        set_camera_viewport(cam_path)
         
-        if cam_path:
-            set_camera_viewport(cam_path)
-        else:
-            carb.log_warn("No communication camera found — skipping viewport setup")
 
 
     def _add_external_usds(self, usds_to_add: str) -> None:
@@ -125,15 +122,15 @@ class Simulation:
         Configure the laser sensor graph and link it to the camera
         """
 
-        if "range_sensor" not in self.usds_to_add:
+        if "distance_sensor" not in self.usds_to_add:
             return
 
-        graph_path = f"{self.usds_to_add['range_sensor'][1]}/ActionGraph"
+        graph_path = f"{self.usds_to_add['distance_sensor'][1]}/ActionGraph"
 
         laser_node_path = f"{graph_path}/laser_depth_node"
-        laser_node_prim = self.stage.GetPrimAtPath(laser_node_path)
+        laser_node_prim = get_prim_at_path(laser_node_path)
 
-        if self.stage.GetPrimAtPath(graph_path):
+        if get_prim_at_path(graph_path):
             self._update_laser_params(graph_path)
 
             # Link laser to active camera (ROS or UDP)
@@ -141,25 +138,19 @@ class Simulation:
             laser_node_prim.GetAttribute("inputs:camera_xform_path").Set(cam_path)
                     
 
-
     def _update_laser_params(self, graph_path: str) -> None:
-        """
-        Set laser sensor parameters from sim_utils
-        """
 
-        range_node_prim = self.stage.GetPrimAtPath(f"{graph_path}/ros2_range_publisher")
-        laser_node_prim = self.stage.GetPrimAtPath(f"{graph_path}/laser_depth_node")
+        range_publisher_node_prim = get_prim_at_path(f"{graph_path}/ros2_distance_publisher")
+        laser_node_prim = get_prim_at_path(f"{graph_path}/laser_depth_node")
+        
+        range_publisher_node_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
+        range_publisher_node_prim.GetAttribute("inputs:topicName").Set(consts.LASER_TOPIC_NAME)
+        range_publisher_node_prim.GetAttribute("inputs:minRange").Set(consts.LASER_MIN_RANGE)
+        range_publisher_node_prim.GetAttribute("inputs:maxRange").Set(consts.LASER_MAX_RANGE)
+        range_publisher_node_prim.GetAttribute("inputs:frameID").Set(consts.INDEX_FRAME)
 
-        laser_cfg = sim_utils.LASER_PARAMS
-
-        range_node_prim.GetAttribute("inputs:publishRateHZ").Set(laser_cfg.get("publish_rate_hz", 30))
-        range_node_prim.GetAttribute("inputs:topicName").Set(laser_cfg.get("topic_name", "/range"))
-        range_node_prim.GetAttribute("inputs:minRange").Set(laser_cfg.get("min_range", 0.2))
-        range_node_prim.GetAttribute("inputs:maxRange").Set(laser_cfg.get("max_range", 180.0))
-        range_node_prim.GetAttribute("inputs:frameID").Set(laser_cfg.get("frame_id", "range_sensor_frame"))
-
-        laser_node_prim.GetAttribute("inputs:min_range").Set(laser_cfg.get("min_range", 0.2))
-        laser_node_prim.GetAttribute("inputs:max_range").Set(laser_cfg.get("max_range", 180.0))
+        laser_node_prim.GetAttribute("inputs:min_range").Set(consts.LASER_MIN_RANGE)
+        laser_node_prim.GetAttribute("inputs:max_range").Set(consts.LASER_MAX_RANGE)
 
 
     def _update_tileset_url(self, prim, url: str) -> None:
@@ -176,17 +167,12 @@ class Simulation:
         Update all cesium:url attributes under a root path (default: /tilesets)
         """
 
-        tilesets = self.stage.GetPrimAtPath(root_path)
-
-        if not tilesets.IsValid():
-            carb.log_warn(f"No {root_path} Xform found")
-            return
+        tilesets = get_prim_at_path(root_path)
         
         for prim in tilesets.GetChildren():
             self._update_tileset_url(prim, url)
         
         carb.log_info("Cesium tilesets URLs updated")
-
 
 
     def _calculate_horizontal_aperture_from_fov(self, focal_length_mm: float, fov_deg: float) -> float:
@@ -203,12 +189,8 @@ class Simulation:
         Vertical aperture is derived from resolution aspect ratio. (isaac sim calculates this automaticaly)
         """
 
-        camera_prim = self.stage.GetPrimAtPath(camera_path)
+        camera_prim = get_prim_at_path(camera_path)
         
-        if not camera_prim or not camera_prim.IsValid():
-            carb.log_error(f"Camera prim not found at path: {camera_path}")
-            return
-
         camera_prim.GetAttribute("horizontalAperture").Set(horizontal_ap_mm)
         camera_prim.GetAttribute("focalLength").Set(focal_length_mm)
 
@@ -247,11 +229,7 @@ class Simulation:
             raise ValueError("Invalid global position")
 
         camera_path = self._get_camera_path()
-        camera_prim = self.stage.GetPrimAtPath(camera_path)
-
-        if not camera_prim or not camera_prim.IsValid():
-            carb.log_error(f"[sim_app] Camera prim not found at path: {camera_path}")
-            return
+        camera_prim = get_prim_at_path(camera_path)
 
         rotate_attr = camera_prim.GetAttribute("xformOp:rotateYXZ")
 

@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (-8.035370170339343, 52.05392576975353, 37.28748215782719)
-                double3 target = (-7.3962632523155, 49.069956789984424, 35.38090418810149)
+                double3 target = (-7.396263252315499, 49.069956789984424, 35.38090418810149)
             }
             dictionary Right = {
                 double3 position = (0, -5, 0)
@@ -264,26 +264,7 @@ def compute(db: og.Database):
             uniform float2 ui:nodegraph:node:pos = (527.5865, 43.898327)
         }
 
-        def OmniGraphNode "ros2_range_publisher" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </World/ActionGraph/laser_depth_node.outputs:execOut>
-            custom string inputs:frameID
-            custom float inputs:maxRange
-            custom float inputs:minRange
-            custom int inputs:publishRateHZ
-            custom float inputs:range
-            prepend float inputs:range.connect = </World/ActionGraph/laser_depth_node.outputs:range>
-            custom string inputs:topicName
-            token node:type = "omni.ros2.range_publisher.ROS2RangePublisher"
-            int node:typeVersion = 1
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (746.6378, 319.7201)
-        }
-
-        def OmniGraphNode "sim_ros2_range_publisher" (
+        def OmniGraphNode "ros2_distance_publisher" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
         {

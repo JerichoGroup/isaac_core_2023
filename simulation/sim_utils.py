@@ -1,12 +1,12 @@
 """this file defines some simulation constants and launch configuration"""
 
-# ==================== imports ====================
+# ===================== Imports ======================== #
 import os
 import argparse
-
 from consts import RESOLUTION_HEIGHT, RESOLUTION_WIDTH
 
-# ==================== simulation constants ====================
+
+# =============== Simulation constants ================= #
 DEFAULT_LAUNCH_CONFIG = {
     "width": RESOLUTION_WIDTH,
     "height": RESOLUTION_HEIGHT,
@@ -34,13 +34,17 @@ OPTIONAL_USDS = {
     )
 }
 
+
+# =============== Project directory =================== #
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
 
-# ==================== Helper - get user arguments ====================
+# ============ Helper - get user arguments ============ #
 def parse_arguments():
-    """get the simulation optional args from the user"""
+    """
+    get the simulation optional args from the user
+    """
 
     parser = argparse.ArgumentParser("Launch flying camera simulation environment")
 
@@ -54,9 +58,11 @@ def parse_arguments():
     return args
 
 
-# ==================== Helper - get usds to add ====================
-def get_usds_to_add(args, project_home_dir):
-    """build the usds to add dict from the user args and the optional usds"""
+# ============= Helper - get usds to add ============== #
+def get_usds_to_add(args, project_home_dir: str) -> dict:
+    """
+    build the usds to add dict from the user args and the optional usds
+    """
 
     usds = {}
     for key, (path, prim_path, name) in OPTIONAL_USDS.items():

@@ -1,17 +1,20 @@
 """this file defines some helper functions to manage the isaacsim simulation app"""
 
-# ==================== imports ====================
+# ==================== imports ==================== #
 import sys
 import carb
 import omni.usd
 from omni.isaac.kit import SimulationApp
 from omni.isaac.core.utils.nucleus import is_file
 from omni.kit.viewport.utility import get_active_viewport
+from pxr import Usd
 
 
-# ==================== helper functions ====================
+# =============== helper functions =============== #
 def set_camera_viewport(camera_prim_path) -> None:
-    """set the simuation-app viewport to the given camera prim viewport"""
+    """
+    set the simuation-app viewport to the given camera prim viewport
+    """
 
     viewport = get_active_viewport()
 
@@ -23,7 +26,9 @@ def set_camera_viewport(camera_prim_path) -> None:
 
 
 def add_usd_to_stage(usd_path: str, prim_path: str) -> None:
-    """add a single usd on top of the current opened stage"""
+    """
+    add a single usd on top of the current opened stage
+    """
 
     root_prim = omni.usd.get_context().get_stage().GetPrimAtPath(prim_path)
     
@@ -34,7 +39,9 @@ def add_usd_to_stage(usd_path: str, prim_path: str) -> None:
 
 
 def open_usd_stage(usd_path: str, kit: SimulationApp) -> None:
-    """opens a single usd as the base of the stage"""
+    """
+    opens a single usd as the base of the stage
+    """
 
     try:
         if is_file(usd_path):
@@ -45,3 +52,19 @@ def open_usd_stage(usd_path: str, kit: SimulationApp) -> None:
             f"the usd path {usd_path} cold not be opened, please make sure that {usd_path} is a valid usd file")
         kit.close()
         sys.exit()
+
+
+def get_prim_at_path(path: str) -> Usd.Prim:
+    """
+    get the prim at path and check if valid
+    """
+
+    stage = omni.usd.get_context().get_stage()
+    prim = stage.GetPrimAtPath(path)
+
+    if not prim or not prim.IsValid():
+        carb.log_error(f"Prim at path {path} is not valid")
+        raise ValueError(f"Prim at path {path} is not valid")
+    
+    return prim
+

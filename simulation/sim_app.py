@@ -26,7 +26,7 @@ import omni.graph.core as og
 
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
-from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage
+from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage, get_prim_at_path
 
 
 # ===================== The Simulation class ======================= #
@@ -89,12 +89,10 @@ class Simulation:
         """
 
         cam_path = self._get_camera_path()
-        cam_prim = self.stage.GetPrimAtPath(cam_path)
+        cam_prim = get_prim_at_path(cam_path)
 
-        if cam_path and cam_prim.IsValid():
-            set_camera_viewport(cam_path)
-        else:
-            carb.log_warn("No communication camera found — skipping viewport setup")
+        set_camera_viewport(cam_path)
+        
 
 
     def _add_external_usds(self, usds_to_add: str) -> None:
@@ -130,9 +128,9 @@ class Simulation:
         graph_path = f"{self.usds_to_add['distance_sensor'][1]}/ActionGraph"
 
         laser_node_path = f"{graph_path}/laser_depth_node"
-        laser_node_prim = self.stage.GetPrimAtPath(laser_node_path)
+        laser_node_prim = get_prim_at_path(laser_node_path)
 
-        if self.stage.GetPrimAtPath(graph_path):
+        if get_prim_at_path(graph_path):
             self._update_laser_params(graph_path)
 
             # Link laser to active camera (ROS or UDP)
@@ -142,16 +140,8 @@ class Simulation:
 
     def _update_laser_params(self, graph_path: str) -> None:
 
-        range_publisher_node_prim = self.stage.GetPrimAtPath(f"{graph_path}/ros2_distance_publisher")
-        laser_node_prim = self.stage.GetPrimAtPath(f"{graph_path}/laser_depth_node")
-
-        if not range_publisher_node_prim or not range_publisher_node_prim.IsValid():
-            carb.log_error(f"SIM | GPTLP | Range publisher node not found at path: {graph_path}/ros2_distance_publisher")
-            return
-        
-        if not laser_node_prim or not laser_node_prim.IsValid():
-            carb.log_error(f"SIM | GPTLP | Laser depth node not found at path: {graph_path}/laser_depth_node")
-            return
+        range_publisher_node_prim = get_prim_at_path(f"{graph_path}/ros2_distance_publisher")
+        laser_node_prim = get_prim_at_path(f"{graph_path}/laser_depth_node")
         
         range_publisher_node_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
         range_publisher_node_prim.GetAttribute("inputs:topicName").Set(consts.LASER_TOPIC_NAME)
@@ -177,11 +167,7 @@ class Simulation:
         Update all cesium:url attributes under a root path (default: /tilesets)
         """
 
-        tilesets = self.stage.GetPrimAtPath(root_path)
-
-        if not tilesets.IsValid():
-            carb.log_warn(f"No {root_path} Xform found")
-            return
+        tilesets = get_prim_at_path(root_path)
         
         for prim in tilesets.GetChildren():
             self._update_tileset_url(prim, url)
@@ -203,12 +189,8 @@ class Simulation:
         Vertical aperture is derived from resolution aspect ratio. (isaac sim calculates this automaticaly)
         """
 
-        camera_prim = self.stage.GetPrimAtPath(camera_path)
+        camera_prim = get_prim_at_path(camera_path)
         
-        if not camera_prim or not camera_prim.IsValid():
-            carb.log_error(f"Camera prim not found at path: {camera_path}")
-            return
-
         camera_prim.GetAttribute("horizontalAperture").Set(horizontal_ap_mm)
         camera_prim.GetAttribute("focalLength").Set(focal_length_mm)
 
@@ -247,11 +229,7 @@ class Simulation:
             raise ValueError("Invalid global position")
 
         camera_path = self._get_camera_path()
-        camera_prim = self.stage.GetPrimAtPath(camera_path)
-
-        if not camera_prim or not camera_prim.IsValid():
-            carb.log_error(f"[sim_app] Camera prim not found at path: {camera_path}")
-            return
+        camera_prim = get_prim_at_path(camera_path)
 
         rotate_attr = camera_prim.GetAttribute("xformOp:rotateYXZ")
 

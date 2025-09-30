@@ -64,7 +64,7 @@ class OgnSimROS2RangePublisherInternalState():
 
         if time_since_last_publish >= self.publish_period:
             current_msg = Range()
-            
+
             current_msg.header.stamp = now.to_msg()
             current_msg.header.frame_id = str(self.frame_id_counter)
             current_msg.radiation_type = 1

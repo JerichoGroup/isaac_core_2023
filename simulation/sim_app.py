@@ -147,7 +147,6 @@ class Simulation:
         range_publisher_node_prim.GetAttribute("inputs:topicName").Set(consts.LASER_TOPIC_NAME)
         range_publisher_node_prim.GetAttribute("inputs:minRange").Set(consts.LASER_MIN_RANGE)
         range_publisher_node_prim.GetAttribute("inputs:maxRange").Set(consts.LASER_MAX_RANGE)
-        range_publisher_node_prim.GetAttribute("inputs:frameID").Set(consts.INDEX_FRAME)
 
         laser_node_prim.GetAttribute("inputs:min_range").Set(consts.LASER_MIN_RANGE)
         laser_node_prim.GetAttribute("inputs:max_range").Set(consts.LASER_MAX_RANGE)

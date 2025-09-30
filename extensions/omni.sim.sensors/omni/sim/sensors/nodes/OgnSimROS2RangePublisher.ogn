@@ -4,7 +4,7 @@
     "description": "Publish sensor_msgs/msg/Range to a user-specified ROS2 topic",
     "language": "Python",
     "metadata": {
-      "uiName": "Sim ROS2 Range Publisher"
+      "uiName": "ROS2 Distance Publisher"
     },
     "inputs": {
       "execIn": {
@@ -53,14 +53,6 @@
         "default": 0.0,
         "metadata": {
           "uiName": "Range"
-        }
-      },
-      "frameID": {
-        "type": "string",
-        "description": "Frame ID for the sensor",
-        "default": "range_sensor_frame",
-        "metadata": {
-          "uiName": "Frame ID"
         }
       }
     },

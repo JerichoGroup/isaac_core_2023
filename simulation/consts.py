@@ -11,4 +11,3 @@ FOCAL_LENGTH = 22.7885                                      # mm, computed from 
 LASER_TOPIC_NAME = "/isaac_core/range_distance_sensor"
 LASER_MIN_RANGE = 0.2
 LASER_MAX_RANGE = 180.0
-INDEX_FRAME = "range_sensor_frame"                          # TODO: must remove in the future

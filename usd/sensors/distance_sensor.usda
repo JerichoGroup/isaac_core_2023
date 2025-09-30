@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (-8.035370170339343, 52.05392576975353, 37.28748215782719)
-                double3 target = (-7.396263252315499, 49.069956789984424, 35.38090418810149)
+                double3 target = (-7.396263252315499, 49.06995678998442, 35.38090418810149)
             }
             dictionary Right = {
                 double3 position = (0, -5, 0)
@@ -198,7 +198,7 @@ def compute(db: og.Database):
             custom float outputs:range
             custom bool state:omni_initialized
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (187.91351, 184.7079)
+            uniform float2 ui:nodegraph:node:pos = (171.36536, 288.40967)
         }
 
         def OmniGraphNode "draw_screen_space_text_beta_" (
@@ -222,7 +222,7 @@ def compute(db: og.Database):
                 }
             )
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (1006.2501, -60.99344)
+            uniform float2 ui:nodegraph:node:pos = (990.6483, -148.36317)
         }
 
         def OmniGraphNode "to_string" (
@@ -235,7 +235,7 @@ def compute(db: og.Database):
             int node:typeVersion = 1
             custom string outputs:converted
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (540.07074, 149.81825)
+            uniform float2 ui:nodegraph:node:pos = (543.78143, 196.20267)
         }
 
         def OmniGraphNode "append_string" (
@@ -250,7 +250,7 @@ def compute(db: og.Database):
             int node:typeVersion = 2
             custom token outputs:value
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (771.9469, 89.48544)
+            uniform float2 ui:nodegraph:node:pos = (785.8622, 136.79745)
         }
 
         def OmniGraphNode "range_prefix" (
@@ -261,7 +261,7 @@ def compute(db: og.Database):
             token node:type = "omni.graph.nodes.ConstantString"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (527.5865, 43.898327)
+            uniform float2 ui:nodegraph:node:pos = (541.5019, 90.28266)
         }
 
         def OmniGraphNode "ros2_distance_publisher" (
@@ -270,7 +270,6 @@ def compute(db: og.Database):
         {
             custom uint inputs:execIn
             prepend uint inputs:execIn.connect = </World/ActionGraph/laser_depth_node.outputs:execOut>
-            custom string inputs:frameID
             custom float inputs:maxRange
             custom float inputs:minRange
             custom int inputs:publishRateHZ
@@ -280,7 +279,7 @@ def compute(db: og.Database):
             token node:type = "omni.sim.sensors.SimROS2RangePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (556.2915, 292.009)
+            uniform float2 ui:nodegraph:node:pos = (611.40234, 349.14105)
         }
     }
 }

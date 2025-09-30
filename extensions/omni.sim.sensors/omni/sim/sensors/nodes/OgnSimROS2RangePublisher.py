@@ -3,19 +3,25 @@
 # ==================== Imports ====================
 import rclpy
 from sensor_msgs.msg import Range
+
 from rclpy.qos import qos_profile_sensor_data
 from omni.sim.sensors.ogn.OgnSimROS2RangePublisherDatabase import OgnSimROS2RangePublisherDatabase
 
 
 # ==================== the OgnSimROS2RangePublisherInternalState class ====================
 class OgnSimROS2RangePublisherInternalState():
-    """Internal state for the OgnSimROS2RangePublisher node"""
+    """
+    Internal state for the OgnSimROS2RangePublisher node
+    """
 
     def __init__(self) -> None:
-        """Initialize the internal state of the node"""
+        """
+        Initialize the internal state of the node
+        """
 
         self.publisher = None
         self.last_publish_time = None
+        self.frame_id_counter = 0
         self.node = rclpy.create_node('range_publisher')
         try:
             self.node.declare_parameter('use_sim_time', True)
@@ -24,7 +30,9 @@ class OgnSimROS2RangePublisherInternalState():
 
 
     def set_variables(self, db) -> None:
-        """Set variables from the database"""
+        """
+        Set variables from the database
+        """
 
         self.publish_period = 1.0 / db.inputs.publishRateHZ
         self.topic_name = db.inputs.topicName
@@ -33,7 +41,9 @@ class OgnSimROS2RangePublisherInternalState():
 
 
     def create_publisher(self) -> None:
-        """Create the ROS2 publisher"""
+        """
+        Create the ROS2 publisher
+        """
 
         self.publisher = self.node.create_publisher(
             Range,
@@ -41,8 +51,10 @@ class OgnSimROS2RangePublisherInternalState():
             qos_profile_sensor_data
         )
 
-    def publish_range(self, range_value: float, frame_id: int) -> None:
-        """"Publish the range message if the publish period has elapsed"""
+    def publish_range(self, range_value: float) -> None:
+        """
+        Publish the range message if the publish period has elapsed
+        """
 
         now = self.node.get_clock().now()
         if self.last_publish_time is None:
@@ -52,23 +64,31 @@ class OgnSimROS2RangePublisherInternalState():
 
         if time_since_last_publish >= self.publish_period:
             current_msg = Range()
+
             current_msg.header.stamp = now.to_msg()
-            current_msg.header.frame_id = frame_id
+            current_msg.header.frame_id = str(self.frame_id_counter)
             current_msg.radiation_type = 1
             current_msg.min_range = self.min_range
             current_msg.max_range = self.max_range
             current_msg.range = range_value
+            
             self.publisher.publish(current_msg)
             self.last_publish_time = now
 
+            self.frame_id_counter += 1
 
+            
 # ==================== the OgnSimROS2RangePublisher class ====================
 class OgnSimROS2RangePublisher:
-    """ this class implements a ROS2 range publisher node"""
+    """
+    this class implements a ROS2 range publisher node
+    """
 
     @staticmethod
     def internal_state():
-        """Create and return the internal state for the node"""
+        """
+        Create and return the internal state for the node
+        """
 
         try:
             rclpy.init()
@@ -79,7 +99,9 @@ class OgnSimROS2RangePublisher:
 
     @staticmethod
     def compute(db) -> bool:
-        """compute the range and publish it"""
+        """
+        compute the range and publish it
+        """
 
         internal_state: OgnSimROS2RangePublisherInternalState = db.internal_state
 
@@ -87,10 +109,7 @@ class OgnSimROS2RangePublisher:
             internal_state.set_variables(db)
             internal_state.create_publisher()
 
-        internal_state.publish_range(
-            db.inputs.range,
-            db.inputs.frameID,
-        )
+        internal_state.publish_range(db.inputs.range)
 
         rclpy.spin_once(internal_state.node, timeout_sec=0.01)
 
@@ -99,7 +118,9 @@ class OgnSimROS2RangePublisher:
 
     @staticmethod
     def release(node):
-        """Release the resources of the node"""
+        """
+        Release the resources of the node
+        """
 
         try:
             internal_state = OgnSimROS2RangePublisherDatabase.per_node_internal_state(node)

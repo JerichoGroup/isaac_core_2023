@@ -235,7 +235,7 @@ The gimbal angle is based on the following photo:
 |-------------------------------------|-----------------------------|-----------------------------|
 | `/isaac_core/odom`  (TODO)          | `geometry_msgs/PoseStamped` | Camera's odometry           |
 | `/isaac_core/gps`  (TODO)           | `sensor_msgs/NavSatFix`     | Camera's lat, lon, alt      |
-| `/isaac_core/laser_distance_sensor` | `sensor_msgs/Range`         | Simulated laser range data  |
+| `/isaac_core/range_distance_sensor"` | `sensor_msgs/Range`         | Simulated laser range data  |
 | `/isaac_core/camera/image_raw`      | `sensor_msgs/Image`         | Camera feed from simulation |
 | `/isaac_core/bbox`  (TODO)          | `TODO`                      | BBOX data                   |
 

@@ -24,7 +24,7 @@ OPTIONAL_USDS = {
     ),
     "com_udp": (
         "usd/cameras/udp_camera.usda",
-        "/Environment/udp_receiver",
+        "/Environment/udp_camera",
         "main_camera_01"
     ),
     "distance_sensor": (

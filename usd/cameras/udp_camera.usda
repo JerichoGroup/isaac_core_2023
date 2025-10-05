@@ -588,7 +588,7 @@ def Xform "Root"
             prepend vector3d inputs:global_orientation.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_orientation>
             custom vector3d inputs:global_position
             prepend vector3d inputs:global_position.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_position>
-            custom int inputs:hz = 100
+            custom int inputs:hz = 50
             custom string inputs:topic_name
             token node:type = "omni.sim.sensors.OgnSimROS2GlobalPosePublisher"
             int node:typeVersion = 1

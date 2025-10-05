@@ -4,7 +4,7 @@
     "description": "Publishes global position and orientation to a ROS 2 topic.",
     "language": "Python",
     "metadata": {
-      "uiName": "ROS 2 Global Pose Publisher"
+      "uiName": "ROS2 Global Pose Publisher"
     },
     "inputs": {
       "execIn": {

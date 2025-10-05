@@ -1,0 +1,37 @@
+{
+  "OgnSimROS2GlobalPosePublisher": {
+    "version": 1,
+    "description": "Publishes global position and orientation to a ROS 2 topic.",
+    "language": "Python",
+    "metadata": {
+      "uiName": "ROS 2 Global Pose Publisher"
+    },
+    "inputs": {
+      "execIn": {
+        "type": "execution",
+        "description": "Tick input for publishing",
+        "default": 0
+      },
+      "topic_name": {
+        "type": "string",
+        "description": "ROS 2 topic name to publish to",
+        "default": "/global_pose"
+      },
+      "global_position": {
+        "type": "vectord[3]",
+        "description": "Global position [lat, lon, alt]",
+        "default": [0.0, 0.0, 0.0]
+      },
+      "global_orientation": {
+        "type": "vectord[3]",
+        "description": "Global orientation [roll, pitch, yaw]",
+        "default": [0.0, 0.0, 0.0]
+      },
+      "hz": {
+        "type": "int",
+        "description": "Publishing frequency in Hz",
+        "default": 10
+      }
+    }
+  }
+}

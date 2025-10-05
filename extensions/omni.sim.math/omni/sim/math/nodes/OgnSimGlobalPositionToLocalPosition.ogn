@@ -38,6 +38,30 @@
         "metadata": {
           "uiName": "Global Orientation"
         }
+      },
+      "offset_roll": {
+        "type": "float",
+        "description": "Offset to apply to roll (degrees)",
+        "default": 0.0,
+        "metadata": {
+          "uiName": "Offset Roll"
+        }
+      },
+      "offset_pitch": {
+        "type": "float",
+        "description": "Offset to apply to pitch (degrees)",
+        "default": 0.0,
+        "metadata": {
+          "uiName": "Offset Pitch"
+        }
+      },
+      "offset_yaw": {
+        "type": "float",
+        "description": "Offset to apply to yaw (degrees)",
+        "default": 0.0,
+        "metadata": {
+          "uiName": "Offset Yaw"
+        }
       }
     },
     "outputs": {
@@ -47,6 +71,14 @@
         "default": [32.22481, 35.25621, 516.7],
         "metadata": {
           "uiName": "Global Position"
+        }
+      },
+      "global_orientation": {
+        "type": "vectorf[3]",
+        "description": "Echo the camera roll pitch yaw",
+        "default": [0.0, 0.0, 0.0],
+        "metadata": {
+          "uiName": "Global orientation"
         }
       },
       "local_position": {

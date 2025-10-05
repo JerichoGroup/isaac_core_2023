@@ -565,13 +565,17 @@ def Xform "Root"
             prepend vector3d inputs:global_orientation.connect = </Root/UDPOdomSync/udp_to_global_position.outputs:global_orientation>
             custom vector3d inputs:global_position
             prepend vector3d inputs:global_position.connect = </Root/UDPOdomSync/udp_to_global_position.outputs:global_position>
+            custom float inputs:offset_pitch = 0
+            custom float inputs:offset_roll = 0
+            custom float inputs:offset_yaw = 0
             token node:type = "omni.sim.math.GlobalPositionToLocalPosition"
             int node:typeVersion = 1
+            custom vector3f outputs:global_orientation
             custom vector3d outputs:global_position
             custom quatf outputs:local_orientation
             custom vector3f outputs:local_position
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (575.97534, 664.91754)
+            uniform float2 ui:nodegraph:node:pos = (574.0184, 664.91754)
         }
     }
 }

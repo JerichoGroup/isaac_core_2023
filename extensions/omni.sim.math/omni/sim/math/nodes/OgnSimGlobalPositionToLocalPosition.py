@@ -63,7 +63,11 @@ def is_invalid_global_position(global_position: Tuple[float, float, float], stat
 
 # ==================== The Transformer class ====================
 class Transformer:
-    """
+    """2025-10-05 08:28:34 [26,851ms] [Error] [omni.graph.core.plugin] /Environment/udp_receiver/UDPOdomSync/global_position_to_local_position: [/Environment/udp_receiver/UDPOdomSync] Assertion raised in compute - The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+  File "/home/ofer/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.sim.math/omni/sim/math/nodes/OgnSimGlobalPositionToLocalPosition.py", line 180, in compute
+    if state.converter is None or state.geo_reference != tuple(reference):
+
+
     Minimal replacement for pyproj.Transformer to handle:
     - EPSG:4979 (geodetic LLA) → EPSG:4978 (ECEF)
     - Always assumes input is (lat, lon, alt) in degrees/meters
@@ -176,8 +180,8 @@ class OgnSimGlobalPositionToLocalPosition:
 
         if is_invalid_global_position(global_position, state):
             return True
-        
-        if state.converter is None or state.geo_reference != tuple(reference):
+
+        if state.converter is None or not np.allclose(state.geo_reference, reference):
             state.define_converter(reference)
 
         enu = state.converter.convert_lla_enu(global_position[0], global_position[1], global_position[2])

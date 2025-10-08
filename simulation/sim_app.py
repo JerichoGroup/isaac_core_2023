@@ -1,6 +1,6 @@
 """this file defines the sim app class"""
 
-# =========================== Imports ============================== #
+# =========================== Imports ==============================
 import os
 import sys
 import json
@@ -11,25 +11,24 @@ import math
 from omni.isaac.kit import SimulationApp
 
 
-# ==================== Define the sim app kit ====================== #
+# ==================== Define the sim app kit ======================
 LAUNCH_CONFIG = json.loads(os.environ["LAUNCH_CONFIG"])
 kit = SimulationApp(launch_config=LAUNCH_CONFIG)
 
 
-# ==== Make isaacsim imports available for the imported modules ==== #
+# ==================== Make isaacsim imports available for the imported modules ====================
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 
-# ================= Additional isaacsim imports ==================== #
+# ================= Additional isaacsim imports ====================
 import omni.usd
 import omni.graph.core as og
-
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
 from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage, get_prim_at_path
 
 
-# ===================== The Simulation class ======================= #
+# ===================== The Simulation class =======================
 class Simulation:
     """
     this class defines a generic simulation app
@@ -41,6 +40,7 @@ class Simulation:
         """
 
         self.usds_to_add = usds_to_add
+        self.camera_key = self._resolve_camera_key()
         self._enable_extensions()
         self._configure_settings()
         open_usd_stage(usd_path, kit)
@@ -52,6 +52,19 @@ class Simulation:
         self._configure_camera()
         self._set_camera_gimbal(consts.GIMBAL_ROLL_DEG, consts.GIMBAL_PITCH_DEG, consts.GIMBAL_YAW_DEG)
 
+    def _resolve_camera_key(self) -> str:
+        """
+        Determines which camera key is active (com_ros or com_udp).
+        """
+
+        for key in ["com_ros", "com_udp"]:
+            if key in self.usds_to_add:
+                return key
+
+        carb.log_warn("No communication camera found — defaulting to com_udp")
+
+        return  "com_udp"
+        
 
     def _enable_extensions(self) -> None:
         """
@@ -88,12 +101,8 @@ class Simulation:
         sets the viewport for either a ros or udp camera
         """
 
-        cam_path = self._get_camera_path()
-        cam_prim = get_prim_at_path(cam_path)
-
-        set_camera_viewport(cam_path)
+        set_camera_viewport(self._get_camera_path())
         
-
 
     def _add_external_usds(self, usds_to_add: str) -> None:
         """
@@ -109,11 +118,10 @@ class Simulation:
         Returns the camera path based on the communication method (ROS2 or UDP).
         """
 
-        for cam_key in ["com_ros", "com_udp"]:
-            if cam_key in self.usds_to_add:
-                return f"{self.usds_to_add[cam_key][1]}/Xform/{self.usds_to_add[cam_key][2]}"
-
-        carb.log_warn("No communication camera found — defaulting to main_camera_01")
+        try:
+            return f"{self.usds_to_add[self.camera_key][1]}/Xform/{self.usds_to_add[self.camera_key][2]}"
+        except KeyError:
+            carb.log_warn("No communication camera found — defaulting to main_camera_01")
         return None
 
 
@@ -220,33 +228,26 @@ class Simulation:
         Sets the gimbal roll, pitch, and yaw offsets by writing them into the math node attributes.
         """
 
-        for key in ["com_ros", "com_udp"]:
-            if key in self.usds_to_add:
-                graph_root = self.usds_to_add[key][1]
+        cam_path = self._get_camera_path()
 
-                if key == "com_ros":
-                    graph_name = "ROS2OdomSync"
-                elif key == "com_udp":
-                    graph_name = "UDPOdomSync"
-                else:
-                    continue
+        if cam_path is None:
+            carb.log_warn("Cannot set gimbal — camera path not found")
+            return
 
-                graph_path = f"{graph_root}/{graph_name}"
-                math_node_path = f"{graph_path}/global_position_to_local_position"
-                math_node_prim = get_prim_at_path(math_node_path)
+        graph_name = "ROS2OdomSync" if self.camera_key == "com_ros" else "UDPOdomSync"
+        graph_root = self.usds_to_add[self.camera_key][1]
+        math_node_path = f"{graph_root}/{graph_name}/global_position_to_local_position"
+        math_node_prim = get_prim_at_path(math_node_path)
 
-                if not math_node_prim:
-                    carb.log_warn(f"[sim_app] Math node not found at {math_node_path}")
-                    return
+        if not math_node_prim:
+            carb.log_warn(f"Math node not found at {math_node_path}")
+            return
 
-                math_node_prim.GetAttribute("inputs:offset_roll").Set(roll_deg)
-                math_node_prim.GetAttribute("inputs:offset_pitch").Set(pitch_deg)
-                math_node_prim.GetAttribute("inputs:offset_yaw").Set(yaw_deg)
+        math_node_prim.GetAttribute("inputs:offset_roll").Set(roll_deg)
+        math_node_prim.GetAttribute("inputs:offset_pitch").Set(pitch_deg)
+        math_node_prim.GetAttribute("inputs:offset_yaw").Set(yaw_deg)
 
-                carb.log_info(f"[Gimbal offsets set on {math_node_path}: roll={roll_deg}, pitch={pitch_deg}, yaw={yaw_deg}")
-                return
-
-        carb.log_warn("No communication method found for gimbal setup")
+        carb.log_info(f"Gimbal offsets set on {math_node_path}: roll={roll_deg}, pitch={pitch_deg}, yaw={yaw_deg}")
 
 
     def run_simulation(self) -> None:

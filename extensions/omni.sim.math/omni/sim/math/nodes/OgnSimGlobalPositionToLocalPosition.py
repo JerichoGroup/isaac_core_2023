@@ -30,8 +30,8 @@ class OgnSimGlobalPositionToLocalPositionInternalState():
 
 
 #==================== Helper - quaternion from Euler angles ====================
-def quaternion_from_euler(roll: float, pitch: float, yaw: float):
-    """Convert Euler angles (in radians) to a quaternion (qx, qy, qz, qw)"""
+def quaternion_from_euler(roll: float, pitch: float, yaw: float) -> Tuple[float, float, float, float]:
+    """Convert Euler angles (in radians) to a quaternion (qx, qy, qz, qw) in ZYX notation"""
 
     cy = math.cos(yaw * 0.5)
     sy = math.sin(yaw * 0.5)
@@ -44,6 +44,7 @@ def quaternion_from_euler(roll: float, pitch: float, yaw: float):
     qy = cr * sp * cy + sr * cp * sy
     qz = cr * cp * sy - sr * sp * cy
     qw = cr * cp * cy + sr * sp * sy
+    
     return qx, qy, qz, qw
 
 
@@ -58,12 +59,14 @@ def is_invalid_global_position(global_position: Tuple[float, float, float], stat
         return True
     
     state.warned_no_data = False
+
     return False
 
 
 # ==================== Helper - quaternion multiplication ====================
-def quaternion_multiply(q1, q2):
+def quaternion_multiply(q1, q2) -> Tuple[float, float, float, float]:
     """Multiply two quaternions q1 * q2"""
+
     x1, y1, z1, w1 = q1
     x2, y2, z2, w2 = q2
 
@@ -71,13 +74,14 @@ def quaternion_multiply(q1, q2):
     y = w1*y2 - x1*z2 + y1*w2 + z1*x2
     z = w1*z2 + x1*y2 - y1*x2 + z1*w2
     w = w1*w2 - x1*x2 - y1*y2 - z1*z2
+
     return x, y, z, w
 
 
 # ==================== Helper - Euler from quaternion ====================
-def euler_from_quaternion(qx, qy, qz, qw):
-    """Convert quaternion to Euler angles (roll, pitch, yaw) in radians"""
-    # Reference: standard aerospace sequence (ZYX)
+def euler_from_quaternion(qx, qy, qz, qw) -> Tuple[float, float, float]:
+    """Convert quaternion to Euler angles (roll, pitch, yaw) in radians in ZYX notation"""
+
     sinr_cosp = 2 * (qw * qx + qy * qz)
     cosr_cosp = 1 - 2 * (qx * qx + qy * qy)
     roll = math.atan2(sinr_cosp, cosr_cosp)
@@ -218,11 +222,13 @@ class OgnSimGlobalPositionToLocalPosition:
         enu = state.converter.convert_lla_enu(global_position[0], global_position[1], global_position[2])
         x, y, z = enu["east"], enu["north"], enu["up"]
 
-        drone_roll = global_orientation[0]
-        drone_pitch = global_orientation[1]
-        drone_yaw = global_orientation[2]
-        q_drone = quaternion_from_euler(drone_roll, drone_pitch, drone_yaw)
+        # vehicle angles in radians
+        vehicle_roll = global_orientation[0]
+        vehicle_pitch = global_orientation[1]
+        vehicle_yaw = global_orientation[2]
+        q_drone = quaternion_from_euler(vehicle_roll, vehicle_pitch, vehicle_yaw)
 
+        # offset angels in degrees to radians
         offset_roll = math.radians(db.inputs.offset_roll)
         offset_pitch = math.radians(-db.inputs.offset_pitch)
         offset_yaw = math.radians(db.inputs.offset_yaw)

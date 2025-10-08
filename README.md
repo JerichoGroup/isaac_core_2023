@@ -293,8 +293,6 @@ Now reopen vscode in this folder an wait 30 seconds ~ for auto-completion.
 
 The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 
-This section describes their purpose, inputs/outputs, and units.
-
 ### `omni.sim.math`
 
 <details>

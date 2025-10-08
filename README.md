@@ -22,18 +22,10 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 
 ---
 
-
 ## System Requirements
 
-- **NVIDIA GPU** — Driver **535+** recommended for Isaac Sim 2023.1+  
-- **Ubuntu 22.04 LTS or later**
-- **Docker 20.10+ & Docker Compose v2 (and NVIDIA Container Toolkit)**
-- **ROS 2 Humble** — Installed automatically inside the base Docker image.  
-  Optional: install locally for development outside Docker.
-- **Setup Extensions**
-
 <details>
-<summary>Install NVIDIA Driver</summary>
+<summary><strong>NVIDIA GPU — Driver 535+ recommended for Isaac Sim 2023.1+</strong></summary>
 
 ```bash
 sudo apt-get remove --purge '^nvidia-.*'
@@ -42,28 +34,37 @@ sudo apt install nvidia-driver-535
 sudo reboot
 nvidia-smi
 ```
+
 </details>
 
 <details>
-<summary>Install Docker & Compose</summary>
+<summary><strong>Ubuntu 22.04 LTS or later</strong></summary>
 
+No additional setup required — just ensure you're running Ubuntu 22.04.
+
+</details>
+
+<details>
+<summary><strong>Docker 20.10+ & Docker Compose v2 (and NVIDIA Container Toolkit)</strong></summary>
+
+Install Docker & Compose:
 ```bash
 sudo apt install docker docker-compose-v2
 ```
-</details>
 
-<details>
-<summary>Install Vulkan & NVIDIA Container Toolkit</summary>
-
+Install Vulkan & NVIDIA Container Toolkit:
 ```bash
 sudo apt install vulkan-tools nvidia-container-toolkit
 ```
+
 </details>
 
 <details>
-<summary>Install ROS 2 Humble and other dependencies (if you want to work locally without docker)</summary>
+<summary><strong>ROS 2 Humble — Installed automatically inside the base Docker image</strong></summary>
 
-Install ros2 humble
+Optional: install locally for development outside Docker.
+
+Install ROS 2 Humble:
 ```bash
 sudo apt update && sudo apt install locales
 sudo locale-gen en_US en_US.UTF-8
@@ -78,9 +79,9 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 
 sudo apt update
 sudo apt install ros-humble-desktop
-
 ```
-Install Isaac sim ros2 workspace
+
+Install Isaac Sim ROS 2 workspace:
 ```bash
 sudo apt install ros-humble-rmw-fastrtps-cpp ros-humble-rmw-cyclonedds-cpp python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential python3-colcon-common-extensions ros-humble-vision-msgs
 git clone https://github.com/isaac-sim/IsaacSim-ros_workspaces.git ~/IsaacSim-ros_workspaces
@@ -89,15 +90,20 @@ rosdep install -i --from-path src --rosdistro humble -y
 colcon build
 echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 ```
-Add to ~/.bashrc;
+
+Add to `~/.bashrc`:
 ```bash
-# vim ~/.bashrc
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_DOMAIN_ID=13
 source ~/IsaacSim-ros_workspaces/humble_ws/install/setup.bash
 ```
 
-Modify Omniverse config file
+</details>
+
+<details>
+<summary><strong>Setup Extensions</strong></summary>
+
+Modify Omniverse config file:
 ```bash
 OMNI_CONFIG_FILE="$ISAACSIM_PATH/apps/omni.isaac.sim.python.kit"
 if [ -f "$OMNI_CONFIG_FILE" ]; then
@@ -111,14 +117,15 @@ if [ -f "$OMNI_CONFIG_FILE" ]; then
     fi
 fi
 ```
-Install in isaac sim gui the extensions: cesium, ros2 bridge
-<br>
-And run:
+
+Install in Isaac Sim GUI the extensions: `cesium`, `ros2 bridge`
+
+Then run:
 ```bash
-mkdir -p "$ISAACSIM_PATH/exts"
 cp -r ~/.local/share/ov/data/exts/v2/cesium.* "$ISAACSIM_PATH/exts"
 cp -r extensions/* $ISAACSIM_PATH/exts/
 ```
+
 </details>
 
 
@@ -227,6 +234,17 @@ The gimbal angle is based on the following photo:
 <img src="readme_images/gimbal_angle_example.png" alt="Gimbal Angle Reference" width="500"/>
 
 ---
+
+## ROS2 input topics
+These are the MAVRos topic the isaac sim would be subscribing to if you choose com-ros
+
+| Topic                                | Type                        | Description                 |
+|--------------------------------------|-----------------------------|-----------------------------|
+| `/mavros/global_position/global`     | `sensor_msgs/NavSatFix`     | Read LLA from MAVRos        |
+| `/mavros/local_position/pose`        | `geometry_msgs/PoseStamped` | Read orientaion from MAVRos |
+
+
+------
 
 ## ROS2 outputs topics
 

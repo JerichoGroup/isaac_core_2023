@@ -22,18 +22,10 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 
 ---
 
-
 ## System Requirements
 
-- **NVIDIA GPU** — Driver **535+** recommended for Isaac Sim 2023.1+  
-- **Ubuntu 22.04 LTS or later**
-- **Docker 20.10+ & Docker Compose v2 (and NVIDIA Container Toolkit)**
-- **ROS 2 Humble** — Installed automatically inside the base Docker image.  
-  Optional: install locally for development outside Docker.
-- **Setup Extensions**
-
 <details>
-<summary>Install NVIDIA Driver</summary>
+<summary><strong>NVIDIA GPU — Driver 535+ recommended for Isaac Sim 2023.1+</strong></summary>
 
 ```bash
 sudo apt-get remove --purge '^nvidia-.*'
@@ -42,28 +34,37 @@ sudo apt install nvidia-driver-535
 sudo reboot
 nvidia-smi
 ```
+
 </details>
 
 <details>
-<summary>Install Docker & Compose</summary>
+<summary><strong>Ubuntu 22.04 LTS or later</strong></summary>
 
+No additional setup required — just ensure you're running Ubuntu 22.04.
+
+</details>
+
+<details>
+<summary><strong>Docker 20.10+ & Docker Compose v2 (and NVIDIA Container Toolkit)</strong></summary>
+
+Install Docker & Compose:
 ```bash
 sudo apt install docker docker-compose-v2
 ```
-</details>
 
-<details>
-<summary>Install Vulkan & NVIDIA Container Toolkit</summary>
-
+Install Vulkan & NVIDIA Container Toolkit:
 ```bash
 sudo apt install vulkan-tools nvidia-container-toolkit
 ```
+
 </details>
 
 <details>
-<summary>Install ROS 2 Humble and other dependencies (if you want to work locally without docker)</summary>
+<summary><strong>ROS 2 Humble — Installed automatically inside the base Docker image</strong></summary>
 
-Install ros2 humble
+Optional: install locally for development outside Docker.
+
+Install ROS 2 Humble:
 ```bash
 sudo apt update && sudo apt install locales
 sudo locale-gen en_US en_US.UTF-8
@@ -78,9 +79,9 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 
 sudo apt update
 sudo apt install ros-humble-desktop
-
 ```
-Install Isaac sim ros2 workspace
+
+Install Isaac Sim ROS 2 workspace:
 ```bash
 sudo apt install ros-humble-rmw-fastrtps-cpp ros-humble-rmw-cyclonedds-cpp python3-rosdep python3-rosinstall python3-rosinstall-generator python3-wstool build-essential python3-colcon-common-extensions ros-humble-vision-msgs
 git clone https://github.com/isaac-sim/IsaacSim-ros_workspaces.git ~/IsaacSim-ros_workspaces
@@ -89,15 +90,20 @@ rosdep install -i --from-path src --rosdistro humble -y
 colcon build
 echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
 ```
-Add to ~/.bashrc;
+
+Add to `~/.bashrc`:
 ```bash
-# vim ~/.bashrc
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_DOMAIN_ID=13
 source ~/IsaacSim-ros_workspaces/humble_ws/install/setup.bash
 ```
 
-Modify Omniverse config file
+</details>
+
+<details>
+<summary><strong>Setup Extensions</strong></summary>
+
+Modify Omniverse config file:
 ```bash
 OMNI_CONFIG_FILE="$ISAACSIM_PATH/apps/omni.isaac.sim.python.kit"
 if [ -f "$OMNI_CONFIG_FILE" ]; then
@@ -111,14 +117,15 @@ if [ -f "$OMNI_CONFIG_FILE" ]; then
     fi
 fi
 ```
-Install in isaac sim gui the extensions: cesium, ros2 bridge
-<br>
-And run:
+
+Install in Isaac Sim GUI the extensions: `cesium`, `ros2 bridge`
+
+Then run:
 ```bash
-mkdir -p "$ISAACSIM_PATH/exts"
 cp -r ~/.local/share/ov/data/exts/v2/cesium.* "$ISAACSIM_PATH/exts"
 cp -r extensions/* $ISAACSIM_PATH/exts/
 ```
+
 </details>
 
 
@@ -206,18 +213,22 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 ## Special configurations
 under simulation/consts.py you can change:
 ```bash
-GIMBAL_PITCH_DEG = 0.0                                      # Range: -90 to +90
-TILESETS_HTTP_SERVER_URL = "http://10.20.15.122:8088"
-MAX_OUTPUTS_ROS_HRZ = 30.0                                  
-RESOLUTION_WIDTH = 1280
-RESOLUTION_HEIGHT = 720
-CAMERA_FOV = 78.1                                           # degrees           
-FOCAL_LENGTH = 22.7885                                      # mm, computed from FOV and sensor size
+GIMBAL_ROLL_DEG           # gimbal roll angel
+GIMBAL_PITCH_DEG          # gimbal pitch angel
+GIMBAL_YAW_DEG            # gimbal yaw angel
+RESOLUTION_WIDTH          # frame width resolution
+RESOLUTION_HEIGHT         # frame height resolution
+CAMERA_FOV                # camera's FOV           
+FOCAL_LENGTH              # camera's focal length
 
-# Laser consts
-LASER_TOPIC_NAME = "/isaac_core/range_distance_sensor"
-LASER_MIN_RANGE = 0.2
-LASER_MAX_RANGE = 180.0
+TILESETS_HTTP_SERVER_URL  # cesium server address
+
+LASER_MIN_RANGE           # distance sensor min range
+LASER_MAX_RANGE           # distance sensor max range
+
+MAX_OUTPUTS_ROS_HRZ       # data topic publish frequency       
+GLOBAL_POSE_TOPIC_NAME    # global pose data topic name
+LASER_TOPIC_NAME          # distance sensor topic name
 ```
 
 ### Gimbal Angle (Reference Image)
@@ -228,15 +239,25 @@ The gimbal angle is based on the following photo:
 
 ---
 
-## ROS2 outputs topics
+## ROS2 input topics
+These are the MAVRos topic the isaac sim would be subscribing to if you choose com-ros
 
 | Topic                                | Type                        | Description                 |
 |--------------------------------------|-----------------------------|-----------------------------|
-| `/isaac_core/odom`  (TODO)           | `geometry_msgs/PoseStamped` | Camera's odometry           |
-| `/isaac_core/gps`  (TODO)            | `sensor_msgs/NavSatFix`     | Camera's lat, lon, alt      |
-| `/isaac_core/range_distance_sensor"` | `sensor_msgs/Range`         | Simulated laser range data  |
-| `/isaac_core/camera/image_raw`       | `sensor_msgs/Image`         | Camera feed from simulation |
-| `/isaac_core/bbox`  (TODO)           | `TODO`                      | BBOX data                   |
+| `/mavros/global_position/global`     | `sensor_msgs/NavSatFix`     | Read LLA from MAVRos        |
+| `/mavros/local_position/pose`        | `geometry_msgs/PoseStamped` | Read orientaion from MAVRos |
+
+
+------
+
+## ROS2 outputs topics
+
+| Topic                                | Type                           | Description                 |
+|--------------------------------------|--------------------------------|-----------------------------|
+| `/isaac_core/global_pose`            | `geometry_msgs/GeoPoseStamped` | Camera's global position (overriding quaternions with RPY, x=roll, y=pitch, z=yaw, w=not used)    |
+| `/isaac_core/range_distance_sensor"` | `sensor_msgs/Range`            | Simulated laser range data  |
+| `/isaac_core/camera/image_raw`       | `sensor_msgs/Image`            | Camera feed from simulation |
+| `/isaac_core/bbox`  (TODO)           | `TODO`                         | BBOX data                   |
 
 
 ---
@@ -244,7 +265,7 @@ The gimbal angle is based on the following photo:
 ## Take pictures
 TODO
 
-# Auto completion in vscode
+## Auto completion in vscode
 <details>
 <summary>Expand to show more on setup</summary>
 `.vscode` folder is unique for each machine depending on the extensions installed, in order to get the right folder follow those steps:
@@ -266,3 +287,95 @@ Run:
 
 Now reopen vscode in this folder an wait 30 seconds ~ for auto-completion.
 </details>
+
+
+## Extension Overview
+
+The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
+
+### `omni.sim.math`
+
+<details>
+<summary><strong>Node: OgnSimGlobalPositionToLocalPosition</strong></summary>
+
+- **Purpose**: Converts global GPS coordinates and orientation (roll, pitch, yaw) into local ENU position and quaternion, all calculation are with ZYX angle notation.
+- **Inputs**:
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
+  - `global_orientation` — `[roll, pitch, yaw]` in radians, ZYX
+  - `enu_reference` — `[lat, lon, alt]` reference point  
+  - `offset_roll/pitch/yaw` — degrees  
+- **Outputs**:
+  - `local_position` — `[x, y, z]` in meters in ENU system around reference
+  - `local_orientation` — quaternion `[qx, qy, qz, qw]`
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
+  - `global_orientation` — `[roll, pitch, yaw]` in degrees, ZYX
+
+</details>
+
+
+### `omni.sim.position`
+
+<details>
+<summary><strong>Node: OgnSimUDPToGlobalPosition</strong></summary>
+
+- **Purpose**: Receives UDP packets and parses them into global position and orientation.
+- **Inputs**:
+  - `udp_port` — integer port number  
+- **Outputs**:
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84) 
+  - `global_orientation` — `[roll, pitch, yaw]` in radians, ZYX
+
+</details>
+
+<details>
+<summary><strong>Node: OgnSimROS2ToGlobalPosition</strong></summary>
+
+- **Purpose**: Subscribes to a ROS 2 topic and extracts global position and orientation.
+- **Inputs**:
+  - `LLA topic_name` — ROS 2 topic string  
+  - `orientation topic_name` — ROS 2 topic string  
+- **Outputs**:
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
+  - `global_orientation` — `[roll, pitch, yaw]` in radians, ZYX
+
+</details>
+
+
+### `omni.sim.sensors`
+
+<details>
+<summary><strong>Node: OgnSimROS2GlobalPosePublisher</strong></summary>
+
+- **Purpose**: Publishes global position and orientation to a ROS 2 topic using `GeoPoseStamped`.
+- **Inputs**:
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
+  - `global_orientation` — `[roll, pitch, yaw]` in degrees, ZYX
+  - `hz` — publish frequency  
+  - `topic_name` — ROS 2 topic string  
+- **Outputs**: None (publishes to ROS 2)  
+
+</details>
+
+<details>
+<summary><strong>Node: OgnSimROS2RangePublisher</strong></summary>
+
+- **Purpose**: Publishes range sensor data to a ROS 2 topic using `sensor_msgs/Range`.
+- **Inputs**:
+  - `max range` — float value in meters  
+  - `min range` — float value in meters  
+  - `publish Rate HZ` — publish frequency
+  - `topicName` — ROS 2 topic string  
+- **Outputs**: None (publishes to ROS 2)  
+
+</details>
+
+
+### `omni.sim.template`
+
+<details>
+<summary><strong>Node: OgnSimTemplate</strong></summary>
+
+- **Purpose**: Starter template for new OmniGraph nodes.
+
+</details>
+

@@ -1,13 +1,25 @@
-# General consts
-GIMBAL_PITCH_DEG = 0.0                                      # Range: -90 to +90
-TILESETS_HTTP_SERVER_URL = "http://10.20.15.122:8088"
-MAX_OUTPUTS_ROS_HRZ = 10.0                                  
+"""this file contains consts used to configure and initialize the simulation"""
+
+# ==================== Camera consts ====================
+GIMBAL_ROLL_DEG = 0.0
+GIMBAL_PITCH_DEG = 0.0
+GIMBAL_YAW_DEG = 0.0
 RESOLUTION_WIDTH = 1280
 RESOLUTION_HEIGHT = 720
-CAMERA_FOV = 78.1                                           # degrees           
-FOCAL_LENGTH = 22.7885                                      # mm, computed from FOV and sensor size
+CAMERA_FOV = 78.1               # degrees           
+FOCAL_LENGTH = 22.7885          # mm, computed from FOV and sensor size
 
-# Laser consts
-LASER_TOPIC_NAME = "/isaac_core/range_distance_sensor"
+
+# ==================== Cesium consts ====================
+TILESETS_HTTP_SERVER_URL = "http://10.20.15.122:8088"
+
+
+# ==================== Distance sensor consts ====================
 LASER_MIN_RANGE = 0.2
 LASER_MAX_RANGE = 180.0
+
+
+# ==================== ROS2 output consts ====================
+MAX_OUTPUTS_ROS_HRZ = 10.0                                  
+GLOBAL_POSE_TOPIC_NAME = "/isaac_core/global_pose"
+LASER_TOPIC_NAME = "/isaac_core/range_distance_sensor"

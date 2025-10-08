@@ -30,8 +30,8 @@ class OgnSimGlobalPositionToLocalPositionInternalState():
 
 
 #==================== Helper - quaternion from Euler angles ====================
-def quaternion_from_euler(roll: float, pitch: float, yaw: float):
-    """Convert Euler angles (in radians) to a quaternion (qx, qy, qz, qw)"""
+def quaternion_from_euler(roll: float, pitch: float, yaw: float) -> Tuple[float, float, float, float]:
+    """Convert Euler angles (in radians) to a quaternion (qx, qy, qz, qw) in ZYX notation"""
 
     cy = math.cos(yaw * 0.5)
     sy = math.sin(yaw * 0.5)
@@ -44,6 +44,7 @@ def quaternion_from_euler(roll: float, pitch: float, yaw: float):
     qy = cr * sp * cy + sr * cp * sy
     qz = cr * cp * sy - sr * sp * cy
     qw = cr * cp * cy + sr * sp * sy
+    
     return qx, qy, qz, qw
 
 
@@ -58,12 +59,50 @@ def is_invalid_global_position(global_position: Tuple[float, float, float], stat
         return True
     
     state.warned_no_data = False
+
     return False
+
+
+# ==================== Helper - quaternion multiplication ====================
+def quaternion_multiply(q1: Tuple[float, float, float, float], q2: Tuple[float, float, float, float]) -> Tuple[float, float, float, float]:
+    """Multiply two quaternions q1 * q2"""
+
+    x1, y1, z1, w1 = q1
+    x2, y2, z2, w2 = q2
+
+    x = w1*x2 + x1*w2 + y1*z2 - z1*y2
+    y = w1*y2 - x1*z2 + y1*w2 + z1*x2
+    z = w1*z2 + x1*y2 - y1*x2 + z1*w2
+    w = w1*w2 - x1*x2 - y1*y2 - z1*z2
+
+    return x, y, z, w
+
+
+# ==================== Helper - Euler from quaternion ====================
+def euler_from_quaternion(qx: float, qy: float, qz: float, qw: float) -> Tuple[float, float, float]:
+    """Convert quaternion to Euler angles (roll, pitch, yaw) in radians in ZYX notation"""
+
+    sinr_cosp = 2 * (qw * qx + qy * qz)
+    cosr_cosp = 1 - 2 * (qx * qx + qy * qy)
+    roll = math.atan2(sinr_cosp, cosr_cosp)
+
+    sinp = 2 * (qw * qy - qz * qx)
+    pitch = math.asin(sinp) if abs(sinp) <= 1 else math.copysign(math.pi / 2, sinp)
+
+    siny_cosp = 2 * (qw * qz + qx * qy)
+    cosy_cosp = 1 - 2 * (qy * qy + qz * qz)
+    yaw = math.atan2(siny_cosp, cosy_cosp)
+
+    return roll, pitch, yaw
 
 
 # ==================== The Transformer class ====================
 class Transformer:
-    """
+    """2025-10-05 08:28:34 [26,851ms] [Error] [omni.graph.core.plugin] /Environment/udp_receiver/UDPOdomSync/global_position_to_local_position: [/Environment/udp_receiver/UDPOdomSync] Assertion raised in compute - The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
+  File "/home/ofer/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.sim.math/omni/sim/math/nodes/OgnSimGlobalPositionToLocalPosition.py", line 180, in compute
+    if state.converter is None or state.geo_reference != tuple(reference):
+
+
     Minimal replacement for pyproj.Transformer to handle:
     - EPSG:4979 (geodetic LLA) → EPSG:4978 (ECEF)
     - Always assumes input is (lat, lon, alt) in degrees/meters
@@ -79,7 +118,7 @@ class Transformer:
 
 
     @staticmethod
-    def from_crs(src_crs: str, dst_crs: str, always_xy: bool = True):
+    def from_crs(src_crs: str, dst_crs: str):
         """
         Returns a Transformer instance.
         Only supports EPSG:4979 -> EPSG:4978 for now.
@@ -115,11 +154,11 @@ class ENUConverter:
     Uses a reference point for the conversion.
     """
 
-    def __init__(self, ref_lat, ref_lon, ref_alt) -> None:
+    def __init__(self, ref_lat: float, ref_lon: float, ref_alt: float) -> None:
         """Initialize the converter with a reference point"""
 
         # Transformer from geodetic to ECEF using WGS84 ellipsoid
-        self.transformer = Transformer.from_crs("EPSG:4979", "EPSG:4978", always_xy=True)
+        self.transformer = Transformer.from_crs("EPSG:4979", "EPSG:4978")
 
         # Convert reference point to ECEF
         self.x0, self.y0, self.z0 = self.transformer.transform(ref_lat, ref_lon, ref_alt)
@@ -134,7 +173,7 @@ class ENUConverter:
         ])
 
 
-    def convert_lla_enu(self, lat, lon, alt) -> Dict[str, float]:
+    def convert_lla_enu(self, lat: float, lon: float, alt: float) -> Dict[str, float]:
         """Convert LLA to ENU and return pose as a dictionary"""
 
         ecef_x, ecef_y, ecef_z = self.transformer.transform(lat, lon, alt)
@@ -176,15 +215,31 @@ class OgnSimGlobalPositionToLocalPosition:
 
         if is_invalid_global_position(global_position, state):
             return True
-        
-        if state.converter is None or state.geo_reference != tuple(reference):
+
+        if state.converter is None or not np.allclose(state.geo_reference, reference):
             state.define_converter(reference)
 
         enu = state.converter.convert_lla_enu(global_position[0], global_position[1], global_position[2])
         x, y, z = enu["east"], enu["north"], enu["up"]
-        qx, qy, qz, qw = quaternion_from_euler(global_orientation[0], global_orientation[1], global_orientation[2])
+
+        # vehicle angles in radians
+        vehicle_roll = global_orientation[0]
+        vehicle_pitch = global_orientation[1]
+        vehicle_yaw = global_orientation[2]
+        q_drone = quaternion_from_euler(vehicle_roll, vehicle_pitch, vehicle_yaw)
+
+        # offset angels in degrees to radians
+        offset_roll = math.radians(db.inputs.offset_roll)
+        offset_pitch = math.radians(-db.inputs.offset_pitch)
+        offset_yaw = math.radians(db.inputs.offset_yaw)
+        q_offset = quaternion_from_euler(offset_roll, offset_pitch, offset_yaw)
+
+        qx, qy, qz, qw = quaternion_multiply(q_drone, q_offset)
+
+        roll, pitch, yaw = euler_from_quaternion(qx, qy, qz, qw)
 
         db.outputs.global_position = global_position
+        db.outputs.global_orientation = [math.degrees(roll) % 360, math.degrees(pitch) % 360, math.degrees(yaw) % 360]
         db.outputs.local_position = [x, y, z]
         db.outputs.local_orientation = [qx, qy, qz, qw]
 

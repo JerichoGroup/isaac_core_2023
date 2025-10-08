@@ -64,7 +64,7 @@ def is_invalid_global_position(global_position: Tuple[float, float, float], stat
 
 
 # ==================== Helper - quaternion multiplication ====================
-def quaternion_multiply(q1, q2) -> Tuple[float, float, float, float]:
+def quaternion_multiply(q1: Tuple[float, float, float, float], q2: Tuple[float, float, float, float]) -> Tuple[float, float, float, float]:
     """Multiply two quaternions q1 * q2"""
 
     x1, y1, z1, w1 = q1
@@ -79,7 +79,7 @@ def quaternion_multiply(q1, q2) -> Tuple[float, float, float, float]:
 
 
 # ==================== Helper - Euler from quaternion ====================
-def euler_from_quaternion(qx, qy, qz, qw) -> Tuple[float, float, float]:
+def euler_from_quaternion(qx: float, qy: float, qz: float, qw: float) -> Tuple[float, float, float]:
     """Convert quaternion to Euler angles (roll, pitch, yaw) in radians in ZYX notation"""
 
     sinr_cosp = 2 * (qw * qx + qy * qz)
@@ -154,7 +154,7 @@ class ENUConverter:
     Uses a reference point for the conversion.
     """
 
-    def __init__(self, ref_lat, ref_lon, ref_alt) -> None:
+    def __init__(self, ref_lat: float, ref_lon: float, ref_alt: float) -> None:
         """Initialize the converter with a reference point"""
 
         # Transformer from geodetic to ECEF using WGS84 ellipsoid
@@ -173,7 +173,7 @@ class ENUConverter:
         ])
 
 
-    def convert_lla_enu(self, lat, lon, alt) -> Dict[str, float]:
+    def convert_lla_enu(self, lat: float, lon: float, alt: float) -> Dict[str, float]:
         """Convert LLA to ENU and return pose as a dictionary"""
 
         ecef_x, ecef_y, ecef_z = self.transformer.transform(lat, lon, alt)

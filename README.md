@@ -213,18 +213,22 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 ## Special configurations
 under simulation/consts.py you can change:
 ```bash
-GIMBAL_PITCH_DEG = 0.0                                      # Range: -90 to +90
-TILESETS_HTTP_SERVER_URL = "http://10.20.15.122:8088"
-MAX_OUTPUTS_ROS_HRZ = 30.0                                  
-RESOLUTION_WIDTH = 1280
-RESOLUTION_HEIGHT = 720
-CAMERA_FOV = 78.1                                           # degrees           
-FOCAL_LENGTH = 22.7885                                      # mm, computed from FOV and sensor size
+GIMBAL_ROLL_DEG           # gimbal roll angel
+GIMBAL_PITCH_DEG          # gimbal pitch angel
+GIMBAL_YAW_DEG            # gimbal yaw angel
+RESOLUTION_WIDTH          # frame width resolution
+RESOLUTION_HEIGHT         # frame height resolution
+CAMERA_FOV                # camera's FOV           
+FOCAL_LENGTH              # camera's focal length
 
-# Laser consts
-LASER_TOPIC_NAME = "/isaac_core/range_distance_sensor"
-LASER_MIN_RANGE = 0.2
-LASER_MAX_RANGE = 180.0
+TILESETS_HTTP_SERVER_URL  # cesium server address
+
+LASER_MIN_RANGE           # distance sensor min range
+LASER_MAX_RANGE           # distance sensor max range
+
+MAX_OUTPUTS_ROS_HRZ       # data topic publish frequency       
+GLOBAL_POSE_TOPIC_NAME    # global pose data topic name
+LASER_TOPIC_NAME          # distance sensor topic name
 ```
 
 ### Gimbal Angle (Reference Image)
@@ -248,13 +252,12 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 
 ## ROS2 outputs topics
 
-| Topic                                | Type                        | Description                 |
-|--------------------------------------|-----------------------------|-----------------------------|
-| `/isaac_core/odom`  (TODO)           | `geometry_msgs/PoseStamped` | Camera's odometry           |
-| `/isaac_core/gps`  (TODO)            | `sensor_msgs/NavSatFix`     | Camera's lat, lon, alt      |
-| `/isaac_core/range_distance_sensor"` | `sensor_msgs/Range`         | Simulated laser range data  |
-| `/isaac_core/camera/image_raw`       | `sensor_msgs/Image`         | Camera feed from simulation |
-| `/isaac_core/bbox`  (TODO)           | `TODO`                      | BBOX data                   |
+| Topic                                | Type                           | Description                 |
+|--------------------------------------|--------------------------------|-----------------------------|
+| `/isaac_core/global_pose`            | `geometry_msgs/GeoPoseStamped` | Camera's global position    |
+| `/isaac_core/range_distance_sensor"` | `sensor_msgs/Range`            | Simulated laser range data  |
+| `/isaac_core/camera/image_raw`       | `sensor_msgs/Image`            | Camera feed from simulation |
+| `/isaac_core/bbox`  (TODO)           | `TODO`                         | BBOX data                   |
 
 
 ---
@@ -297,17 +300,17 @@ This section describes their purpose, inputs/outputs, and units.
 <details>
 <summary><strong>Node: OgnSimGlobalPositionToLocalPosition</strong></summary>
 
-- **Purpose**: Converts global GPS coordinates and orientation (roll, pitch, yaw) into local ENU position and quaternion.
+- **Purpose**: Converts global GPS coordinates and orientation (roll, pitch, yaw) into local ENU position and quaternion, all calculation are with ZYX angle notation.
 - **Inputs**:
   - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
-  - `global_orientation` — `[roll, pitch, yaw]` in radians  
+  - `global_orientation` — `[roll, pitch, yaw]` in radians, ZYX
   - `enu_reference` — `[lat, lon, alt]` reference point  
   - `offset_roll/pitch/yaw` — degrees  
 - **Outputs**:
   - `local_position` — `[x, y, z]` in meters in ENU system around reference
   - `local_orientation` — quaternion `[qx, qy, qz, qw]`
   - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
-  - `global_orientation` — `[roll, pitch, yaw]` in degrees  
+  - `global_orientation` — `[roll, pitch, yaw]` in degrees, ZYX
 
 </details>
 
@@ -322,7 +325,7 @@ This section describes their purpose, inputs/outputs, and units.
   - `udp_port` — integer port number  
 - **Outputs**:
   - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84) 
-  - `global_orientation` — `[roll, pitch, yaw]` in radians  
+  - `global_orientation` — `[roll, pitch, yaw]` in radians, ZYX
 
 </details>
 
@@ -335,7 +338,7 @@ This section describes their purpose, inputs/outputs, and units.
   - `orientation topic_name` — ROS 2 topic string  
 - **Outputs**:
   - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
-  - `global_orientation` — `[roll, pitch, yaw]` in radians
+  - `global_orientation` — `[roll, pitch, yaw]` in radians, ZYX
 
 </details>
 
@@ -348,7 +351,7 @@ This section describes their purpose, inputs/outputs, and units.
 - **Purpose**: Publishes global position and orientation to a ROS 2 topic using `GeoPoseStamped`.
 - **Inputs**:
   - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
-  - `global_orientation` — `[roll, pitch, yaw]` in degrees
+  - `global_orientation` — `[roll, pitch, yaw]` in degrees, ZYX
   - `hz` — publish frequency  
   - `topic_name` — ROS 2 topic string  
 - **Outputs**: None (publishes to ROS 2)  

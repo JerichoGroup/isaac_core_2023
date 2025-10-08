@@ -61,6 +61,37 @@ def is_invalid_global_position(global_position: Tuple[float, float, float], stat
     return False
 
 
+# ==================== Helper - quaternion multiplication ====================
+def quaternion_multiply(q1, q2):
+    """Multiply two quaternions q1 * q2"""
+    x1, y1, z1, w1 = q1
+    x2, y2, z2, w2 = q2
+
+    x = w1*x2 + x1*w2 + y1*z2 - z1*y2
+    y = w1*y2 - x1*z2 + y1*w2 + z1*x2
+    z = w1*z2 + x1*y2 - y1*x2 + z1*w2
+    w = w1*w2 - x1*x2 - y1*y2 - z1*z2
+    return x, y, z, w
+
+
+# ==================== Helper - Euler from quaternion ====================
+def euler_from_quaternion(qx, qy, qz, qw):
+    """Convert quaternion to Euler angles (roll, pitch, yaw) in radians"""
+    # Reference: standard aerospace sequence (ZYX)
+    sinr_cosp = 2 * (qw * qx + qy * qz)
+    cosr_cosp = 1 - 2 * (qx * qx + qy * qy)
+    roll = math.atan2(sinr_cosp, cosr_cosp)
+
+    sinp = 2 * (qw * qy - qz * qx)
+    pitch = math.asin(sinp) if abs(sinp) <= 1 else math.copysign(math.pi / 2, sinp)
+
+    siny_cosp = 2 * (qw * qz + qx * qy)
+    cosy_cosp = 1 - 2 * (qy * qy + qz * qz)
+    yaw = math.atan2(siny_cosp, cosy_cosp)
+
+    return roll, pitch, yaw
+
+
 # ==================== The Transformer class ====================
 class Transformer:
     """2025-10-05 08:28:34 [26,851ms] [Error] [omni.graph.core.plugin] /Environment/udp_receiver/UDPOdomSync/global_position_to_local_position: [/Environment/udp_receiver/UDPOdomSync] Assertion raised in compute - The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
@@ -186,10 +217,20 @@ class OgnSimGlobalPositionToLocalPosition:
 
         enu = state.converter.convert_lla_enu(global_position[0], global_position[1], global_position[2])
         x, y, z = enu["east"], enu["north"], enu["up"]
-        roll = global_orientation[0] + math.radians(db.inputs.offset_roll)
-        pitch = global_orientation[1] + math.radians(-db.inputs.offset_pitch)
-        yaw = global_orientation[2] + math.radians(db.inputs.offset_yaw)
-        qx, qy, qz, qw = quaternion_from_euler(roll, pitch, yaw)
+
+        drone_roll = global_orientation[0]
+        drone_pitch = global_orientation[1]
+        drone_yaw = global_orientation[2]
+        q_drone = quaternion_from_euler(drone_roll, drone_pitch, drone_yaw)
+
+        offset_roll = math.radians(db.inputs.offset_roll)
+        offset_pitch = math.radians(-db.inputs.offset_pitch)
+        offset_yaw = math.radians(db.inputs.offset_yaw)
+        q_offset = quaternion_from_euler(offset_roll, offset_pitch, offset_yaw)
+
+        qx, qy, qz, qw = quaternion_multiply(q_drone, q_offset)
+
+        roll, pitch, yaw = euler_from_quaternion(qx, qy, qz, qw)
 
         db.outputs.global_position = global_position
         db.outputs.global_orientation = [math.degrees(roll) % 360, math.degrees(pitch) % 360, math.degrees(yaw) % 360]

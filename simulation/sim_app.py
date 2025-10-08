@@ -50,7 +50,7 @@ class Simulation:
         self._update_laser_sensor()
         self._set_cesium_tilesets_url(consts.TILESETS_HTTP_SERVER_URL)
         self._configure_camera()
-        self._set_camera_gimbal_pitch(consts.GIMBAL_PITCH_DEG)
+        self._set_camera_gimbal(consts.GIMBAL_ROLL_DEG, consts.GIMBAL_PITCH_DEG, consts.GIMBAL_YAW_DEG)
 
 
     def _enable_extensions(self) -> None:
@@ -111,7 +111,7 @@ class Simulation:
 
         for cam_key in ["com_ros", "com_udp"]:
             if cam_key in self.usds_to_add:
-                return f"{self.usds_to_add[cam_key][1]}/Xform/default_camera_rotation/{self.usds_to_add[cam_key][2]}"
+                return f"{self.usds_to_add[cam_key][1]}/Xform/{self.usds_to_add[cam_key][2]}"
 
         carb.log_warn("No communication camera found — defaulting to main_camera_01")
         return None
@@ -215,32 +215,38 @@ class Simulation:
         )
 
 
-    def _set_camera_gimbal_pitch(self, pitch_deg: float) -> None:
+    def _set_camera_gimbal(self, roll_deg: float, pitch_deg: float, yaw_deg: float) -> None:
         """
-        Sets the gimbal pitch for the camera.
-
-        Args:
-            pitch_deg (float): Desired pitch angle in degrees (range: -90 to +90)
+        Sets the gimbal roll, pitch, and yaw offsets by writing them into the math node attributes.
         """
 
-        if not (-90.0 <= pitch_deg <= 90.0):
-            carb.log_error("SIM | GPTLP | Invalid input for global position")
-            raise ValueError("Invalid global position")
+        for key in ["com_ros", "com_udp"]:
+            if key in self.usds_to_add:
+                graph_root = self.usds_to_add[key][1]
 
-        camera_path = self._get_camera_path()
-        camera_prim = get_prim_at_path(camera_path)
+                if key == "com_ros":
+                    graph_name = "ROS2OdomSync"
+                elif key == "com_udp":
+                    graph_name = "UDPOdomSync"
+                else:
+                    continue
 
-        rotate_attr = camera_prim.GetAttribute("xformOp:rotateYXZ")
+                graph_path = f"{graph_root}/{graph_name}"
+                math_node_path = f"{graph_path}/global_position_to_local_position"
+                math_node_prim = get_prim_at_path(math_node_path)
 
-        current_rotation = rotate_attr.Get()
-        if current_rotation is None or len(current_rotation) != 3:
-            carb.log_warn(f"[sim_app] Invalid rotation value on {camera_path} — skipping gimbal pitch")
-            return
+                if not math_node_prim:
+                    carb.log_warn(f"[sim_app] Math node not found at {math_node_path}")
+                    return
 
-        new_rotation = (pitch_deg, current_rotation[1], current_rotation[2])
-        rotate_attr.Set(new_rotation)
-        carb.log_info(f"[sim_app] Gimbal pitch set to {pitch_deg}° on {camera_path}")
+                math_node_prim.GetAttribute("inputs:offset_roll").Set(roll_deg)
+                math_node_prim.GetAttribute("inputs:offset_pitch").Set(pitch_deg)
+                math_node_prim.GetAttribute("inputs:offset_yaw").Set(yaw_deg)
 
+                carb.log_info(f"[Gimbal offsets set on {math_node_path}: roll={roll_deg}, pitch={pitch_deg}, yaw={yaw_deg}")
+                return
+
+        carb.log_warn("No communication method found for gimbal setup")
 
 
     def run_simulation(self) -> None:

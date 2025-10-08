@@ -187,7 +187,7 @@ class OgnSimGlobalPositionToLocalPosition:
         enu = state.converter.convert_lla_enu(global_position[0], global_position[1], global_position[2])
         x, y, z = enu["east"], enu["north"], enu["up"]
         roll = global_orientation[0] + math.radians(db.inputs.offset_roll)
-        pitch = global_orientation[1] + math.radians(db.inputs.offset_pitch)
+        pitch = global_orientation[1] + math.radians(-db.inputs.offset_pitch)
         yaw = global_orientation[2] + math.radians(db.inputs.offset_yaw)
         qx, qy, qz, qw = quaternion_from_euler(roll, pitch, yaw)
 

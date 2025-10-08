@@ -1,5 +1,7 @@
 # General consts
-GIMBAL_PITCH_DEG = 0.0                                      # Range: -90 to +90
+GIMBAL_ROLL_DEG = 180.0
+GIMBAL_PITCH_DEG = 30.0
+GIMBAL_YAW_DEG = 0.0
 TILESETS_HTTP_SERVER_URL = "http://10.20.15.122:8088"
 MAX_OUTPUTS_ROS_HRZ = 10.0                                  
 RESOLUTION_WIDTH = 1280

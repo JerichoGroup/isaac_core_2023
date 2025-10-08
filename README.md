@@ -244,7 +244,7 @@ The gimbal angle is based on the following photo:
 ## Take pictures
 TODO
 
-# Auto completion in vscode
+## Auto completion in vscode
 <details>
 <summary>Expand to show more on setup</summary>
 `.vscode` folder is unique for each machine depending on the extensions installed, in order to get the right folder follow those steps:
@@ -266,3 +266,97 @@ Run:
 
 Now reopen vscode in this folder an wait 30 seconds ~ for auto-completion.
 </details>
+
+
+## Extension Overview
+
+The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
+
+This section describes their purpose, inputs/outputs, and units.
+
+### `omni.sim.math`
+
+<details>
+<summary><strong>Node: OgnSimGlobalPositionToLocalPosition</strong></summary>
+
+- **Purpose**: Converts global GPS coordinates and orientation (roll, pitch, yaw) into local ENU position and quaternion.
+- **Inputs**:
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
+  - `global_orientation` — `[roll, pitch, yaw]` in radians  
+  - `enu_reference` — `[lat, lon, alt]` reference point  
+  - `offset_roll/pitch/yaw` — degrees  
+- **Outputs**:
+  - `local_position` — `[x, y, z]` in meters in ENU system around reference
+  - `local_orientation` — quaternion `[qx, qy, qz, qw]`
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
+  - `global_orientation` — `[roll, pitch, yaw]` in degrees  
+
+</details>
+
+
+### `omni.sim.position`
+
+<details>
+<summary><strong>Node: OgnSimUDPToGlobalPosition</strong></summary>
+
+- **Purpose**: Receives UDP packets and parses them into global position and orientation.
+- **Inputs**:
+  - `udp_port` — integer port number  
+- **Outputs**:
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84) 
+  - `global_orientation` — `[roll, pitch, yaw]` in radians  
+
+</details>
+
+<details>
+<summary><strong>Node: OgnSimROS2ToGlobalPosition</strong></summary>
+
+- **Purpose**: Subscribes to a ROS 2 topic and extracts global position and orientation.
+- **Inputs**:
+  - `LLA topic_name` — ROS 2 topic string  
+  - `orientation topic_name` — ROS 2 topic string  
+- **Outputs**:
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
+  - `global_orientation` — `[roll, pitch, yaw]` in radians
+
+</details>
+
+
+### `omni.sim.sensors`
+
+<details>
+<summary><strong>Node: OgnSimROS2GlobalPosePublisher</strong></summary>
+
+- **Purpose**: Publishes global position and orientation to a ROS 2 topic using `GeoPoseStamped`.
+- **Inputs**:
+  - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
+  - `global_orientation` — `[roll, pitch, yaw]` in degrees
+  - `hz` — publish frequency  
+  - `topic_name` — ROS 2 topic string  
+- **Outputs**: None (publishes to ROS 2)  
+
+</details>
+
+<details>
+<summary><strong>Node: OgnSimROS2RangePublisher</strong></summary>
+
+- **Purpose**: Publishes range sensor data to a ROS 2 topic using `sensor_msgs/Range`.
+- **Inputs**:
+  - `max range` — float value in meters  
+  - `min range` — float value in meters  
+  - `publish Rate HZ` — publish frequency
+  - `topicName` — ROS 2 topic string  
+- **Outputs**: None (publishes to ROS 2)  
+
+</details>
+
+
+### `omni.sim.template`
+
+<details>
+<summary><strong>Node: OgnSimTemplate</strong></summary>
+
+- **Purpose**: Starter template for new OmniGraph nodes.
+
+</details>
+

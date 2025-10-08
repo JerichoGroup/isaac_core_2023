@@ -50,8 +50,10 @@ class Simulation:
         self._update_laser_sensor()
         self._set_cesium_tilesets_url(consts.TILESETS_HTTP_SERVER_URL)
         self._configure_camera()
-        self._set_camera_gimbal(consts.GIMBAL_ROLL_DEG, consts.GIMBAL_PITCH_DEG, consts.GIMBAL_YAW_DEG)
+        self._configure_extensions_ros2()
 
+
+# ==================== camera methods
     def _resolve_camera_key(self) -> str:
         """
         Determines which camera key is active (com_ros or com_udp).
@@ -66,53 +68,6 @@ class Simulation:
         return  "com_udp"
         
 
-    def _enable_extensions(self) -> None:
-        """
-        enable the needed extensions for the simulation app
-        """
-
-        enable_extension("omni.sim.position")
-        enable_extension("omni.sim.math")
-        enable_extension("omni.sim.sensors")
-        enable_extension("omni.isaac.ros2_bridge")
-        enable_extension("cesium.omniverse")
-
-
-    def _configure_settings(self) -> None:
-        """
-        set the relevant carb settings for the simulation app
-        """
-
-        settings = carb.settings.get_settings()
-
-        settings.set_bool("/app/useFabricSceneDelegate", True)
-        settings.set_bool("/app/usdrt/scene_delegate/enableProxyCubes", False)
-        settings.set_bool("/app/usdrt/scene_delegate/geometryStreaming/enabled", False)
-        settings.set_bool("/omnihydra/parallelHydraSprimSync", False)
-        settings.set_bool("/rtx/ecoMode/enabled", True)
-        settings.set_bool("/app/player/useFixedTimeStepping", True)
-        settings.set_bool("/omni.graph.scriptnode/showWarnings", False)
-
-        kit.update()
-
-
-    def _set_viewport(self) -> None:
-        """
-        sets the viewport for either a ros or udp camera
-        """
-
-        set_camera_viewport(self._get_camera_path())
-        
-
-    def _add_external_usds(self, usds_to_add: str) -> None:
-        """
-        load all the relevant usds on top of the opened stage
-        """
-
-        for paths in usds_to_add.values():
-            add_usd_to_stage(paths[0], paths[1])
-
-
     def _get_camera_path(self) -> str:
         """
         Returns the camera path based on the communication method (ROS2 or UDP).
@@ -125,62 +80,13 @@ class Simulation:
         return None
 
 
-    def _update_laser_sensor(self) -> None:
+    def _set_viewport(self) -> None:
         """
-        Configure the laser sensor graph and link it to the camera
-        """
-
-        if "distance_sensor" not in self.usds_to_add:
-            return
-
-        graph_path = f"{self.usds_to_add['distance_sensor'][1]}/ActionGraph"
-
-        laser_node_path = f"{graph_path}/laser_depth_node"
-        laser_node_prim = get_prim_at_path(laser_node_path)
-
-        if get_prim_at_path(graph_path):
-            self._update_laser_params(graph_path)
-
-            # Link laser to active camera (ROS or UDP)
-            cam_path = self._get_camera_path()
-            laser_node_prim.GetAttribute("inputs:camera_xform_path").Set(cam_path)
-                    
-
-    def _update_laser_params(self, graph_path: str) -> None:
-
-        range_publisher_node_prim = get_prim_at_path(f"{graph_path}/ros2_distance_publisher")
-        laser_node_prim = get_prim_at_path(f"{graph_path}/laser_depth_node")
-        
-        range_publisher_node_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
-        range_publisher_node_prim.GetAttribute("inputs:topicName").Set(consts.LASER_TOPIC_NAME)
-        range_publisher_node_prim.GetAttribute("inputs:minRange").Set(consts.LASER_MIN_RANGE)
-        range_publisher_node_prim.GetAttribute("inputs:maxRange").Set(consts.LASER_MAX_RANGE)
-
-        laser_node_prim.GetAttribute("inputs:min_range").Set(consts.LASER_MIN_RANGE)
-        laser_node_prim.GetAttribute("inputs:max_range").Set(consts.LASER_MAX_RANGE)
-
-
-    def _update_tileset_url(self, prim, url: str) -> None:
-        
-        attr = prim.GetAttribute("cesium:url")
-        
-        if attr:
-            new_url = f"{url}/{prim.GetName()}/tileset.json"
-            attr.Set(new_url)
-
-
-    def _set_cesium_tilesets_url(self, url: str, root_path: str = "/tilesets") -> None:
-        """
-        Update all cesium:url attributes under a root path (default: /tilesets)
+        sets the viewport for either a ros or udp camera
         """
 
-        tilesets = get_prim_at_path(root_path)
+        set_camera_viewport(self._get_camera_path())
         
-        for prim in tilesets.GetChildren():
-            self._update_tileset_url(prim, url)
-        
-        carb.log_info("Cesium tilesets URLs updated")
-
 
     def _calculate_horizontal_aperture_from_fov(self, focal_length_mm: float, fov_deg: float) -> float:
 
@@ -222,8 +128,10 @@ class Simulation:
             focal_length_mm=consts.FOCAL_LENGTH
         )
 
+        self._set_camera_gimbal()
 
-    def _set_camera_gimbal(self, roll_deg: float, pitch_deg: float, yaw_deg: float) -> None:
+
+    def _set_camera_gimbal(self) -> None:
         """
         Sets the gimbal roll, pitch, and yaw offsets by writing them into the math node attributes.
         """
@@ -243,13 +151,138 @@ class Simulation:
             carb.log_warn(f"Math node not found at {math_node_path}")
             return
 
-        math_node_prim.GetAttribute("inputs:offset_roll").Set(roll_deg)
-        math_node_prim.GetAttribute("inputs:offset_pitch").Set(pitch_deg)
-        math_node_prim.GetAttribute("inputs:offset_yaw").Set(yaw_deg)
-
-        carb.log_info(f"Gimbal offsets set on {math_node_path}: roll={roll_deg}, pitch={pitch_deg}, yaw={yaw_deg}")
+        math_node_prim.GetAttribute("inputs:offset_roll").Set(consts.GIMBAL_ROLL_DEG)
+        math_node_prim.GetAttribute("inputs:offset_pitch").Set(consts.GIMBAL_PITCH_DEG)
+        math_node_prim.GetAttribute("inputs:offset_yaw").Set(consts.GIMBAL_YAW_DEG)
 
 
+# ==================== config simulation methods
+    def _enable_extensions(self) -> None:
+        """
+        enable the needed extensions for the simulation app
+        """
+
+        enable_extension("omni.sim.position")
+        enable_extension("omni.sim.math")
+        enable_extension("omni.sim.sensors")
+        enable_extension("omni.isaac.ros2_bridge")
+        enable_extension("cesium.omniverse")
+
+
+    def _configure_settings(self) -> None:
+        """
+        set the relevant carb settings for the simulation app
+        """
+
+        settings = carb.settings.get_settings()
+
+        settings.set_bool("/app/useFabricSceneDelegate", True)
+        settings.set_bool("/app/usdrt/scene_delegate/enableProxyCubes", False)
+        settings.set_bool("/app/usdrt/scene_delegate/geometryStreaming/enabled", False)
+        settings.set_bool("/omnihydra/parallelHydraSprimSync", False)
+        settings.set_bool("/rtx/ecoMode/enabled", True)
+        settings.set_bool("/app/player/useFixedTimeStepping", True)
+        settings.set_bool("/omni.graph.scriptnode/showWarnings", False)
+
+        kit.update()
+
+
+    def _configure_extensions_ros2(self) -> None:
+        """
+        Configure the HZ and topic names for all the relevant ROS2 nodes
+        """
+
+        # Configure distance sensor
+        sensor_pub_path = "/Environment/distance_sensor/ActionGraph/ros2_distance_publisher"
+        sensor_pub_prim = get_prim_at_path(sensor_pub_path)
+
+        if sensor_pub_prim:
+            sensor_pub_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
+            sensor_pub_prim.GetAttribute("inputs:topicName").Set(consts.LASER_TOPIC_NAME)
+
+        # Configure global pose
+        cam_path = self._get_camera_path()
+        if cam_path is None:
+            carb.log_warn("Cannot configure global pose publisher — camera path not found")
+            return
+
+        graph_name = "ROS2OdomSync" if self.camera_key == "com_ros" else "UDPOdomSync"
+        graph_root = self.usds_to_add[self.camera_key][1]
+        pose_pub_path = f"{graph_root}/{graph_name}/ros_2_global_pose_publisher"
+        pose_pub_prim = get_prim_at_path(pose_pub_path)
+
+        if pose_pub_prim:
+            pose_pub_prim.GetAttribute("inputs:hz").Set(consts.MAX_OUTPUTS_ROS_HRZ)
+            pose_pub_prim.GetAttribute("inputs:topic_name").Set(consts.GLOBAL_POSE_TOPIC_NAME)
+
+
+# ==================== usds methods
+    def _add_external_usds(self, usds_to_add: str) -> None:
+        """
+        load all the relevant usds on top of the opened stage
+        """
+
+        for paths in usds_to_add.values():
+            add_usd_to_stage(paths[0], paths[1])
+
+
+    def _update_tileset_url(self, prim, url: str) -> None:
+        
+        attr = prim.GetAttribute("cesium:url")
+        
+        if attr:
+            new_url = f"{url}/{prim.GetName()}/tileset.json"
+            attr.Set(new_url)
+
+
+    def _set_cesium_tilesets_url(self, url: str, root_path: str = "/tilesets") -> None:
+        """
+        Update all cesium:url attributes under a root path (default: /tilesets)
+        """
+
+        tilesets = get_prim_at_path(root_path)
+        
+        for prim in tilesets.GetChildren():
+            self._update_tileset_url(prim, url)
+        
+
+# ==================== laser sensor methods
+    def _update_laser_sensor(self) -> None:
+        """
+        Configure the laser sensor graph and link it to the camera
+        """
+
+        if "distance_sensor" not in self.usds_to_add:
+            return
+
+        graph_path = f"{self.usds_to_add['distance_sensor'][1]}/ActionGraph"
+
+        laser_node_path = f"{graph_path}/laser_depth_node"
+        laser_node_prim = get_prim_at_path(laser_node_path)
+
+        if get_prim_at_path(graph_path):
+            self._update_laser_params(graph_path)
+
+            # Link laser to active camera (ROS or UDP)
+            cam_path = self._get_camera_path()
+            laser_node_prim.GetAttribute("inputs:camera_xform_path").Set(cam_path)
+                    
+
+    def _update_laser_params(self, graph_path: str) -> None:
+
+        range_publisher_node_prim = get_prim_at_path(f"{graph_path}/ros2_distance_publisher")
+        laser_node_prim = get_prim_at_path(f"{graph_path}/laser_depth_node")
+        
+        range_publisher_node_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
+        range_publisher_node_prim.GetAttribute("inputs:topicName").Set(consts.LASER_TOPIC_NAME)
+        range_publisher_node_prim.GetAttribute("inputs:minRange").Set(consts.LASER_MIN_RANGE)
+        range_publisher_node_prim.GetAttribute("inputs:maxRange").Set(consts.LASER_MAX_RANGE)
+
+        laser_node_prim.GetAttribute("inputs:min_range").Set(consts.LASER_MIN_RANGE)
+        laser_node_prim.GetAttribute("inputs:max_range").Set(consts.LASER_MAX_RANGE)
+
+
+# ==================== run simulation method
     def run_simulation(self) -> None:
         """
         manages and runs the simulation loop

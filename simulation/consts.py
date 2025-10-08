@@ -1,8 +1,8 @@
 """this file contains consts used to configure and initialize the simulation"""
 
 # ==================== Camera consts ====================
-GIMBAL_ROLL_DEG = 180.0
-GIMBAL_PITCH_DEG = 30.0
+GIMBAL_ROLL_DEG = 0.0
+GIMBAL_PITCH_DEG = 0.0
 GIMBAL_YAW_DEG = 0.0
 RESOLUTION_WIDTH = 1280
 RESOLUTION_HEIGHT = 720

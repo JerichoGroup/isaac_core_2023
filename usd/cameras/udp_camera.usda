@@ -589,7 +589,7 @@ def Xform "Root"
             custom vector3d inputs:global_position
             prepend vector3d inputs:global_position.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_position>
             custom int inputs:hz = 50
-            custom string inputs:topic_name
+            custom string inputs:topic_name = "/global_pose"
             token node:type = "omni.sim.sensors.OgnSimROS2GlobalPosePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
@@ -607,6 +607,24 @@ def Xform "Root"
             custom uint64 outputs:context
             uniform token ui:nodegraph:node:expansionState = "open"
             uniform float2 ui:nodegraph:node:pos = (92.53906, 757.1577)
+        }
+
+        def OmniGraphNode "ros_2_global_pose_publisher_01" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/UDPOdomSync/on_playback_tick.outputs:tick>
+            custom vector3d inputs:global_orientation
+            prepend vector3d inputs:global_orientation.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_orientation>
+            custom vector3d inputs:global_position
+            prepend vector3d inputs:global_position.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_position>
+            custom int inputs:hz = 50
+            custom string inputs:topic_name = "/global_pose"
+            token node:type = "omni.sim.sensors.OgnSimROS2GlobalPosePublisher"
+            int node:typeVersion = 1
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (993.8128, 1077.6367)
         }
     }
 }

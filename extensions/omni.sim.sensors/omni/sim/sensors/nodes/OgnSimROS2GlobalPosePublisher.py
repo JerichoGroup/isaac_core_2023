@@ -2,7 +2,7 @@
 
 # ==================== Imports ====================
 import rclpy
-from geometry_msgs.msg import PoseStamped
+from geographic_msgs.msg import GeoPoseStamped
 from rclpy.qos import qos_profile_sensor_data
 from omni.sim.sensors.ogn.OgnSimROS2GlobalPosePublisherDatabase import OgnSimROS2GlobalPosePublisherDatabase
 
@@ -44,7 +44,7 @@ class OgnSimROS2GlobalPosePublisherInternalState:
         """
 
         self.publisher = self.node.create_publisher(
-            PoseStamped,
+            GeoPoseStamped,
             self.topic_name,
             qos_profile_sensor_data
         )
@@ -62,18 +62,18 @@ class OgnSimROS2GlobalPosePublisherInternalState:
         time_since_last_publish = (now - self.last_publish_time).nanoseconds / 1e9
 
         if time_since_last_publish >= self.publish_period:
-            msg = PoseStamped()
+            msg = GeoPoseStamped()
             msg.header.stamp = now.to_msg()
             msg.header.frame_id = str(self.frame_id_counter)
 
-            msg.pose.position.x = float(position[0])
-            msg.pose.position.y = float(position[1])
-            msg.pose.position.z = float(position[2])
+            msg.pose.position.latitude = float(position[0])
+            msg.pose.position.longitude = float(position[1])
+            msg.pose.position.altitude = float(position[2])
 
             msg.pose.orientation.x = float(orientation[0])
             msg.pose.orientation.y = float(orientation[1])
             msg.pose.orientation.z = float(orientation[2])
-            msg.pose.orientation.w = 1.0  # not in use when publishing roll, pitch, yaw
+            msg.pose.orientation.w = 1.0    # not in use when publishing roll, pitch, yaw
 
             self.publisher.publish(msg)
             self.last_publish_time = now

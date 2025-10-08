@@ -118,7 +118,7 @@ class Transformer:
 
 
     @staticmethod
-    def from_crs(src_crs: str, dst_crs: str, always_xy: bool = True):
+    def from_crs(src_crs: str, dst_crs: str):
         """
         Returns a Transformer instance.
         Only supports EPSG:4979 -> EPSG:4978 for now.
@@ -158,7 +158,7 @@ class ENUConverter:
         """Initialize the converter with a reference point"""
 
         # Transformer from geodetic to ECEF using WGS84 ellipsoid
-        self.transformer = Transformer.from_crs("EPSG:4979", "EPSG:4978", always_xy=True)
+        self.transformer = Transformer.from_crs("EPSG:4979", "EPSG:4978")
 
         # Convert reference point to ECEF
         self.x0, self.y0, self.z0 = self.transformer.transform(ref_lat, ref_lon, ref_alt)

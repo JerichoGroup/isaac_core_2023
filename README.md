@@ -101,6 +101,29 @@ source ~/IsaacSim-ros_workspaces/humble_ws/install/setup.bash
 </details>
 
 <details>
+<summary><strong>Isaac core custom ros2 interfaces</strong></summary>
+
+Copy the files into the humble workspace in your home dir:
+```bash
+cp -r ./simulation/ros2_interfaces/* ~/IsaacSim-ros_workspaces/humble_ws/src/isaac_ros2_messages/
+```
+
+Rebuild the relevant package:
+```bash
+cd ~/IsaacSim-ros_workspaces/humble_ws/
+colcon build --packages-select isaac_ros2_messages
+source install/setup.bash 
+```
+
+Check that the interface is available:
+```bash
+ros2 interface show isaac_ros2_messages/msg/FrameBboxes 
+ros2 interface show isaac_ros2_messages/msg/Bbox 
+```
+
+</details>
+
+<details>
 <summary><strong>Setup Extensions</strong></summary>
 
 Modify Omniverse config file:
@@ -378,4 +401,3 @@ The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 - **Purpose**: Starter template for new OmniGraph nodes.
 
 </details>
-

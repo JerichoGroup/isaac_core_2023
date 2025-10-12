@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # ================= Additional isaacsim imports ====================
 import omni.usd
-from pxr import Sdf
+from pxr import Sdf, Usd, UsdGeom
 import omni.graph.core as og
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
@@ -52,7 +52,7 @@ class Simulation:
         self._set_cesium_tilesets_url(consts.TILESETS_HTTP_SERVER_URL)
         self._configure_camera()
         self._configure_extensions_ros2()
-        # self._configure_bbox_prims()
+        self._configure_bbox_prims()
 
 
 # ==================== camera methods
@@ -159,15 +159,6 @@ class Simulation:
 
 
 # ==================== config simulation methods
-    def _configure_simulation(self) -> None:
-        """
-        configures the simulation app
-        """
-        self._enable_extensions()
-        self._configure_settings()
-        self._configure_extensions_ros2()
-        self._configure_bbox_prims()
-
     def _enable_extensions(self) -> None:
         """
         enable the needed extensions for the simulation app
@@ -235,6 +226,7 @@ class Simulation:
     def _configure_bbox_prims(self) -> None:
         """
         Assign semantic labels to all prims under /bboxes using their name as the class label.
+        Ensures SemanticsAPI is prepended in apiSchemas and attributes are set in the correct format.
         """
 
         if "bbox_publisher" not in self.usds_to_add:
@@ -251,7 +243,28 @@ class Simulation:
                 continue
 
             prim_name = prim.GetName()
-            prim.CreateAttribute("semantics:class", Sdf.ValueTypeNames.String).Set(prim_name)
+
+            # Prepend SemanticsAPI to apiSchemas
+            api_schemas_attr = prim.GetAttribute("apiSchemas")
+            if api_schemas_attr:
+                existing = api_schemas_attr.Get() or []
+                if "SemanticsAPI:Semantics_sYmu" not in existing:
+                    api_schemas_attr.Set(["SemanticsAPI:Semantics_sYmu"] + existing)
+            else:
+                prim.CreateAttribute("apiSchemas", Sdf.ValueTypeNames.TokenArray).Set(["SemanticsAPI:Semantics_sYmu"])
+
+            # Set semanticType and semanticData using correct namespaced attributes
+            prim.CreateAttribute("semantic:Semantics_sYmu:params:semanticType", Sdf.ValueTypeNames.String).Set("class")
+            prim.CreateAttribute("semantic:Semantics_sYmu:params:semanticData", Sdf.ValueTypeNames.String).Set(prim_name)
+
+            # Debug print
+            print(f"[DEBUG] Prim: {prim}")
+            print(f"        Path: {prim.GetPath().pathString}")
+            print(f"        Name: {prim_name}")
+            print(f"        apiSchemas: {prim.GetAttribute('apiSchemas').Get()}")
+            print(f"        semanticType: {prim.GetAttribute('semantic:Semantics_sYmu:params:semanticType').Get()}")
+            print(f"        semanticData: {prim.GetAttribute('semantic:Semantics_sYmu:params:semanticData').Get()}")
+            print("")
 
 
 

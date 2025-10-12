@@ -1,23 +1,23 @@
 """this file defines a script node to publish bounding boxes via ROS2"""
 
 # ==================== Imports ====================
-import asyncio
-import rclpy
 import math
-from pxr import Gf, UsdGeom
-from rclpy.qos import qos_profile_sensor_data
-from std_msgs.msg import Header
-from isaac_ros2_messages.msg import FrameBboxes, Bbox
-from omni import syntheticdata as sd
-from omni.kit.viewport.utility import get_active_viewport
+import rclpy
+import asyncio
 import omni.usd
-from pxr import UsdGeom, Gf
+from pxr import UsdGeom
+from std_msgs.msg import Header
+from typing import Tuple
+from omni import syntheticdata as sd
 from omni.isaac.core.prims import XFormPrim
+from rclpy.qos import qos_profile_sensor_data
+from isaac_ros2_messages.msg import FrameBboxes, Bbox
+from omni.kit.viewport.utility import get_active_viewport
 
 
 # ==================== Helper - Quaternion to Euler Conversion ====================
-def euler_from_quaternion_xyz(w: float, x: float, y: float, z: float) -> tuple[float, float, float]:
-    """Convert quaternion (w, x, y, z) to Euler angles in degrees using XYZ rotation order"""
+def euler_from_quaternion(w: float, x: float, y: float, z: float) -> Tuple[float, float, float]:
+    """Convert quaternion (w, x, y, z) to Euler angles in degrees using XYZ rotation order, and z up/down correction"""
     
     xx, yy, zz = x*x, y*y, z*z
     xy, xz, yz = x*y, x*z, y*z
@@ -44,8 +44,6 @@ def euler_from_quaternion_xyz(w: float, x: float, y: float, z: float) -> tuple[f
         z = 0
 
     return math.degrees(x), math.degrees(y), math.degrees(z)
-
-
 
 
 # ==================== Helper - Async Frame Bboxes Publisher ====================
@@ -117,31 +115,23 @@ def build_bboxes(db) -> list[Bbox]:
         bbox_msg.lon = float(prim.GetAttribute("cesium:anchor:longitude").Get())
         bbox_msg.alt = float(prim.GetAttribute("cesium:anchor:height").Get())
 
-        # World pose (position and rotation)
+        # World pose
         target = XFormPrim(path)
         camera = XFormPrim(db.internal_state.camera_prim.GetPath().pathString)
 
         target_pos, target_rot = target.get_world_pose()
         camera_pos, _ = camera.get_world_pose()
 
-        # Orientation (from xformOp:orient quaternion)
-        xformable = UsdGeom.Xformable(prim)
-        ops = xformable.GetOrderedXformOps()
-
-        quat = None
-        for op in ops:
-            if op.GetOpType() == UsdGeom.XformOp.TypeOrient:
-                quat = op.Get()
-                break
-
-        if quat is not None:
+        # Orientation
+        try:
+            quat = UsdGeom.Xformable(prim).GetOrientAttr().Get()
             w = quat.GetReal()
             x, y, z = quat.GetImaginary()
-            roll, pitch, yaw = euler_from_quaternion_xyz(w, x, y, z)
+            roll, pitch, yaw = euler_from_quaternion(w, x, y, z)
             bbox_msg.roll = round(roll, 1)
             bbox_msg.pitch = round(pitch, 1)
             bbox_msg.yaw = round(yaw, 1)
-        else:
+        except Exception:
             bbox_msg.roll = bbox_msg.pitch = bbox_msg.yaw = 0.0
 
         # Relative position
@@ -152,7 +142,6 @@ def build_bboxes(db) -> list[Bbox]:
         bboxes.append(bbox_msg)
 
     return bboxes
-
 
 
 # ==================== isaac sim funcs ====================
@@ -204,9 +193,6 @@ def setup(db) -> None:
                 db.internal_state.bboxes_paths.append(prim.GetPath().pathString)
     else:
         print("[bbox_script_node] Warning: /bboxes prim not found.")
-
-
-
 
 
 # ==================== Compute

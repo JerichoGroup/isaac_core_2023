@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # ================= Additional isaacsim imports ====================
 import omni.usd
+from pxr import Sdf
 import omni.graph.core as og
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
@@ -51,6 +52,7 @@ class Simulation:
         self._set_cesium_tilesets_url(consts.TILESETS_HTTP_SERVER_URL)
         self._configure_camera()
         self._configure_extensions_ros2()
+        # self._configure_bbox_prims()
 
 
 # ==================== camera methods
@@ -157,6 +159,15 @@ class Simulation:
 
 
 # ==================== config simulation methods
+    def _configure_simulation(self) -> None:
+        """
+        configures the simulation app
+        """
+        self._enable_extensions()
+        self._configure_settings()
+        self._configure_extensions_ros2()
+        self._configure_bbox_prims()
+
     def _enable_extensions(self) -> None:
         """
         enable the needed extensions for the simulation app
@@ -193,12 +204,17 @@ class Simulation:
         """
 
         # Configure distance sensor
-        sensor_pub_path = "/Environment/distance_sensor/ActionGraph/ros2_distance_publisher"
-        sensor_pub_prim = get_prim_at_path(sensor_pub_path)
-
-        if sensor_pub_prim:
+        if "distance_sensor" in self.usds_to_add:
+            sensor_pub_path = "/Environment/distance_sensor/ActionGraph/ros2_distance_publisher"
+            sensor_pub_prim = get_prim_at_path(sensor_pub_path)
             sensor_pub_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
             sensor_pub_prim.GetAttribute("inputs:topicName").Set(consts.LASER_TOPIC_NAME)
+
+        if "bbox_publisher" in self.usds_to_add:
+            bbox_pub_path = "/Environment/bbox_publisher/BboxPublisher/script_node"
+            bbox_pub_prim = get_prim_at_path(bbox_pub_path)
+            bbox_pub_prim.GetAttribute("inputs:hz").Set(consts.MAX_OUTPUTS_ROS_HRZ)
+            bbox_pub_prim.GetAttribute("inputs:topic_name").Set(consts.BBOXES_TOPIC_NAME)
 
         # Configure global pose
         cam_path = self._get_camera_path()
@@ -214,6 +230,29 @@ class Simulation:
         if pose_pub_prim:
             pose_pub_prim.GetAttribute("inputs:hz").Set(consts.MAX_OUTPUTS_ROS_HRZ)
             pose_pub_prim.GetAttribute("inputs:topic_name").Set(consts.GLOBAL_POSE_TOPIC_NAME)
+
+
+    def _configure_bbox_prims(self) -> None:
+        """
+        Assign semantic labels to all prims under /bboxes using their name as the class label.
+        """
+
+        if "bbox_publisher" not in self.usds_to_add:
+            return
+
+        bbox_root = get_prim_at_path("/bboxes")
+
+        if not bbox_root or not bbox_root.IsValid():
+            carb.log_warn("Bbox root not found at /bboxes")
+            return
+
+        for prim in bbox_root.GetChildren():
+            if not prim.IsValid():
+                continue
+
+            prim_name = prim.GetName()
+            prim.CreateAttribute("semantics:class", Sdf.ValueTypeNames.String).Set(prim_name)
+
 
 
 # ==================== usds methods

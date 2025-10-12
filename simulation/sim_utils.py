@@ -31,6 +31,11 @@ OPTIONAL_USDS = {
         "usd/sensors/distance_sensor.usda",
         "/Environment/distance_sensor",
         "distance_sensor"
+    ),
+    "bbox_publisher": (
+        "usd/sensors/bbox_publisher.usda",
+        "/Environment/bbox_publisher",
+        "bbox_publisher"
     )
 }
 
@@ -53,6 +58,7 @@ def parse_arguments():
     parser.add_argument("--com-ros", default=False, action="store_true", help="Enable communication via ROS")
     parser.add_argument("--com-udp", default=False, action="store_true", help="Enable communication via UDP")
     parser.add_argument("--distance-sensor", default=False, action="store_true", help="Add a distance sensor to the simulation")
+    parser.add_argument("--bbox-publisher", default=False, action="store_true", help="Add a bounding box publisher to the simulation")
 
     args, _ = parser.parse_known_args()
     return args

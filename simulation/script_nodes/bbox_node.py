@@ -123,15 +123,23 @@ def build_bboxes(db) -> list[Bbox]:
         camera_pos, _ = camera.get_world_pose()
 
         # Orientation
-        try:
-            quat = UsdGeom.Xformable(prim).GetOrientAttr().Get()
+        xformable = UsdGeom.Xformable(prim)
+        ops = xformable.GetOrderedXformOps()
+
+        quat = None
+        for op in ops:
+            if op.GetOpType() == UsdGeom.XformOp.TypeOrient:
+                quat = op.Get()
+                break
+
+        if quat is not None:
             w = quat.GetReal()
             x, y, z = quat.GetImaginary()
             roll, pitch, yaw = euler_from_quaternion(w, x, y, z)
             bbox_msg.roll = round(roll, 1)
             bbox_msg.pitch = round(pitch, 1)
             bbox_msg.yaw = round(yaw, 1)
-        except Exception:
+        else:
             bbox_msg.roll = bbox_msg.pitch = bbox_msg.yaw = 0.0
 
         # Relative position
@@ -142,6 +150,7 @@ def build_bboxes(db) -> list[Bbox]:
         bboxes.append(bbox_msg)
 
     return bboxes
+
 
 
 # ==================== isaac sim funcs ====================
@@ -193,6 +202,9 @@ def setup(db) -> None:
                 db.internal_state.bboxes_paths.append(prim.GetPath().pathString)
     else:
         print("[bbox_script_node] Warning: /bboxes prim not found.")
+
+
+
 
 
 # ==================== Compute

@@ -152,7 +152,6 @@ def build_bboxes(db) -> list[Bbox]:
     return bboxes
 
 
-
 # ==================== isaac sim funcs ====================
 # ==================== Setup
 def setup(db) -> None:
@@ -202,9 +201,6 @@ def setup(db) -> None:
                 db.internal_state.bboxes_paths.append(prim.GetPath().pathString)
     else:
         print("[bbox_script_node] Warning: /bboxes prim not found.")
-
-
-
 
 
 # ==================== Compute

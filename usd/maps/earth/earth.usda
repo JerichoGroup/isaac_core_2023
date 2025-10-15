@@ -7,8 +7,8 @@
                 double radius = 5
             }
             dictionary Perspective = {
-                double3 position = (4703.979961308516, -2723.436249833762, 204.04538221705818)
-                double3 target = (4703.942256854701, -2723.6306641266324, 203.7245539505737)
+                double3 position = (4703.984100657648, -2723.4052324605673, 204.0060434675708)
+                double3 target = (4703.969418222499, -2723.6150805980133, 203.69315769768968)
             }
             dictionary Right = {
                 double3 position = (0, -5, 0)
@@ -283,8 +283,8 @@ def Xform "bboxes"
         string semantic:Semantics_wN6I:params:semanticData = "Cube"
         string semantic:Semantics_wN6I:params:semanticType = "class"
         uniform token subdivisionScheme = "none"
-        quatd xformOp:orient = (0.9437143641474892, 0.26853582275156895, 0.1448781254173688, 0.12767944069578033)
-        double3 xformOp:scale = (30.00000000000004, 30.000000000000014, 30.000000000000014)
+        quatd xformOp:orient = (0.4817022142508345, 0.4738680537545348, 0.20131048764138496, 0.7091446481376845)
+        double3 xformOp:scale = (30.000000000000252, 30.000000000000178, 30.000000000000192)
         double3 xformOp:translate = (4692.798828125931, -2792.8815917959437, 92.70816040039062)
         uniform token[] xformOpOrder = ["!resetXformStack!", "xformOp:translate", "xformOp:orient", "xformOp:scale"]
     }

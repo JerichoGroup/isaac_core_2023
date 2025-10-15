@@ -7,7 +7,7 @@ import asyncio
 import omni.usd
 from pxr import UsdGeom
 from std_msgs.msg import Header
-from typing import Tuple
+from typing import Tuple, List
 from omni import syntheticdata as sd
 from omni.isaac.core.prims import XFormPrim
 from rclpy.qos import qos_profile_sensor_data
@@ -46,6 +46,22 @@ def euler_from_quaternion(w: float, x: float, y: float, z: float) -> Tuple[float
     return math.degrees(x), math.degrees(y), math.degrees(z)
 
 
+# ==================== Helper - Extract Euler from Prim ====================
+def get_euler_from_prim(prim) -> Tuple[float, float, float]:
+    """Extract roll, pitch, yaw from a prim's orientation quaternion, in degrees."""
+    xformable = UsdGeom.Xformable(prim)
+    ops = xformable.GetOrderedXformOps()
+
+    for op in ops:
+        if op.GetOpType() == UsdGeom.XformOp.TypeOrient:
+            quat = op.Get()
+            w = quat.GetReal()
+            x, y, z = quat.GetImaginary()
+            return tuple(round(angle, 1) for angle in euler_from_quaternion(w, x, y, z))
+
+    return (0.0, 0.0, 0.0)
+
+
 # ==================== Helper - Async Frame Bboxes Publisher ====================
 async def publish_frame_bboxes(db) -> None:
     """publish all bounding boxes in the current frame"""
@@ -73,7 +89,7 @@ async def publish_frame_bboxes(db) -> None:
 
 
 # ==================== Helper - Bounding Box Builder ====================
-def build_bboxes(db) -> list[Bbox]:
+def build_bboxes(db) -> List[Bbox]:
     """Build list of all bounding boxes data in the current frame"""
 
     tight_data = sd.sensors.get_bounding_box_2d_tight(db.internal_state.vp_api)
@@ -101,7 +117,7 @@ def build_bboxes(db) -> list[Bbox]:
         bbox_msg.is_visible = in_tight
 
         # Bounding box coordinates
-        bbox_data = prims_in_loose.get(path) or prims_in_tight.get(path)
+        bbox_data = prims_in_loose.get(path)
         if bbox_data:
             bbox_msg.x1 = int(bbox_data[6])
             bbox_msg.y1 = int(bbox_data[7])
@@ -123,24 +139,7 @@ def build_bboxes(db) -> list[Bbox]:
         camera_pos, _ = camera.get_world_pose()
 
         # Orientation
-        xformable = UsdGeom.Xformable(prim)
-        ops = xformable.GetOrderedXformOps()
-
-        quat = None
-        for op in ops:
-            if op.GetOpType() == UsdGeom.XformOp.TypeOrient:
-                quat = op.Get()
-                break
-
-        if quat is not None:
-            w = quat.GetReal()
-            x, y, z = quat.GetImaginary()
-            roll, pitch, yaw = euler_from_quaternion(w, x, y, z)
-            bbox_msg.roll = round(roll, 1)
-            bbox_msg.pitch = round(pitch, 1)
-            bbox_msg.yaw = round(yaw, 1)
-        else:
-            bbox_msg.roll = bbox_msg.pitch = bbox_msg.yaw = 0.0
+        bbox_msg.roll, bbox_msg.pitch, bbox_msg.yaw = get_euler_from_prim(prim)
 
         # Relative position
         bbox_msg.distance_x = float(target_pos[0] - camera_pos[0])

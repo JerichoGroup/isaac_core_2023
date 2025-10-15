@@ -257,6 +257,7 @@ LASER_MAX_RANGE           # distance sensor max range
 MAX_OUTPUTS_ROS_HRZ       # data topic publish frequency       
 GLOBAL_POSE_TOPIC_NAME    # global pose data topic name
 LASER_TOPIC_NAME          # distance sensor topic name
+BBOXES_TOPIC_NAME         # bbox data topic name
 ```
 
 ### Gimbal Angle (Reference Image)

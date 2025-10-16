@@ -155,6 +155,14 @@ cp -r extensions/* $ISAACSIM_PATH/exts/
 
 </details>
 
+<details>
+<summary><strong>install isaac python modules</strong></summary>
+
+```bash
+~/.local/share/ov/pkg/isaac_sim-2023.1.1/python.sh -m pip install pyproj transforms3d
+```
+
+</details>
 
 ---
 

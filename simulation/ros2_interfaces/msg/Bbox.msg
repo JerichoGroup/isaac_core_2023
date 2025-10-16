@@ -1,3 +1,8 @@
+# x1, y1, x2, y2 - bbox boundrys in pixels on the axis
+# lat, lon, alt - location of the obejct in the world
+# roll, pitch, yaw - local orientation of the object (euler angels XYZ notation)
+# distance x/y/z - the local distance between the camera and object on the axis in meters
+
 string target_name
 bool in_frame
 bool is_visible

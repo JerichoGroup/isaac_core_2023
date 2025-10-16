@@ -139,9 +139,11 @@ def build_bboxes(db) -> List[Bbox]:
         camera_pos, _ = camera.get_world_pose()
 
         # Orientation
+        # the local orientation of the objects in isaac sim, the orientation the user defines in the gui
         bbox_msg.roll, bbox_msg.pitch, bbox_msg.yaw = get_euler_from_prim(prim)
 
         # Relative position
+        # the distance difference between the camera and the object in the world in local xyz coordinates, in meters
         bbox_msg.distance_x = float(target_pos[0] - camera_pos[0])
         bbox_msg.distance_y = float(target_pos[1] - camera_pos[1])
         bbox_msg.distance_z = float(target_pos[2] - camera_pos[2])

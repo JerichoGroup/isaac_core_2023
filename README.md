@@ -16,9 +16,13 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 1. [Docker Workflow (Optional)](#docker-workflow-optional)
 1. [Running the Simulation](#running-the-simulation)  
 1. [Simulation Flags](#simulation-flags)  
+1. [Special configurations](#Special-configurations)
+1. [ROS2 input topics](#ros2-input-topics)  
 1. [ROS2 outputs topics](#ros2-outputs-topics)  
 1. [Take pictures](#take-pictures)  
-1. [Auto completion in vscode](#auto-completion-in-vscode)  
+1. [Auto completion in vscode](#auto-completion-in-vscode)
+1. [Extension Overview](#Extension-Overview)
+1. [Using Bbox](#Using-Bbox)
 
 ---
 
@@ -96,6 +100,29 @@ Add to `~/.bashrc`:
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
 export ROS_DOMAIN_ID=13
 source ~/IsaacSim-ros_workspaces/humble_ws/install/setup.bash
+```
+
+</details>
+
+<details>
+<summary><strong>Isaac core custom ros2 interfaces</strong></summary>
+
+Copy the files into the humble workspace in your home dir:
+```bash
+cp -r ./simulation/ros2_interfaces/* ~/IsaacSim-ros_workspaces/humble_ws/src/isaac_ros2_messages/
+```
+
+Rebuild the relevant package:
+```bash
+cd ~/IsaacSim-ros_workspaces/humble_ws/
+colcon build --packages-select isaac_ros2_messages
+source install/setup.bash 
+```
+
+Check that the interface is available:
+```bash
+ros2 interface show isaac_ros2_messages/msg/FrameBboxes 
+ros2 interface show isaac_ros2_messages/msg/Bbox 
 ```
 
 </details>
@@ -206,7 +233,8 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 | `--headless`             | Run Isaac Sim without GUI                                    |
 | `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ros       |
 | `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp       |
-| `--distance-sensor`         | Add range sensor to simulation (output is on ros topic)      |
+| `--distance-sensor`      | Add range sensor to simulation (output is on ros topic)      |
+| `--bbox-publisher`       | Publish bbox data for each object specified                  |
 
 ---
 
@@ -229,6 +257,7 @@ LASER_MAX_RANGE           # distance sensor max range
 MAX_OUTPUTS_ROS_HRZ       # data topic publish frequency       
 GLOBAL_POSE_TOPIC_NAME    # global pose data topic name
 LASER_TOPIC_NAME          # distance sensor topic name
+BBOXES_TOPIC_NAME         # bbox data topic name
 ```
 
 ### Gimbal Angle (Reference Image)
@@ -252,12 +281,12 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 
 ## ROS2 outputs topics
 
-| Topic                                | Type                           | Description                 |
-|--------------------------------------|--------------------------------|-----------------------------|
-| `/isaac_core/global_pose`            | `geometry_msgs/GeoPoseStamped` | Camera's global position (overriding quaternions with RPY, x=roll, y=pitch, z=yaw, w=not used)    |
-| `/isaac_core/range_distance_sensor` | `sensor_msgs/Range`            | Simulated laser range data  |
-| `/isaac_core/camera/image_raw`       | `sensor_msgs/Image`            | Camera feed from simulation |
-| `/isaac_core/bbox`  (TODO)           | `TODO`                         | BBOX data                   |
+| Topic                                | Type                                 | Description                 |
+|--------------------------------------|--------------------------------------|-----------------------------|
+| `/isaac_core/global_pose`            | `geometry_msgs/GeoPoseStamped`       | Camera's global position (overriding quaternions with RPY, x=roll, y=pitch, z=yaw, w=not used)    |
+| `/isaac_core/range_distance_sensor"` | `sensor_msgs/Range`                  | Simulated laser range data  |
+| `/isaac_core/camera/image_raw`       | `sensor_msgs/Image`                  | Camera feed from simulation |
+| `/isaac_core/bbox`                   | `isaac_ros2_messages/msg/FrameBboxes`| BBOX data per object        |
 
 
 ---
@@ -378,4 +407,46 @@ The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 - **Purpose**: Starter template for new OmniGraph nodes.
 
 </details>
+
+
+## Using Bbox
+
+You can enable the Bbox option with the `--bbox-publisher` flag.
+
+In order to add a new object to get its bbox data, you need to follow there steps:
+
+<details>
+<summary><strong>Adding your object under the `bboxes` Xfrom</strong></summary>
+
+- Open the .usda file you intend to open, for example `earth.usda`
+- Add your object to where ever you want it to be
+  * You can find free models to use at `Sketchfab.com`
+- In the stage tab, drag and drop your object prim into the /bboxes Xform
+  * Notice: that if your .usda doest have a /bboxes xform in its top hierarchy you will need to create one
+- Make sure your object looks like the cube in the image, placed in the world and its prim path is under /bboxes
+
+<img src="readme_images/bbox_xform.png" alt="object under bbox Xfrom for example" width="1500"/>
+</details>
+
+<details>
+<summary><strong>Adding `Global anchor` to your object</strong></summary>
+
+- Go to the `property` tab of the object and click `Add+`
+- Then you need to hover above `cesium` and a pop up window will appear
+- Then click the `Global anchor` option, and make sure when you scroll down you see it
+
+<img src="readme_images/bbox_global_anchor.png" alt="adding the global anchor to a object" width="500"/>
+</details>
+
+<details>
+<summary><strong>Adding the correct semantics to your object</strong></summary>
+
+- Go to the `Semantics Schema Editor` tab of the object, there you will see the same window as in the image
+  * Notice: Make sure all your fields look like in the image, the `apply to` needs to be on stage and not selected
+- Click `Add`
+
+<img src="readme_images/bbox_semantics.png" alt="adding the correct semantics to a object" width="500"/>
+</details>
+
+#### Make sure to save the .usda file after adding your object and setting it
 

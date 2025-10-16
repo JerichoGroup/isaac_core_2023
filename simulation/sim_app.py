@@ -22,7 +22,6 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # ================= Additional isaacsim imports ====================
 import omni.usd
-import omni.graph.core as og
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
 from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage, get_prim_at_path
@@ -193,12 +192,17 @@ class Simulation:
         """
 
         # Configure distance sensor
-        sensor_pub_path = "/Environment/distance_sensor/ActionGraph/ros2_distance_publisher"
-        sensor_pub_prim = get_prim_at_path(sensor_pub_path)
-
-        if sensor_pub_prim:
+        if "distance_sensor" in self.usds_to_add:
+            sensor_pub_path = "/Environment/distance_sensor/ActionGraph/ros2_distance_publisher"
+            sensor_pub_prim = get_prim_at_path(sensor_pub_path)
             sensor_pub_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
             sensor_pub_prim.GetAttribute("inputs:topicName").Set(consts.LASER_TOPIC_NAME)
+
+        if "bbox_publisher" in self.usds_to_add:
+            bbox_pub_path = "/Environment/bbox_publisher/BboxPublisher/script_node"
+            bbox_pub_prim = get_prim_at_path(bbox_pub_path)
+            bbox_pub_prim.GetAttribute("inputs:hz").Set(consts.MAX_OUTPUTS_ROS_HRZ)
+            bbox_pub_prim.GetAttribute("inputs:topic_name").Set(consts.BBOXES_TOPIC_NAME)
 
         # Configure global pose
         cam_path = self._get_camera_path()

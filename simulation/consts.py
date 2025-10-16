@@ -20,6 +20,7 @@ LASER_MAX_RANGE = 180.0
 
 
 # ==================== ROS2 output consts ====================
-MAX_OUTPUTS_ROS_HRZ = 10.0                                  
+MAX_OUTPUTS_ROS_HRZ = 50.0                                  
 GLOBAL_POSE_TOPIC_NAME = "/isaac_core/global_pose"
 LASER_TOPIC_NAME = "/isaac_core/range_distance_sensor"
+BBOXES_TOPIC_NAME = "/isaac_core/bbox"

@@ -5,7 +5,7 @@ COM="--com-udp"
 BBOX="--bbox-publisher"
 DISTANCE_SENSOR="--distance-sensor"
 
-RUN_SIMULATION="ISAACSIM_PYTHON ./simulation/main_sim.py $USD_PATH $COM $BBOX"
+RUN_SIMULATION="ISAACSIM_PYTHON ./simulation/main_sim.py $USD_PATH $COM"
 
 bash -ic "$RUN_SIMULATION"
 

@@ -4,13 +4,16 @@ icon = "data/sensors_pic.png"
 category = "SIM"
 title = "Sensors"
 description = "This extension binds all sensors/motors/etc omni graph nodes"
-authors = ["Mr_Blum and sinimini"]
+authors = ["Mr_Blum, Sinimini and Binchilling"]
 repository = ""
 readme = "docs/README.md"
 keywords = ["sensors", "laser", "range", "distance", "servo", "motors"]
 
 [[python.module]]
 name = "omni.sim.sensors"
+
+[ogn]
+path = "omni/sim/sensors/nodes"
 
 [fswatcher.patterns]
 include = ["*.ogn", "*.py"]
@@ -19,3 +22,5 @@ exclude = ["Ogn*Database.py"]
 [dependencies]
 "omni.kit.test" = {}
 "omni.graph" = {}
+"omni.isaac.ros2_bridge" = {}
+"omni.syntheticdata" = {}

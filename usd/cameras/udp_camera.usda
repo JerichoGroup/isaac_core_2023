@@ -202,7 +202,6 @@ def Xform "Root"
                     bool isExecution = 1
                 }
             )
-            uniform float2 ui:nodegraph:node:pos = (-2704.5002, 176.66663)
         }
 
         def OmniGraphNode "createViewport" (
@@ -221,7 +220,6 @@ def Xform "Root"
                 }
             )
             custom token outputs:viewport
-            uniform float2 ui:nodegraph:node:pos = (-2180.5405, 165.31526)
         }
 
         def OmniGraphNode "setViewPortResolution" (
@@ -241,7 +239,6 @@ def Xform "Root"
                     bool isExecution = 1
                 }
             )
-            uniform float2 ui:nodegraph:node:pos = (-1716.3147, 193.95113)
         }
 
         def OmniGraphNode "getRenderProduct" (
@@ -260,7 +257,6 @@ def Xform "Root"
                 }
             )
             custom token outputs:renderProductPath
-            uniform float2 ui:nodegraph:node:pos = (-1621.2609, -60.06767)
         }
 
         def OmniGraphNode "setCamera" (
@@ -287,7 +283,6 @@ def Xform "Root"
                     bool isExecution = 1
                 }
             )
-            uniform float2 ui:nodegraph:node:pos = (-1174.6023, 159.48706)
         }
 
         def OmniGraphNode "cameraHelperRgb" (
@@ -301,6 +296,7 @@ def Xform "Root"
             custom uint inputs:execIn
             prepend uint inputs:execIn.connect = </Root/ROS2CameraImageExport/setCamera.outputs:execOut>
             custom string inputs:frameId = "sim_camera"
+            prepend string inputs:frameId.connect = </Root/ROS2CameraImageExport/constant_string.inputs:value>
             custom string inputs:nodeNamespace
             custom uint64 inputs:queueSize
             custom token inputs:renderProductPath
@@ -315,7 +311,6 @@ def Xform "Root"
             custom token inputs:viewport
             token node:type = "omni.isaac.ros2_bridge.ROS2CameraHelper"
             int node:typeVersion = 2
-            uniform float2 ui:nodegraph:node:pos = (-498.06085, -33.78892)
         }
 
         def OmniGraphNode "cameraHelperInfo" (
@@ -329,6 +324,7 @@ def Xform "Root"
             custom uint inputs:execIn
             uint inputs:execIn.connect = </Root/ROS2CameraImageExport/setCamera.outputs:execOut>
             custom string inputs:frameId = "camera_senor_link"
+            prepend string inputs:frameId.connect = </Root/ROS2CameraImageExport/constant_string.inputs:value>
             custom string inputs:nodeNamespace
             custom uint64 inputs:queueSize
             custom token inputs:renderProductPath
@@ -343,7 +339,6 @@ def Xform "Root"
             custom token inputs:viewport
             token node:type = "omni.isaac.ros2_bridge.ROS2CameraHelper"
             int node:typeVersion = 2
-            uniform float2 ui:nodegraph:node:pos = (-515.5027, 328.02774)
         }
 
         def OmniGraphNode "cameraHelperDepth" (
@@ -357,6 +352,7 @@ def Xform "Root"
             custom uint inputs:execIn
             uint inputs:execIn.connect = </Root/ROS2CameraImageExport/setCamera.outputs:execOut>
             custom string inputs:frameId = "sim_camera"
+            prepend string inputs:frameId.connect = </Root/ROS2CameraImageExport/constant_string.inputs:value>
             custom string inputs:nodeNamespace
             custom uint64 inputs:queueSize
             custom token inputs:renderProductPath
@@ -371,7 +367,6 @@ def Xform "Root"
             custom token inputs:viewport
             token node:type = "omni.isaac.ros2_bridge.ROS2CameraHelper"
             int node:typeVersion = 2
-            uniform float2 ui:nodegraph:node:pos = (-512.98706, -396.7076)
         }
 
         def OmniGraphNode "ros2_context" (
@@ -384,7 +379,17 @@ def Xform "Root"
             int node:typeVersion = 2
             custom uint64 outputs:context
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-1197.8549, -317.87)
+        }
+
+        def OmniGraphNode "constant_string" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom string inputs:value = "35"
+            token node:type = "omni.graph.nodes.ConstantString"
+            int node:typeVersion = 1
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (-512.0508, -680.4708)
         }
     }
 

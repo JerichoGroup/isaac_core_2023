@@ -83,16 +83,28 @@ class Simulation:
         kit.update()
 
 
+    def _get_camera_path(self) -> str | None:
+        """
+        Returns the camera path based on the communication method (ROS2 or UDP).
+        """
+
+        for cam_key in ["com_ros", "com_udp"]:
+            if cam_key in self.usds_to_add:
+                return f"{self.usds_to_add[cam_key][1]}/Xform/default_camera_rotation/{self.usds_to_add[cam_key][2]}"
+
+        carb.log_error("No communication camera found — defaulting to main_camera_01")
+        return None
+    
+
     def _set_viewport(self) -> None:
         """
         sets the viewport for either a ros or udp camera
         """
 
         cam_path = self._get_camera_path()
-        cam_prim = get_prim_at_path(cam_path)
 
-        set_camera_viewport(cam_path)
-        
+        if cam_path:
+            set_camera_viewport(cam_path)
 
 
     def _add_external_usds(self, usds_to_add: str) -> None:
@@ -102,19 +114,6 @@ class Simulation:
 
         for paths in usds_to_add.values():
             add_usd_to_stage(paths[0], paths[1])
-
-
-    def _get_camera_path(self) -> str:
-        """
-        Returns the camera path based on the communication method (ROS2 or UDP).
-        """
-
-        for cam_key in ["com_ros", "com_udp"]:
-            if cam_key in self.usds_to_add:
-                return f"{self.usds_to_add[cam_key][1]}/Xform/default_camera_rotation/{self.usds_to_add[cam_key][2]}"
-
-        carb.log_warn("No communication camera found — defaulting to main_camera_01")
-        return None
 
 
     def _update_laser_sensor(self) -> None:

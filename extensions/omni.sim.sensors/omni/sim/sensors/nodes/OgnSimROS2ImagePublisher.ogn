@@ -1,7 +1,7 @@
 {
   "SimROS2ImagePublisher": {
     "version": 1,
-    "description": "Publish RGB images from a render product to a ROS2 topic using sensor_msgs/msg/Image.",
+    "description": "Publish RGB images from a render product to a ROS2 topics.",
     "language": "Python",
     "metadata": {
       "uiName": "ROS2 Image Publisher"
@@ -47,12 +47,20 @@
           "uiName": "Node Namespace"
         }
       },
-      "topicName": {
+      "rawTopic": {
         "type": "string",
-        "default": "/isaac_core/rgb",
-        "description": "ROS2 topic name to publish the image messages to.",
-        "metadata": {
-          "uiName": "Topic Name"
+        "default": "/isaac_core/raw_rgb",
+        "description": "ROS2 topic name to subscribe to for raw RGB input.",
+        "metadata": { 
+          "uiName": "Raw RGB Topic" 
+        }
+      },
+      "repubTopic": {
+        "type": "string",
+        "default": "/isaac_core/image_rgb",
+        "description": "ROS2 topic name to republish processed RGB data to.",
+        "metadata": { 
+          "uiName": "Repub RGB Topic" 
         }
       },
       "queueSize": {
@@ -81,7 +89,7 @@
       },
       "publishRateHZ": {
         "type": "float",
-        "default": 30.0,
+        "default": 60.0,
         "description": "Rate in Hz at which images are published to the ROS2 topic.",
         "metadata": {
           "uiName": "Publish Rate"

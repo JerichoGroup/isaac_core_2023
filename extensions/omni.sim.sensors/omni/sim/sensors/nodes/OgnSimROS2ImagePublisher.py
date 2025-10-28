@@ -24,6 +24,11 @@ from std_msgs.msg import Header
 from omni.sim.sensors.ogn.OgnSimROS2ImagePublisherDatabase import OgnSimROS2ImagePublisherDatabase
 
 
+# ==================== ROS2 Initialization ==================== #
+if not rclpy.ok(): 
+    rclpy.init() # you must initialize rclpy only once per process
+
+
 # ===================== Internal State ======================== #
 class OgnSimROS2ImagePublisherInternalState(BaseWriterNode):
     """
@@ -129,7 +134,6 @@ class ROS2ImageRepublisher(Node):
 
         self.publisher = self.create_publisher(Image, repub_topic, queue_size)
         self.subscription = self.create_subscription(Image, raw_topic, self._callback, queue_size)
-        self.get_logger().info(f"[ROS2ImageRepublisher] Subscribed '{raw_topic}' → publishing '{repub_topic}'")
 
 
     def _callback(self, msg: Image) -> None:
@@ -173,12 +177,12 @@ class ROS2ImageRepublisher(Node):
         return repub_msg
 
 
-    def _compute_publish_period(self, hz: float) -> float:
+    def _compute_publish_period(self, hz: float, default_hz: float = 30.0) -> float:
         """
         Compute the interval between publishes based on publish rate.
         """
 
-        return 1.0 / hz if hz > 0 else 0.033
+        return 1.0 / hz if hz > 0 else 1.0 / default_hz
 
 
     def set_publish_rate(self, hz: float) -> None:
@@ -218,12 +222,14 @@ class OgnSimROS2ImagePublisher:
                 return True
 
             if not db.internal_state.initialized:
-                return db.internal_state.setup_writer(
+                success = db.internal_state.setup_writer(
                     render_product_path=db.inputs.renderProductPath,
                     queue_size=db.inputs.queueSize,
                     topic_name=db.inputs.rawTopic,
                     context=db.inputs.context
                 )
+                if not success:
+                    return False
 
             if not hasattr(db, "_republisher_node"):
                 db._republisher_node = ROS2ImageRepublisher(
@@ -252,7 +258,7 @@ class OgnSimROS2ImagePublisher:
         """
 
         try:
-            rclpy.spin_once(node, timeout_sec=0.05)
+            rclpy.spin_once(node, timeout_sec=0.00005)
         except Exception as exception:
             carb.log_warn(f"[OgnSimROS2ImagePublisher] Spin error: {exception}")
 

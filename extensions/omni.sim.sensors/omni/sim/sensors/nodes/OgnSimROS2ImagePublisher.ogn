@@ -89,7 +89,7 @@
       },
       "publishRateHZ": {
         "type": "float",
-        "default": 60.0,
+        "default": 30.0,
         "description": "Rate in Hz at which images are published to the ROS2 topic.",
         "metadata": {
           "uiName": "Publish Rate"

@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (3.3268194539482083, 3.3268194539482088, 3.3268194938840665)
-                double3 target = (-3.978038209950796e-8, -3.978038076724033e-8, 7.956076952808644e-8)
+                double3 target = (-3.978038298768638e-8, -3.978038032315112e-8, 7.956076952808644e-8)
             }
             dictionary Right = {
                 double3 position = (0, -500, 0)
@@ -270,7 +270,7 @@ def Xform "Root"
                 }
             )
             custom token outputs:renderProductPath = ""
-            uniform float2 ui:nodegraph:node:pos = (-1624.0638, -62.87065)
+            uniform float2 ui:nodegraph:node:pos = (-1635.9763, -54.461956)
             variantSet "Variant_Set" = {
                 "Variant" {
                     custom token outputs:renderProductPath = "/Render/IsaacRenderProduct"
@@ -303,7 +303,7 @@ def Xform "Root"
                     bool isExecution = 1
                 }
             )
-            uniform float2 ui:nodegraph:node:pos = (-1176.0038, 156.68408)
+            uniform float2 ui:nodegraph:node:pos = (-1307.9921, 135.47163)
         }
 
         def OmniGraphNode "cameraHelperInfo" (
@@ -372,7 +372,7 @@ def Xform "Root"
             int node:typeVersion = 2
             custom uint64 outputs:context
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-1177.3195, -195.13728)
+            uniform float2 ui:nodegraph:node:pos = (-1273.9537, -150.35538)
         }
 
         def OmniGraphNode "ros2_image_publisher" (
@@ -388,14 +388,15 @@ def Xform "Root"
             custom string inputs:nodeNamespace
             custom float inputs:publishRateHZ
             custom int inputs:queueSize
+            custom string inputs:rawTopic
             custom token inputs:renderProductPath
             prepend token inputs:renderProductPath.connect = </Root/ROS2CameraImageExport/getRenderProduct.outputs:renderProductPath>
+            custom string inputs:repubTopic
             custom float inputs:stereoOffset
-            custom string inputs:topicName
             token node:type = "omni.sim.sensors.SimROS2ImagePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-515.4864, 3.924147)
+            uniform float2 ui:nodegraph:node:pos = (-510.87643, -3.504993)
         }
     }
 

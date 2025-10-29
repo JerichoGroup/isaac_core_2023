@@ -160,6 +160,17 @@ class Simulation:
             attr.Set(new_url)
 
 
+    def _update_image_publisher_hrz(self, graph_path: str) -> None:
+        """
+        Update the image publisher node parameters in the given graph.
+        """
+
+        image_publisher_node_prim = get_prim_at_path(f"{graph_path}/ros2_image_publisher")
+        
+        image_publisher_node_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
+        image_publisher_node_prim.GetAttribute("inputs:repubTopic").Set(consts.IMAGE_PUBLISHER_TOPIC_NAME)
+        
+
     def _set_cesium_tilesets_url(self, url: str, root_path: str = "/tilesets") -> None:
         """
         Update all cesium:url attributes under a root path (default: /tilesets)

@@ -1,8 +1,8 @@
 """
 OgnSimROS2ImagePublisher Node
-=============================
-Publishes raw RGB images via ROS2 and republishes them to
-/isaac_core/image_rgb republished from /isaac_core/raw_rgb via ROS2
+======================================================
+Publishes raw RGB images via ROS2 and republishes them
+to /isaac_core/image_rgb from /isaac_core/raw_rgb
 """
 
 
@@ -124,6 +124,7 @@ class ROS2ImageRepublisher(Node):
         """
 
         super().__init__("isaac_ros2_image_republisher")
+        
         self.raw_topic = raw_topic
         self.repub_topic = repub_topic
         self.queue_size = queue_size
@@ -174,6 +175,7 @@ class ROS2ImageRepublisher(Node):
         repub_msg.is_bigendian = msg.is_bigendian
         repub_msg.step = msg.step
         repub_msg.data = msg.data
+
         return repub_msg
 
 
@@ -206,7 +208,9 @@ class OgnSimROS2ImagePublisher:
         """
         Return a new internal state instance.
         """
+
         return OgnSimROS2ImagePublisherInternalState()
+
 
     @staticmethod
     def compute(db) -> bool:
@@ -259,6 +263,7 @@ class OgnSimROS2ImagePublisher:
 
         try:
             rclpy.spin_once(node, timeout_sec=0.00005)
+            
         except Exception as exception:
             carb.log_warn(f"[OgnSimROS2ImagePublisher] Spin error: {exception}")
 

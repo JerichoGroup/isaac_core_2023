@@ -21,6 +21,7 @@ from sensor_msgs.msg import Image
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
 from std_msgs.msg import Header
+import threading
 from omni.sim.sensors.ogn.OgnSimROS2ImagePublisherDatabase import OgnSimROS2ImagePublisherDatabase
 
 
@@ -33,7 +34,7 @@ if not rclpy.ok():
 class OgnSimROS2ImagePublisherInternalState(BaseWriterNode):
     """
     Internal state for raw RGB writer node.
-    Responsible for setup and teardown of the ROS2 writer.
+    Responsible for setup, attaching, and releasing the ROS2 writer.
     """
 
     def __init__(self) -> None:
@@ -114,8 +115,8 @@ class OgnSimROS2ImagePublisherInternalState(BaseWriterNode):
 # ================== ROS2 Image Republisher =================== #
 class ROS2ImageRepublisher(Node):
     """
-    Subscribes to raw RGB topic and republishes it as /isaac_core/image_rgb.
-    Handles frame_id incrementing and publish rate control.
+    Subscribes to raw RGB topic and republishes it to /isaac_core/image_rgb
+    on a timer. Handles frame_id incrementing and dynamic publish rate.
     """
 
     def __init__(self, raw_topic: str, repub_topic: str, queue_size: int = 10, publish_rate_hz: float = 30.0):
@@ -130,33 +131,21 @@ class ROS2ImageRepublisher(Node):
         self.queue_size = queue_size
 
         self.frame_counter = 0
-        self.last_publish_time = 0.0
         self.publish_period = self._compute_publish_period(publish_rate_hz)
 
         self.publisher = self.create_publisher(Image, repub_topic, queue_size)
-        self.subscription = self.create_subscription(Image, raw_topic, self._callback, queue_size)
+        self.subscription = self.create_subscription(Image, raw_topic, self.store_latest_image, queue_size)
+
+        self.latest_image = None
+        self.timer = self.create_timer(self.publish_period, self.publish_latest_image)
 
 
-    def _callback(self, msg: Image) -> None:
+    def store_latest_image(self, msg: Image) -> None:
         """
-        Republish incoming messages if allowed by rate limit.
-        """
-
-        if not self._can_publish():
-            return
-        
-        repub_msg = self._build_republish_msg(msg)
-        self.publisher.publish(repub_msg)
-        self.frame_counter += 1
-        self.last_publish_time = time.time()
-
-
-    def _can_publish(self) -> bool:
-        """
-        Check if enough time has passed since last publish.
+        Store the latest received image for timed publishing.
         """
 
-        return (time.time() - self.last_publish_time) >= self.publish_period
+        self.latest_image = msg
 
 
     def _build_republish_msg(self, msg: Image) -> Image:
@@ -187,7 +176,21 @@ class ROS2ImageRepublisher(Node):
         return 1.0 / hz if hz > 0 else 1.0 / default_hz
 
 
-    def set_publish_rate(self, hz: float) -> None:
+    def publish_latest_image(self) -> None:
+        """
+        Publish the latest stored image via the publisher, incrementing frame_counter.
+        Called periodically by the timer.
+        """
+
+        if self.latest_image is None:
+            return
+
+        repub_msg = self._build_republish_msg(self.latest_image)
+        self.publisher.publish(repub_msg)
+        self.frame_counter += 1
+
+
+    def update_publish_rate(self, hz: float) -> None:
         """
         Update the publish period to a new rate.
         """
@@ -244,7 +247,7 @@ class OgnSimROS2ImagePublisher:
                 )
             else:
                 # Dynamic publish rate
-                db._republisher_node.set_publish_rate(db.inputs.publishRateHZ)
+                db._republisher_node.update_publish_rate(db.inputs.publishRateHZ)
 
             OgnSimROS2ImagePublisher._spin_node(db._republisher_node)
             return True
@@ -262,7 +265,7 @@ class OgnSimROS2ImagePublisher:
         """
 
         try:
-            rclpy.spin_once(node, timeout_sec=0.00005)
+            rclpy.spin_once(node, timeout_sec=0.001)
             
         except Exception as exception:
             carb.log_warn(f"[OgnSimROS2ImagePublisher] Spin error: {exception}")

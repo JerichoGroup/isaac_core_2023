@@ -240,24 +240,25 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 
 ## Special configurations
 under simulation/consts.py you can change:
-```bash
-GIMBAL_ROLL_DEG           # gimbal roll angel
-GIMBAL_PITCH_DEG          # gimbal pitch angel
-GIMBAL_YAW_DEG            # gimbal yaw angel
-RESOLUTION_WIDTH          # frame width resolution
-RESOLUTION_HEIGHT         # frame height resolution
-CAMERA_FOV                # camera's FOV           
-FOCAL_LENGTH              # camera's focal length
+```bash     
+GIMBAL_ROLL_DEG                 # gimbal roll angel
+GIMBAL_PITCH_DEG                # gimbal pitch angel
+GIMBAL_YAW_DEG                  # gimbal yaw angel
+RESOLUTION_WIDTH                # frame width resolution
+RESOLUTION_HEIGHT               # frame height resolution
+CAMERA_FOV                      # camera's FOV           
+FOCAL_LENGTH                    # camera's focal length
 
-TILESETS_HTTP_SERVER_URL  # cesium server address
+TILESETS_HTTP_SERVER_URL        # cesium server address
 
-LASER_MIN_RANGE           # distance sensor min range
-LASER_MAX_RANGE           # distance sensor max range
+LASER_MIN_RANGE                 # distance sensor min range
+LASER_MAX_RANGE                 # distance sensor max range
 
-MAX_OUTPUTS_ROS_HRZ       # data topic publish frequency       
-GLOBAL_POSE_TOPIC_NAME    # global pose data topic name
-LASER_TOPIC_NAME          # distance sensor topic name
-BBOXES_TOPIC_NAME         # bbox data topic name
+MAX_OUTPUTS_ROS_HRZ             # data topic publish frequency       
+GLOBAL_POSE_TOPIC_NAME          # global pose data topic name
+LASER_TOPIC_NAME                # distance sensor topic name
+BBOXES_TOPIC_NAME               # bbox data topic name
+IMAGE_PUBLISHER_TOPIC_NAME      # image rgb topic name
 ```
 
 ### Gimbal Angle (Reference Image)
@@ -284,8 +285,8 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 | Topic                                | Type                                 | Description                 |
 |--------------------------------------|--------------------------------------|-----------------------------|
 | `/isaac_core/global_pose`            | `geometry_msgs/GeoPoseStamped`       | Camera's global position (overriding quaternions with RPY, x=roll, y=pitch, z=yaw, w=not used)    |
-| `/isaac_core/range_distance_sensor"` | `sensor_msgs/Range`                  | Simulated laser range data  |
-| `/isaac_core/camera/image_raw`       | `sensor_msgs/Image`                  | Camera feed from simulation |
+| `/isaac_core/distance_sensor"`       | `sensor_msgs/Range`                  | Simulated laser range data  |
+| `/isaac_core/camera/image_rgb`       | `sensor_msgs/Image`                  | Camera feed from simulation |
 | `/isaac_core/bbox`                   | `isaac_ros2_messages/msg/FrameBboxes`| BBOX data per object        |
 
 

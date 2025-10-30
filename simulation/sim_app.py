@@ -1,6 +1,6 @@
 """this file defines the sim app class"""
 
-# =========================== Imports ==============================
+# =========================== Imports ============================== #
 import os
 import sys
 import json
@@ -11,26 +11,26 @@ import math
 from omni.isaac.kit import SimulationApp
 
 
-# ==================== Define the sim app kit ======================
+# ==================== Define the sim app kit ====================== #
 LAUNCH_CONFIG = json.loads(os.environ["LAUNCH_CONFIG"])
 kit = SimulationApp(launch_config=LAUNCH_CONFIG)
 
 
-# ==================== Make isaacsim imports available for the imported modules ====================
+# ==== Make isaacsim imports available for the imported modules ==== #
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 
-# ================= Additional isaacsim imports ====================
+# ================= Additional isaacsim imports ==================== #
 import omni.usd
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
 from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage, get_prim_at_path
 
 
-# ===================== The Simulation class =======================
+# ===================== The Simulation class ======================= #
 class Simulation:
     """
-    this class defines a generic simulation app
+    This class defines a generic simulation app
     """
 
     def __init__(self, usd_path: str, usds_to_add: dict) -> None:
@@ -58,9 +58,9 @@ class Simulation:
         Determines which camera key is active (com_ros or com_udp).
         """
 
-        for key in ["com_ros", "com_udp"]:
-            if key in self.usds_to_add:
-                return key
+        for cam_key in ["com_ros", "com_udp"]:
+            if cam_key in self.usds_to_add:
+                return cam_key
 
         carb.log_warn("No communication camera found — defaulting to com_udp")
 
@@ -74,6 +74,7 @@ class Simulation:
 
         try:
             return f"{self.usds_to_add[self.camera_key][1]}/Xform/{self.usds_to_add[self.camera_key][2]}"
+        
         except KeyError:
             carb.log_warn("No communication camera found — defaulting to main_camera_01")
         return None
@@ -108,6 +109,17 @@ class Simulation:
 
         carb.log_info(f"Camera intrinsics applied: horizontal_ap={horizontal_ap_mm:.2f}mm, focal={focal_length_mm:.2f}mm")
 
+    
+    def _update_image_publisher_params(self, graph_path: str) -> None:
+        """
+        Update the image publisher node parameters in the given graph.
+        """
+
+        image_publisher_node_prim = get_prim_at_path(f"{graph_path}/ros2_image_publisher")
+        
+        image_publisher_node_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
+        image_publisher_node_prim.GetAttribute("inputs:repubTopic").Set(consts.IMAGE_PUBLISHER_TOPIC_NAME)
+
 
     def _configure_camera(self) -> None:
         """
@@ -115,6 +127,7 @@ class Simulation:
         """
 
         camera_path = self._get_camera_path()
+        graph_path = f"{self.usds_to_add[self.camera_key][1]}/{'ROS2OdomSync' if self.camera_key == 'com_ros' else 'UDPOdomSync'}"
 
         horizontal_aperture = self._calculate_horizontal_aperture_from_fov(
             focal_length_mm=consts.FOCAL_LENGTH,
@@ -126,6 +139,9 @@ class Simulation:
             horizontal_ap_mm=horizontal_aperture,
             focal_length_mm=consts.FOCAL_LENGTH
         )
+
+        if get_prim_at_path(graph_path):
+            self._update_image_publisher_params(graph_path)
 
         self._set_camera_gimbal()
 

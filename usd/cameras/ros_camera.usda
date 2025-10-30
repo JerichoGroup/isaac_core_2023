@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (3.3268194539482083, 3.3268194539482088, 3.3268194938840665)
-                double3 target = (-3.978038298768638e-8, -3.978038032315112e-8, 7.956076952808644e-8)
+                double3 target = (-3.978038209950796e-8, -3.978038076724033e-8, 7.956076952808644e-8)
             }
             dictionary Right = {
                 double3 position = (0, -500, 0)
@@ -375,7 +375,7 @@ def Xform "Root"
             uniform float2 ui:nodegraph:node:pos = (-1273.9537, -150.35538)
         }
 
-        def OmniGraphNode "ros2_image_publisher_01" (
+        def OmniGraphNode "ros2_image_publisher" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
         {
@@ -386,17 +386,16 @@ def Xform "Root"
             prepend uint inputs:execIn.connect = </Root/ROS2CameraImageExport/setCamera.outputs:execOut>
             custom string inputs:frameId
             custom string inputs:nodeNamespace
-            custom float inputs:publishRateHZ = 30
+            custom float inputs:publishRateHZ
             custom int inputs:queueSize
             custom string inputs:rawTopic
             custom token inputs:renderProductPath
             prepend token inputs:renderProductPath.connect = </Root/ROS2CameraImageExport/getRenderProduct.outputs:renderProductPath>
             custom string inputs:repubTopic
-            custom float inputs:stereoOffset
             token node:type = "omni.sim.sensors.SimROS2ImagePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-512.7902, 0.21511006)
+            uniform float2 ui:nodegraph:node:pos = (-520.00916, 7.0728245)
         }
     }
 

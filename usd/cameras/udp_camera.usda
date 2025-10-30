@@ -364,7 +364,7 @@ def Xform "Root"
             uniform float2 ui:nodegraph:node:pos = (-508.51535, -616.8336)
         }
 
-        def OmniGraphNode "ros2_image_publisher" (
+        def OmniGraphNode "ros2_image_publisher_01" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
         {
@@ -381,11 +381,10 @@ def Xform "Root"
             custom token inputs:renderProductPath
             prepend token inputs:renderProductPath.connect = </Root/ROS2CameraImageExport/getRenderProduct.outputs:renderProductPath>
             custom string inputs:repubTopic
-            custom float inputs:stereoOffset
             token node:type = "omni.sim.sensors.SimROS2ImagePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-120.51074, -499.31836)
+            uniform float2 ui:nodegraph:node:pos = (-126.53644, -506.28848)
         }
     }
 

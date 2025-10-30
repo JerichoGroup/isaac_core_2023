@@ -26,8 +26,13 @@ from omni.sim.sensors.ogn.OgnSimROS2ImagePublisherDatabase import OgnSimROS2Imag
 
 
 # ==================== ROS2 Initialization ==================== #
-if not rclpy.ok(): 
-    rclpy.init() # you must initialize rclpy only once per process
+def init_rclpy_once() -> None:
+    """
+    Initialize rclpy only once per process.
+    """
+    
+    if not rclpy.ok():
+        rclpy.init()
 
 
 # ===================== Internal State ======================== #
@@ -123,6 +128,8 @@ class ROS2ImageRepublisher(Node):
         """
         Create publisher and subscription and initialize counters and timing.
         """
+        
+        init_rclpy_once()
 
         super().__init__("isaac_ros2_image_republisher")
         

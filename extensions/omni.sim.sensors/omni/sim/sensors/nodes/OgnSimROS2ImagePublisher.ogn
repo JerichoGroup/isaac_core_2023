@@ -71,14 +71,6 @@
           "uiName": "Queue Size"
         }
       },
-      "stereoOffset": {
-        "type": "float",
-        "default": 0.0,
-        "description": "Offset for right camera in stereo setup (optional)",
-        "metadata": {
-          "uiName": "Stereo Offset"
-        }
-      },
       "renderProductPath": {
         "type": "token",
         "default": "",

@@ -13,15 +13,12 @@ import omni.replicator.core as rep
 from omni.isaac.core_nodes import BaseWriterNode
 from pxr import Usd
 import traceback
-import time
-from typing import Optional
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
 from std_msgs.msg import Header
-import threading
 from omni.sim.sensors.ogn.OgnSimROS2ImagePublisherDatabase import OgnSimROS2ImagePublisherDatabase
 
 
@@ -49,7 +46,7 @@ class OgnSimROS2ImagePublisherInternalState(BaseWriterNode):
 
         super().__init__(initialize=False)
         self.initialized: bool = False
-        self.resetSimulationTimeOnStop: bool = False
+        self.reset_simulation_time_on_stop: bool = False
         self.writer = None
 
 
@@ -65,6 +62,7 @@ class OgnSimROS2ImagePublisherInternalState(BaseWriterNode):
             return False
 
         try:
+            # Retrieve the default NVIDIA Replicator ROS2 writer for publishing RGB images
             rv = omni.syntheticdata.SyntheticData.convert_sensor_type_to_rendervar(sd.SensorType.Rgb.name)
             self.writer = rep.writers.get(rv + "ROS2PublishImage")
             
@@ -85,7 +83,7 @@ class OgnSimROS2ImagePublisherInternalState(BaseWriterNode):
             return False
 
 
-    def _is_valid_path(self, path: str, stage) -> bool:
+    def _is_valid_path(self, path: str, stage: Usd.Stage) -> bool:
         """
         Check if the given render product path exists in the stage.
         """
@@ -126,9 +124,9 @@ class ROS2ImageRepublisher(Node):
 
     def __init__(self, raw_topic: str, repub_topic: str, queue_size: int = 10, publish_rate_hz: float = 30.0):
         """
-        Create publisher and subscription and initialize counters and timing.
+        Create publisher and subscriber and initialize counters and timing.
         """
-        
+
         init_rclpy_once()
 
         super().__init__("isaac_ros2_image_republisher")
@@ -141,46 +139,36 @@ class ROS2ImageRepublisher(Node):
         self.publish_period = self._compute_publish_period(publish_rate_hz)
 
         self.publisher = self.create_publisher(Image, repub_topic, queue_size)
-        self.subscription = self.create_subscription(Image, raw_topic, self.store_latest_image, queue_size)
+        self.subscriber = self.create_subscription(Image, raw_topic, self.store_latest_image, queue_size)
 
         self.latest_image = None
         self.timer = self.create_timer(self.publish_period, self.publish_latest_image)
 
 
     def store_latest_image(self, msg: Image) -> None:
-        """
-        Store the latest received image for timed publishing.
-        """
 
         self.latest_image = msg
 
 
     def _build_republish_msg(self, msg: Image) -> Image:
         """
-        Build a new Image message with incremented frame_id and copied data.
+        Update the frame_id of the given Image message and return it.
         """
 
-        repub_msg = Image()
-        repub_msg.header = Header()
-        repub_msg.header.stamp = self.get_clock().now().to_msg()
-        repub_msg.header.frame_id = f"{self.frame_counter}"
+        msg.header.frame_id = f"{self.frame_counter}"
 
-        repub_msg.height = msg.height
-        repub_msg.width = msg.width
-        repub_msg.encoding = msg.encoding
-        repub_msg.is_bigendian = msg.is_bigendian
-        repub_msg.step = msg.step
-        repub_msg.data = msg.data
-
-        return repub_msg
+        return msg
 
 
-    def _compute_publish_period(self, hz: float, default_hz: float = 30.0) -> float:
+    def _compute_publish_period(self, hz: float) -> float:
         """
         Compute the interval between publishes based on publish rate.
         """
 
-        return 1.0 / hz if hz > 0 else 1.0 / default_hz
+        if hz <= 0:
+            raise ValueError(f"Publish rate must be > 0, got {hz}")
+        
+        return 1.0 / hz
 
 
     def publish_latest_image(self) -> None:
@@ -279,7 +267,7 @@ class OgnSimROS2ImagePublisher:
 
 
     @staticmethod
-    def release(node) -> None:
+    def release(node: ROS2ImageRepublisher) -> None:
         """
         Release resources for both raw writer and ROS2 republisher node.
         """

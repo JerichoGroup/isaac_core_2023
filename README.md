@@ -285,7 +285,7 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 | Topic                                | Type                                 | Description                 |
 |--------------------------------------|--------------------------------------|-----------------------------|
 | `/isaac_core/global_pose`            | `geometry_msgs/GeoPoseStamped`       | Camera's global position (overriding quaternions with RPY, x=roll, y=pitch, z=yaw, w=not used)    |
-| `/isaac_core/distance_sensor"`       | `sensor_msgs/Range`                  | Simulated laser range data  |
+| `/isaac_core/distance_sensor`       | `sensor_msgs/Range`                  | Simulated laser range data  |
 | `/isaac_core/camera/image_rgb`       | `sensor_msgs/Image`                  | Camera feed from simulation |
 | `/isaac_core/bbox`                   | `isaac_ros2_messages/msg/FrameBboxes`| BBOX data per object        |
 

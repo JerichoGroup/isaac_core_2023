@@ -282,34 +282,6 @@ def Xform "Root"
             uniform float2 ui:nodegraph:node:pos = (-1174.6023, 159.48706)
         }
 
-        def OmniGraphNode "cameraHelperRgb" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint64 inputs:context
-            prepend uint64 inputs:context.connect = </Root/ROS2CameraImageExport/ros2_context.outputs:context>
-            custom bool inputs:enabled
-            custom bool inputs:enableSemanticLabels
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </Root/ROS2CameraImageExport/setCamera.outputs:execOut>
-            custom string inputs:frameId = "sim_camera"
-            custom string inputs:nodeNamespace
-            custom uint64 inputs:queueSize
-            custom token inputs:renderProductPath
-            token inputs:renderProductPath.connect = </Root/ROS2CameraImageExport/getRenderProduct.outputs:renderProductPath>
-            custom bool inputs:resetSimulationTimeOnStop
-            custom string inputs:semanticLabelsTopicName
-            custom float2 inputs:stereoOffset
-            custom string inputs:topicName = "flying_rgb"
-            custom token inputs:type = "rgb" (
-                allowedTokens = ["rgb", "depth", "depth_pcl", "instance_segmentation", "semantic_segmentation", "bbox_2d_tight", "bbox_2d_loose", "bbox_3d", "camera_info"]
-            )
-            custom token inputs:viewport
-            token node:type = "omni.isaac.ros2_bridge.ROS2CameraHelper"
-            int node:typeVersion = 2
-            uniform float2 ui:nodegraph:node:pos = (-498.06085, -33.78892)
-        }
-
         def OmniGraphNode "cameraHelperInfo" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
@@ -377,6 +349,29 @@ def Xform "Root"
             custom uint64 outputs:context
             uniform token ui:nodegraph:node:expansionState = "open"
             uniform float2 ui:nodegraph:node:pos = (-1197.8549, -317.87)
+        }
+
+        def OmniGraphNode "ros2_image_publisher" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint64 inputs:context
+            prepend uint64 inputs:context.connect = </Root/ROS2CameraImageExport/ros2_context.outputs:context>
+            custom bool inputs:enabled
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/ROS2CameraImageExport/setCamera.outputs:execOut>
+            custom string inputs:frameId
+            custom string inputs:nodeNamespace
+            custom float inputs:publishRateHZ
+            custom int inputs:queueSize
+            custom string inputs:rawTopic
+            custom token inputs:renderProductPath
+            prepend token inputs:renderProductPath.connect = </Root/ROS2CameraImageExport/getRenderProduct.outputs:renderProductPath>
+            custom string inputs:repubTopic
+            token node:type = "omni.sim.sensors.SimROS2ImagePublisher"
+            int node:typeVersion = 1
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (-517.2179, 3.5627308)
         }
     }
 

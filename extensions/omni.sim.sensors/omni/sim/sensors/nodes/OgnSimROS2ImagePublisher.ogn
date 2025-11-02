@@ -1,0 +1,95 @@
+{
+  "SimROS2ImagePublisher": {
+    "version": 1,
+    "description": "Publish RGB images from a render product to a ROS2 topics.",
+    "language": "Python",
+    "metadata": {
+      "uiName": "ROS2 Image Publisher"
+    },
+    "inputs": {
+      "execIn": {
+        "type": "execution",
+        "default": 0,
+        "description": "Execution trigger to initiate image publishing.",
+        "metadata": {
+          "uiName": "Exec In"
+        }
+      },
+      "enabled": {
+        "type": "bool",
+        "default": true,
+        "description": "Enable or disable image publishing.",
+        "metadata": {
+          "uiName": "Enabled"
+        }
+      },
+      "context": {
+        "type": "uint64",
+        "default": 0,
+        "description": "Render context used to retrieve the image from the render product.",
+        "metadata": {
+          "uiName": "Context"
+        }
+      },
+      "frameId": {
+        "type": "string",
+        "default": "0",
+        "description": "Frame ID to use in the ROS2 message header.",
+        "metadata": {
+          "uiName": "Frame ID"
+        }
+      },
+      "nodeNamespace": {
+        "type": "string",
+        "default": "",
+        "description": "ROS2 node namespace (optional)",
+        "metadata": {
+          "uiName": "Node Namespace"
+        }
+      },
+      "rawTopic": {
+        "type": "string",
+        "default": "/isaac_core/raw_rgb",
+        "description": "ROS2 topic name to subscribe to for raw RGB input.",
+        "metadata": { 
+          "uiName": "Raw RGB Topic" 
+        }
+      },
+      "repubTopic": {
+        "type": "string",
+        "default": "/isaac_core/image_rgb",
+        "description": "ROS2 topic name to republish processed RGB data to.",
+        "metadata": { 
+          "uiName": "Repub RGB Topic" 
+        }
+      },
+      "queueSize": {
+        "type": "int",
+        "default": 10,
+        "description": "ROS2 publisher queue size",
+        "metadata": {
+          "uiName": "Queue Size"
+        }
+      },
+      "renderProductPath": {
+        "type": "token",
+        "default": "",
+        "description": "Path to the render product (camera output) in the USD stage.",
+        "metadata": {
+          "uiName": "Render Product Path"
+        }
+      },
+      "publishRateHZ": {
+        "type": "float",
+        "default": 30.0,
+        "description": "Rate in Hz at which images are published to the ROS2 topic.",
+        "metadata": {
+          "uiName": "Publish Rate"
+        }
+      }
+    },
+    "outputs": {},
+    "state": {}
+
+  }
+}

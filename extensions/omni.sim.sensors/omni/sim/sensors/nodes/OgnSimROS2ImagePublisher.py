@@ -22,16 +22,6 @@ from std_msgs.msg import Header
 from omni.sim.sensors.ogn.OgnSimROS2ImagePublisherDatabase import OgnSimROS2ImagePublisherDatabase
 
 
-# ==================== ROS2 Initialization ==================== #
-def init_rclpy_once() -> None:
-    """
-    Initialize rclpy only once per process.
-    """
-    
-    if not rclpy.ok():
-        rclpy.init()
-
-
 # ===================== Internal State ======================== #
 class OgnSimROS2ImagePublisherInternalState(BaseWriterNode):
     """
@@ -127,7 +117,7 @@ class ROS2ImageRepublisher(Node):
         Create publisher and subscriber and initialize counters and timing.
         """
 
-        init_rclpy_once()
+        self._init_rclpy_once()
 
         super().__init__("isaac_ros2_image_republisher")
         
@@ -191,6 +181,12 @@ class ROS2ImageRepublisher(Node):
         """
 
         self.publish_period = self._compute_publish_period(hz)
+
+
+    def _init_rclpy_once(self) -> None:
+
+        if not rclpy.ok():
+            rclpy.init()
 
 
 # =================== OmniGraph Node ========================== #

@@ -62,7 +62,7 @@ class Simulation:
             if cam_key in self.usds_to_add:
                 return cam_key
 
-        carb.log_warn("No communication camera found — defaulting to com_udp")
+        carb.log_error("No communication camera found — defaulting to com_udp")
 
         return  "com_udp"
         

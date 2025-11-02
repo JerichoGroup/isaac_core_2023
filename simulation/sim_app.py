@@ -110,15 +110,20 @@ class Simulation:
         carb.log_info(f"Camera intrinsics applied: horizontal_ap={horizontal_ap_mm:.2f}mm, focal={focal_length_mm:.2f}mm")
 
     
-    def _update_image_publisher_params(self, graph_path: str) -> None:
-        """
-        Update the image publisher node parameters in the given graph.
-        """
+    def _update_ros2_image_publisher_params(self, graph_path: str) -> None:
 
         image_publisher_node_prim = get_prim_at_path(f"{graph_path}/ros2_image_publisher")
         
         image_publisher_node_prim.GetAttribute("inputs:publishRateHZ").Set(consts.MAX_OUTPUTS_ROS_HRZ)
         image_publisher_node_prim.GetAttribute("inputs:repubTopic").Set(consts.IMAGE_PUBLISHER_TOPIC_NAME)
+
+
+    def _update_camera_resolution_params(self, graph_path: str) -> None:
+
+        view_port_prim = get_prim_at_path(f"{graph_path}/setViewPortResolution")
+
+        view_port_prim.GetAttribute("inputs:width").Set(consts.RESOLUTION_WIDTH)
+        view_port_prim.GetAttribute("inputs:height").Set(consts.RESOLUTION_HEIGHT)
 
 
     def _configure_camera(self) -> None:
@@ -127,7 +132,7 @@ class Simulation:
         """
 
         camera_path = self._get_camera_path()
-        graph_path = f"{self.usds_to_add[self.camera_key][1]}/{'ROS2OdomSync' if self.camera_key == 'com_ros' else 'UDPOdomSync'}"
+        graph_path = f"{self.usds_to_add[self.camera_key][1]}/ROS2CameraImageExport"
 
         horizontal_aperture = self._calculate_horizontal_aperture_from_fov(
             focal_length_mm=consts.FOCAL_LENGTH,
@@ -141,7 +146,8 @@ class Simulation:
         )
 
         if get_prim_at_path(graph_path):
-            self._update_image_publisher_params(graph_path)
+            self._update_ros2_image_publisher_params(graph_path)
+            self._update_camera_resolution_params(graph_path)
 
         self._set_camera_gimbal()
 

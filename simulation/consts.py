@@ -6,8 +6,8 @@ This file contains consts used to configure and initialize the simulation
 GIMBAL_ROLL_DEG = 0.0
 GIMBAL_PITCH_DEG = 0.0
 GIMBAL_YAW_DEG = 0.0
-RESOLUTION_WIDTH = 1280
-RESOLUTION_HEIGHT = 720
+RESOLUTION_WIDTH = 1280         
+RESOLUTION_HEIGHT = 720         
 CAMERA_FOV = 78.1               # degrees
 FOCAL_LENGTH = 22.7885          # mm, computed from FOV and sensor size
 

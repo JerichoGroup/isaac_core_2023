@@ -85,7 +85,7 @@ def quaternion_to_euler(x, y, z, w) -> Tuple[float, float, float]:
     return roll, pitch, yaw
 
 
-# ==================== Node Class ====================
+# ==================== the OgnSimROS2ToGlobalPosition class ====================
 class OgnSimROS2ToGlobalPosition:
     """ROS2ToGlobalPosition node implementation"""
 

@@ -47,6 +47,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/SetPrimAttribute.srv"
   "msg/Bbox.msg"
   "msg/FrameBboxes.msg"
+  "msg/Gimbal.msg"
   DEPENDENCIES builtin_interfaces std_msgs geometry_msgs
 )
 

@@ -48,6 +48,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Bbox.msg"
   "msg/FrameBboxes.msg"
   "msg/Gimbal.msg"
+  "msg/SATOutput.msg"
   DEPENDENCIES builtin_interfaces std_msgs geometry_msgs
 )
 

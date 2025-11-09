@@ -434,7 +434,10 @@ The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 - **Purpose**: Read gimbal angels values from the topic `/isaac_core/gimbal`.
 - **Inputs**:
   - `Gimbal Topic` — topic name to read gimbal values from
-- **Outputs**: None  
+- **Outputs**:
+  - `roll` - roll in degrees
+  - `pitch` - pitch in degrees
+  - `yaw` - yaw in degrees
 
 </details>
 

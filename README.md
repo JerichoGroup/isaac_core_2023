@@ -235,14 +235,15 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 
 ## Simulation Flags
 
-| Flag                     | Description                                                  |
-|--------------------------|--------------------------------------------------------------|
-| `--usd-path <file.usda>` | Load a specific USDA scene file                              |
-| `--headless`             | Run Isaac Sim without GUI                                    |
-| `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ros       |
-| `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp       |
-| `--distance-sensor`      | Add range sensor to simulation (output is on ros topic)      |
-| `--bbox-publisher`       | Publish bbox data for each object specified                  |
+| Flag                     | Description                                                         |
+|--------------------------|---------------------------------------------------------------------|
+| `--usd-path <file.usda>` | Load a specific USDA scene file                                     |
+| `--headless`             | Run Isaac Sim without GUI                                           |
+| `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ros              |
+| `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp              |
+| `--distance-sensor`      | Add range sensor to simulation (output is on ros topic)             |
+| `--bbox-publisher`       | Publish bbox data for each object specified                         |
+| `--sat`                  | enables to capture current frames to and output path via a ros topic|
 
 ---
 
@@ -274,7 +275,7 @@ The gimbal angle is based on the following photo:
 
 <img src="readme_images/gimbal_angle_example.png" alt="Gimbal Angle Reference" width="500"/>
 
-There is always a gimbal subscriber that is subscribed to `/isaac_core/gimbal`
+There is always a gimbal subscriber that is subscribed to `/isaac_core/gimbal` that updates the gimbal angel values while "in the air".
 
 The isaac sim expects msgs there with values for gimbal roll, pitch, yaw, and it update the gimbal live.
 

@@ -4,10 +4,11 @@
 import carb
 import math
 import rclpy
+import threading
 from typing import Any, Tuple
 from sensor_msgs.msg import NavSatFix
 from geometry_msgs.msg import PoseStamped
-from rclpy.executors import ExternalShutdownException
+from rclpy.executors import MultiThreadedExecutor
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from omni.sim.position.ogn.OgnSimROS2ToGlobalPositionDatabase import OgnSimROS2ToGlobalPositionDatabase
 
@@ -26,7 +27,9 @@ class OgnSimROS2ToGlobalPositionInternalState:
             self.node.declare_parameter("use_sim_time", True)
         except rclpy.exceptions.ParameterAlreadyDeclaredException:
             pass
-
+        
+        self.lock = threading.Lock()
+        self.spinning = False
         self.lla_subscription = None
         self.orientation_subscription = None
         self.latest_lla = NavSatFix()
@@ -41,13 +44,15 @@ class OgnSimROS2ToGlobalPositionInternalState:
     def lla_callback(self, msg: NavSatFix) -> None:
         """Callback for lla messages"""
 
-        self.latest_lla = msg
+        with self.lock:
+            self.latest_lla = msg
 
 
     def orientation_callback(self, msg: PoseStamped) -> None:
         """Callback for orientation messages"""
 
-        self.latest_orientation = msg
+        with self.lock:
+            self.latest_orientation = msg
 
 
     def create_subscriptions(self, lla_topic: str, orientation_topic: str) -> None:
@@ -64,6 +69,18 @@ class OgnSimROS2ToGlobalPositionInternalState:
             self.orientation_subscription = self.node.create_subscription(
                 PoseStamped, orientation_topic, self.orientation_callback, self.qos_profile
             )
+
+        if not self.spinning:
+            threading.Thread(target=self._spin, daemon=True).start()
+            self.spinning = True
+
+
+    def _spin(self) -> None:
+        """uses a MultiThreadedExecutor to spin the node in a separate thread"""
+
+        executor = MultiThreadedExecutor()
+        executor.add_node(self.node)
+        executor.spin()
 
 
 # ==================== Helper - quaternion to Euler ====================
@@ -93,10 +110,13 @@ class OgnSimROS2ToGlobalPosition:
     def internal_state() -> OgnSimROS2ToGlobalPositionInternalState:
         """Create and return the internal state of the node"""
 
-        try:
-            rclpy.init()
-        except Exception as e:
-            carb.log_error(f"SIM | RTGP | Failed to initialize rclpy: {e}")
+        if not rclpy.ok():
+            try:
+                rclpy.init()
+            except Exception as e:
+                carb.log_error(f"SIM | RTGP | Failed to initialize rclpy: {e}")
+                pass
+
         return OgnSimROS2ToGlobalPositionInternalState()
 
 
@@ -111,17 +131,15 @@ class OgnSimROS2ToGlobalPosition:
         state = db.internal_state
 
         state.create_subscriptions(lla_topic, orientation_topic)
-        try:
-            rclpy.spin_once(state.node, timeout_sec=1)
-        except ExternalShutdownException:
-            carb.log_warn("SIM | RTGP | ROS2 shutdown detected during spin_once")
-            return False
 
-        lat = state.latest_lla.latitude
-        lon = state.latest_lla.longitude
-        alt = state.latest_lla.altitude
+        with state.lock:
+            
+            lat = state.latest_lla.latitude
+            lon = state.latest_lla.longitude
+            alt = state.latest_lla.altitude
 
-        q = state.latest_orientation.pose.orientation
+            q = state.latest_orientation.pose.orientation
+            
         roll, pitch, yaw = quaternion_to_euler(q.x, q.y, q.z, q.w)
 
         db.outputs.global_position = [lat, lon, alt]
@@ -148,7 +166,8 @@ class OgnSimROS2ToGlobalPosition:
             except Exception as e:
                 carb.log_error(f"SIM | RTGP | Failed to destroy node: {e}")
             try:
-                rclpy.shutdown()
+                if rclpy.ok():
+                    rclpy.shutdown()
             except Exception as e:
                 carb.log_error(f"SIM | RTGP | Failed to shutdown rclpy: {e}")
             carb.log_info("SIM | RTGP | Node resources released")

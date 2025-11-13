@@ -2,8 +2,10 @@
 
 # ==================== Imports ====================
 import rclpy
+import threading
 from geographic_msgs.msg import GeoPoseStamped
 from rclpy.qos import qos_profile_sensor_data
+from rclpy.executors import MultiThreadedExecutor
 from omni.sim.sensors.ogn.OgnSimROS2GlobalPosePublisherDatabase import OgnSimROS2GlobalPosePublisherDatabase
 
 
@@ -14,10 +16,11 @@ class OgnSimROS2GlobalPosePublisherInternalState:
     """
 
     def __init__(self) -> None:
-        """
-        Initialize the internal state of the node
-        """
+        """initialize the internal state of the node"""
 
+        self.lock = threading.Lock()
+        self.publish_period = 50
+        self.spinning = False
         self.publisher = None
         self.last_publish_time = None
         self.frame_id_counter = 0
@@ -49,35 +52,48 @@ class OgnSimROS2GlobalPosePublisherInternalState:
             qos_profile_sensor_data
         )
 
+        if not self.spinning:
+            threading.Thread(target=self._spin, daemon=True).start()
+            self.spinning = True
+
 
     def publish_pose(self, position, orientation) -> None:
         """
         Publish the pose message if the publish period has elapsed
         """
+        
+        with self.lock:
+            now = self.node.get_clock().now()
+            if self.last_publish_time is None:
+                self.last_publish_time = now
 
-        now = self.node.get_clock().now()
-        if self.last_publish_time is None:
-            self.last_publish_time = now
+            time_since_last_publish = (now - self.last_publish_time).nanoseconds / 1e9
 
-        time_since_last_publish = (now - self.last_publish_time).nanoseconds / 1e9
+            if time_since_last_publish >= self.publish_period:
+                msg = GeoPoseStamped()
+                msg.header.stamp = now.to_msg()
+                msg.header.frame_id = str(self.frame_id_counter)
 
-        if time_since_last_publish >= self.publish_period:
-            msg = GeoPoseStamped()
-            msg.header.stamp = now.to_msg()
-            msg.header.frame_id = str(self.frame_id_counter)
+                msg.pose.position.latitude = float(position[0])
+                msg.pose.position.longitude = float(position[1])
+                msg.pose.position.altitude = float(position[2])
 
-            msg.pose.position.latitude = float(position[0])
-            msg.pose.position.longitude = float(position[1])
-            msg.pose.position.altitude = float(position[2])
+                msg.pose.orientation.x = float(orientation[0])
+                msg.pose.orientation.y = float(orientation[1])
+                msg.pose.orientation.z = float(orientation[2])
+                msg.pose.orientation.w = 1.0    # not in use when publishing roll, pitch, yaw
 
-            msg.pose.orientation.x = float(orientation[0])
-            msg.pose.orientation.y = float(orientation[1])
-            msg.pose.orientation.z = float(orientation[2])
-            msg.pose.orientation.w = 1.0    # not in use when publishing roll, pitch, yaw
+                self.publisher.publish(msg)
+                self.last_publish_time = now
+                self.frame_id_counter += 1
+        
 
-            self.publisher.publish(msg)
-            self.last_publish_time = now
-            self.frame_id_counter += 1
+    def _spin(self) -> None:
+        """spin the node in a separate thread"""
+
+        executor = MultiThreadedExecutor()
+        executor.add_node(self.node)
+        executor.spin()
 
 
 # ==================== the OgnSimROS2GlobalPosePublisher class ====================
@@ -92,10 +108,11 @@ class OgnSimROS2GlobalPosePublisher:
         Create and return the internal state for the node
         """
 
-        try:
-            rclpy.init()
-        except Exception:
-            pass
+        if not rclpy.ok():
+            try:
+                rclpy.init()
+            except Exception:
+                pass
 
         return OgnSimROS2GlobalPosePublisherInternalState()
 
@@ -114,8 +131,6 @@ class OgnSimROS2GlobalPosePublisher:
 
         internal_state.publish_pose(db.inputs.global_position, db.inputs.global_orientation)
 
-        rclpy.spin_once(internal_state.node, timeout_sec=0.01)
-
         return True
 
 
@@ -132,4 +147,5 @@ class OgnSimROS2GlobalPosePublisher:
 
         if internal_state is not None:
             internal_state.node.destroy_node()
-            rclpy.shutdown()
+            if rclpy.ok():
+                rclpy.shutdown()

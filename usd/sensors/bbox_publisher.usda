@@ -149,7 +149,7 @@ def cleanup(db: og.Database):
 
 def compute(db: og.Database):
     return True"""
-            custom token inputs:scriptPath = "../../../simulation/script_nodes/bbox_node.py"
+            custom token inputs:scriptPath = "../../../../../../simulation/script_nodes/bbox_node.py"
             custom bool inputs:usePath = 1
             token node:type = "omni.graph.scriptnode.ScriptNode"
             int node:typeVersion = 2

@@ -36,6 +36,11 @@ OPTIONAL_USDS = {
         "usd/sensors/bbox_publisher.usda",
         "/Environment/bbox_publisher",
         "bbox_publisher"
+    ),
+    "sat": (
+    "usd/sensors/SAT.usda",
+    "/Environment/SAT",
+    "SAT"
     )
 }
 
@@ -59,6 +64,7 @@ def parse_arguments():
     parser.add_argument("--com-udp", default=False, action="store_true", help="Enable communication via UDP")
     parser.add_argument("--distance-sensor", default=False, action="store_true", help="Add a distance sensor to the simulation")
     parser.add_argument("--bbox-publisher", default=False, action="store_true", help="Add a bounding box publisher to the simulation")
+    parser.add_argument("--sat", default=False, action="store_true", help="Add a script node that takes images")
 
     args, _ = parser.parse_known_args()
     return args

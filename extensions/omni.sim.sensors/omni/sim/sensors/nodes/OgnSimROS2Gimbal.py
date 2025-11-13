@@ -4,7 +4,6 @@
 import carb
 import rclpy
 import threading
-from rclpy.node import Node
 from isaac_ros2_messages.msg import Gimbal
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
@@ -27,7 +26,7 @@ class OgnSimROS2GimbalInternalState:
             pass
         
         self.lock = threading.Lock()
-        self.spin_thread_started = False
+        self.spinning = False
         self.gimbal_subscription = None
         self.latest_gimbal = Gimbal()
         self.qos_profile = QoSProfile(
@@ -53,18 +52,17 @@ class OgnSimROS2GimbalInternalState:
                 Gimbal, gimbal_topic, self.gimbal_callback, self.qos_profile
             )
         
-        if not self.spin_thread_started:
-            threading.Thread(target=spin_node, args=(self.node,), daemon=True).start()
-            self.spin_thread_started = True
+        if not self.spinning:
+            threading.Thread(target=self._spin, daemon=True).start()
+            self.spinning = True
 
 
-# ==================== Helper - spin node ====================
-def spin_node(node: Node) -> None:
-    """spin the given node in a separate thread"""
+    def _spin(self) -> None:
+        """spin the node in a separate thread"""
 
-    executor = MultiThreadedExecutor()
-    executor.add_node(node)
-    executor.spin()
+        executor = MultiThreadedExecutor()
+        executor.add_node(self.node)
+        executor.spin()
 
 
 # ==================== the OgnSimROS2Gimbal class ====================
@@ -108,14 +106,14 @@ class OgnSimROS2Gimbal:
     
 
     @staticmethod
-    def release() -> None:
+    def release(node) -> None:
         """release resources when the node is no longer needed"""
 
         carb.log_info("SIM | RG | Releasing ROS2Gimbal resources")
 
         state = None
         try:
-            state = OgnSimROS2GimbalDatabase.per_node_internal_state()
+            state = OgnSimROS2GimbalDatabase.per_node_internal_state(node)
         except Exception as e:
             carb.log_error(f"SIM | RG | Node release error: {e}")
         
@@ -125,7 +123,8 @@ class OgnSimROS2Gimbal:
             except Exception as e:
                 carb.log_error(f"SIM | RG | Failed to destroy node: {e}")
             try:
-                rclpy.shutdown()
+                if rclpy.ok():
+                    rclpy.shutdown()
             except Exception as e:
                 carb.log_error(f"SIM | RG | Failed to shutdown rclpy: {e}")
         

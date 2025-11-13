@@ -235,14 +235,15 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 
 ## Simulation Flags
 
-| Flag                     | Description                                                  |
-|--------------------------|--------------------------------------------------------------|
-| `--usd-path <file.usda>` | Load a specific USDA scene file                              |
-| `--headless`             | Run Isaac Sim without GUI                                    |
-| `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ros       |
-| `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp       |
-| `--distance-sensor`      | Add range sensor to simulation (output is on ros topic)      |
-| `--bbox-publisher`       | Publish bbox data for each object specified                  |
+| Flag                     | Description                                                         |
+|--------------------------|---------------------------------------------------------------------|
+| `--usd-path <file.usda>` | Load a specific USDA scene file                                     |
+| `--headless`             | Run Isaac Sim without GUI                                           |
+| `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ros              |
+| `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp              |
+| `--distance-sensor`      | Add range sensor to simulation (output is on ros topic)             |
+| `--bbox-publisher`       | Publish bbox data for each object specified                         |
+| `--sat`                  | enables to capture current frames to and output path via a ros topic|
 
 ---
 
@@ -274,15 +275,26 @@ The gimbal angle is based on the following photo:
 
 <img src="readme_images/gimbal_angle_example.png" alt="Gimbal Angle Reference" width="500"/>
 
+There is always a gimbal subscriber that is subscribed to `/isaac_core/gimbal` that updates the gimbal angel values while "in the air".
+
+The isaac sim expects msgs there with values for gimbal roll, pitch, yaw, and it update the gimbal live.
+
+here is a bash command to publish a msg on a topic for manual usage (adjust the values):
+```bash
+ros2 topic pub /isaac_core/gimbal isaac_ros2_messages/msg/Gimbal "{roll: 0.0, pitch: 0.0, yaw: 0.0}"
+```
+
 ---
 
 ## ROS2 input topics
 These are the MAVRos topic the isaac sim would be subscribing to if you choose com-ros
 
-| Topic                                | Type                        | Description                 |
-|--------------------------------------|-----------------------------|-----------------------------|
-| `/mavros/global_position/global`     | `sensor_msgs/NavSatFix`     | Read LLA from MAVRos        |
-| `/mavros/local_position/pose`        | `geometry_msgs/PoseStamped` | Read orientaion from MAVRos |
+| Topic                                | Type                                | Description                                      |
+|--------------------------------------|-------------------------------------|--------------------------------------------------|
+| `/mavros/global_position/global`     | `sensor_msgs/NavSatFix`             | Read LLA from MAVRos                             |
+| `/mavros/local_position/pose`        | `geometry_msgs/PoseStamped`         | Read orientaion from MAVRos                      |
+| `/isaac_core/sat`                    | `isaac_ros2_messages/msg/SATOutput` | wait for an output path to save frame            |
+| `/isaac_core/gimbal`                 | `isaac_ros2_messages/msg/Gimbal`    | Read gimbal angels and adjust gimbal dynamically |
 
 
 ------
@@ -300,7 +312,18 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 ---
 
 ## Take pictures
-TODO
+You can enable the take picture with the `--sat` flag
+
+Then the topic `/isaac_core/sat` will expect msg's that their content is a file path.
+
+If the isaac sim process have permission for that path it will save there a png of the current frame.
+
+here is a bash command to publish a msg on a topic for manual usage:
+```bash
+ros2 topic pub /isaac_core/sat isaac_ros2_messages/msg/SATOutput "{output_path: '<your path>'}"
+```
+
+
 
 ## Auto completion in vscode
 <details>
@@ -403,6 +426,19 @@ The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
   - `publish Rate HZ` — publish frequency
   - `topicName` — ROS 2 topic string  
 - **Outputs**: None (publishes to ROS 2)  
+
+</details>
+
+<details>
+<summary><strong>Node: OgnSimROS2Gimbal</strong></summary>
+
+- **Purpose**: Read gimbal angels values from the topic `/isaac_core/gimbal`.
+- **Inputs**:
+  - `Gimbal Topic` — topic name to read gimbal values from
+- **Outputs**:
+  - `roll` - roll in degrees
+  - `pitch` - pitch in degrees
+  - `yaw` - yaw in degrees
 
 </details>
 

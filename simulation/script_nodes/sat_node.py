@@ -42,7 +42,7 @@ class ROS2SATNode:
             pass
 
 
-    def sat_callback(self, msg: SATOutput) -> None:
+    def sat_callback(self, msg) -> None:
         """callback for SATOutput messages"""
 
         self.output_path = msg.output_path
@@ -74,10 +74,17 @@ def spin_node(node: Node) -> None:
 async def capture_frame(db, output_path):
     """Capture a frame image and save it to the specified path"""
 
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    vp_api = db.internal_state.vp_api
-    capture = vp_api.schedule_capture(FileCapture(output_path))
-    await capture.wait_for_result()
+    try:
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        vp_api = db.internal_state.vp_api
+        capture = vp_api.schedule_capture(FileCapture(output_path))
+        await capture.wait_for_result()
+
+    except PermissionError:
+        print(f"[sat_script_node] Permission denied when trying to save image to: {output_path}")
+
+    except Exception as e:
+        print(f"[sat_script_node] Failed to capture image to {output_path}: {e}")
 
 
 # ==================== script Node Functions ====================
@@ -115,7 +122,7 @@ def compute(db):
     if output_path and output_path != db.internal_state.last_captured_path:
         db.internal_state.last_captured_path = output_path
         ros_node.output_path = None
-        db.internal_state.ros2_sat_node.get_logger().info(f"Capturing SAT image to: {output_path}")
+        print(f"Capturing SAT image to: {output_path}")
         asyncio.ensure_future(capture_frame(db, output_path))
 
 

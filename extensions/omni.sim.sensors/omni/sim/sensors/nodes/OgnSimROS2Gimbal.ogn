@@ -20,7 +20,7 @@
         "description": "ROS 2 topic for Gimbal(roll, pitch, yaw)",
         "default": "/isaac_core/gimbal",
         "metadata": {
-          "uiName": "LLA Topic"
+          "uiName": "Gimbal Topic"
         }
       }
     },

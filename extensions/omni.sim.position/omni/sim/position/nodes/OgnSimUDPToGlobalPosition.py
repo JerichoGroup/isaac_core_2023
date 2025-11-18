@@ -40,7 +40,7 @@ class OgnSimUDPToGlobalPositionInternalState:
             self.parser = PacketGetter(HEADER1, HEADER2, PACKET_SIZE, port)
 
 
-#==================== The PoseData dataclass ====================
+# ==================== The PoseData dataclass ====================
 @dataclass
 class PoseData:
     """Data class to hold a position data"""
@@ -53,7 +53,7 @@ class PoseData:
     yaw: float
 
 
-#==================== The PacketParser class ==================
+# ==================== The PacketParser class ==================
 class PacketGetter:
 
     def __init__(self, header1: int, header2: int, packet_size: int, port: int) -> None:

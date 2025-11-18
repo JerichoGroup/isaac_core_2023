@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (2.6915690792767677, 3.974855376954017, 2.4477885184388333)
-                double3 target = (0.01821044060993593, -0.15092441561365355, 0.0126075233103915)
+                double3 target = (0.01821044060993593, -0.15092441561365444, 0.012607523310391056)
             }
             dictionary Right = {
                 double3 position = (0, -500, 0)
@@ -158,6 +158,254 @@ def Xform "Root"
                     uniform token[] xformOpOrder = ["xformOp:transform"]
                 }
             }
+        }
+    }
+
+    def OmniGraph "ROS2OdomSync"
+    {
+        token evaluationMode = "Automatic"
+        token evaluator:type = "execution"
+        token fabricCacheBacking = "Shared"
+        int2 fileFormatVersion = (1, 7)
+        token pipelineStage = "pipelineStageSimulation"
+        token ui:displayGroup = "Material Graphs"
+        token ui:displayName = "ROS2OdomSub"
+        int ui:order = 1024
+        uniform token[] xformOpOrder = []
+
+        def OmniGraphNode "on_playback_tick" (
+            apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            token node:type = "omni.graph.action.OnPlaybackTick"
+            int node:typeVersion = 1
+            custom double outputs:deltaSeconds
+            custom double outputs:frame
+            custom uint outputs:tick (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            custom double outputs:time
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (108.6406, 585.2163)
+        }
+
+        def OmniGraphNode "ros2_context" (
+            apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uchar inputs:domain_id
+            custom bool inputs:useDomainIDEnvVar
+            token node:type = "omni.isaac.ros2_bridge.ROS2Context"
+            int node:typeVersion = 2
+            custom uint64 outputs:context
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (1161.186, 220.64708)
+        }
+
+        def OmniGraphNode "ros2_subscribe_clock" (
+            apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint64 inputs:context
+            uint64 inputs:context.connect = [
+                </Root/ROS2OdomSync/ros2_context.outputs:context>,
+                </ROS2OdomSub/ros2_context.outputs:context>,
+            ]
+            custom uint inputs:execIn
+            custom string inputs:nodeNamespace
+            custom uint64 inputs:queueSize
+            custom string inputs:topicName
+            token node:type = "omni.isaac.ros2_bridge.ROS2SubscribeClock"
+            int node:typeVersion = 1
+            custom uint outputs:execOut (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            custom double outputs:timeStamp
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (1610.0215, 87.815125)
+        }
+
+        def OmniGraphNode "orient_writer" (
+            apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
+            custom token inputs:name = "xformOp:orient"
+            custom rel inputs:prim = </Root/Xform> (
+                customData = {
+                    dictionary omni = {
+                        dictionary graph = {
+                            string relType = "target"
+                        }
+                    }
+                }
+            )
+            custom token inputs:primPath
+            custom bool inputs:usdWriteBack
+            custom bool inputs:usePath
+            custom token inputs:value (
+                customData = {
+                    dictionary omni = {
+                        dictionary graph = {
+                            double4 attrValue = (0, 0, 0, 0)
+                            string resolvedType = "quatd[4]"
+                        }
+                    }
+                }
+            )
+            delete token inputs:value.connect = [
+                </Root/ROS2OdomSync/ros2_odometry_subscribe.outputs:orientation>,
+                </Root/ROS2OdomSync/ros2_absolute_pose_subscriber.outputs:orientation>,
+            ]
+            prepend token inputs:value.connect = [
+                </ROS2OdomSub/ros2_odometry_subscribe.outputs:orientation>,
+                </Root/ROS2OdomSync/ros2_absolute_pose_subscriber.outputs:orientation>,
+                </Root/ROS2OdomSync/global_position_to_local_position.outputs:local_orientation>,
+            ]
+            token node:type = "omni.graph.nodes.WritePrimAttribute"
+            int node:typeVersion = 2
+            custom uint outputs:execOut (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            custom bool state:correctlySetup
+            custom uint64 state:destAttrib
+            custom uint64 state:destPath
+            custom uint64 state:destPathToken
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (1610.5454, 565.6959)
+        }
+
+        def OmniGraphNode "translate_writer" (
+            apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
+            custom token inputs:name = "xformOp:translate"
+            custom rel inputs:prim = </Root/Xform> (
+                customData = {
+                    dictionary omni = {
+                        dictionary graph = {
+                            string relType = "target"
+                        }
+                    }
+                }
+            )
+            custom token inputs:primPath
+            custom bool inputs:usdWriteBack
+            custom bool inputs:usePath
+            custom token inputs:value (
+                customData = {
+                    dictionary omni = {
+                        dictionary graph = {
+                            double3 attrValue = (0, 0, 0)
+                            string resolvedType = "double[3]"
+                        }
+                    }
+                }
+            )
+            delete token inputs:value.connect = [
+                </Root/ROS2OdomSync/ros2_odometry_subscribe.outputs:position>,
+                </Root/ROS2OdomSync/ros2_absolute_pose_subscriber.outputs:position>,
+            ]
+            prepend token inputs:value.connect = [
+                </ROS2OdomSub/ros2_odometry_subscribe.outputs:position>,
+                </Root/ROS2OdomSync/ros2_absolute_pose_subscriber.outputs:position>,
+                </Root/ROS2OdomSync/global_position_to_local_position.outputs:local_position>,
+            ]
+            token node:type = "omni.graph.nodes.WritePrimAttribute"
+            int node:typeVersion = 2
+            custom uint outputs:execOut (
+                customData = {
+                    bool isExecution = 1
+                }
+            )
+            custom bool state:correctlySetup
+            custom uint64 state:destAttrib
+            custom uint64 state:destPath
+            custom uint64 state:destPathToken
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (1611.0323, 842.3848)
+        }
+
+        def OmniGraphNode "ros2_absolute_pose_subscriber" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
+            custom string inputs:topic_name
+            token node:type = "omni.ros2.absolute_pose_subscriber.ROS2AbsolutePoseSubscriber"
+            int node:typeVersion = 1
+            custom quatf outputs:orientation
+            custom vector3f outputs:position
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (620.9332, 641.38495)
+        }
+
+        def OmniGraphNode "global_position_to_local_position" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom vector3d inputs:enu_reference
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
+            custom vector3d inputs:global_orientation
+            prepend vector3d inputs:global_orientation.connect = </Root/ROS2OdomSync/ros2_to_global_position.outputs:global_orientation>
+            custom vector3d inputs:global_position
+            prepend vector3d inputs:global_position.connect = </Root/ROS2OdomSync/ros2_to_global_position.outputs:global_position>
+            custom float inputs:offset_pitch
+            custom float inputs:offset_roll
+            custom float inputs:offset_yaw
+            token node:type = "omni.sim.math.GlobalPositionToLocalPosition"
+            int node:typeVersion = 1
+            custom vector3f outputs:global_orientation
+            custom vector3d outputs:global_position
+            custom quatf outputs:local_orientation
+            custom vector3f outputs:local_position
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (772.7736, 855.0355)
+        }
+
+        def OmniGraphNode "ros2_to_global_position" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
+            custom string inputs:lla_topic
+            custom string inputs:orientation_topic
+            token node:type = "omni.sim.position.ROS2ToGlobalPosition"
+            int node:typeVersion = 1
+            custom vector3d outputs:global_orientation
+            custom vector3d outputs:global_position
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (403.47775, 835.41425)
+        }
+
+        def OmniGraphNode "ros_2_global_pose_publisher" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
+            custom vector3d inputs:global_orientation
+            prepend vector3d inputs:global_orientation.connect = </Root/ROS2OdomSync/global_position_to_local_position.outputs:global_orientation>
+            custom vector3d inputs:global_position
+            prepend vector3d inputs:global_position.connect = </Root/ROS2OdomSync/global_position_to_local_position.outputs:global_position>
+            custom int inputs:hz = 50
+            custom string inputs:topic_name
+            token node:type = "omni.sim.sensors.OgnSimROS2GlobalPosePublisher"
+            int node:typeVersion = 1
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (1610.6605, 346.7645)
         }
     }
 
@@ -371,254 +619,6 @@ def Xform "Root"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
             uniform float2 ui:nodegraph:node:pos = (-517.8747, 8.111891)
-        }
-    }
-
-    def OmniGraph "ROS2OdomSync"
-    {
-        token evaluationMode = "Automatic"
-        token evaluator:type = "execution"
-        token fabricCacheBacking = "Shared"
-        int2 fileFormatVersion = (1, 7)
-        token pipelineStage = "pipelineStageSimulation"
-        token ui:displayGroup = "Material Graphs"
-        token ui:displayName = "ROS2OdomSub"
-        int ui:order = 1024
-        uniform token[] xformOpOrder = []
-
-        def OmniGraphNode "on_playback_tick" (
-            apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            token node:type = "omni.graph.action.OnPlaybackTick"
-            int node:typeVersion = 1
-            custom double outputs:deltaSeconds
-            custom double outputs:frame
-            custom uint outputs:tick (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom double outputs:time
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (225.55222, 592.3018)
-        }
-
-        def OmniGraphNode "ros2_context" (
-            apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uchar inputs:domain_id
-            custom bool inputs:useDomainIDEnvVar
-            token node:type = "omni.isaac.ros2_bridge.ROS2Context"
-            int node:typeVersion = 2
-            custom uint64 outputs:context
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (182.14938, 820.4765)
-        }
-
-        def OmniGraphNode "ros2_subscribe_clock" (
-            apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint64 inputs:context
-            uint64 inputs:context.connect = [
-                </Root/ROS2OdomSync/ros2_context.outputs:context>,
-                </ROS2OdomSub/ros2_context.outputs:context>,
-            ]
-            custom uint inputs:execIn
-            custom string inputs:nodeNamespace
-            custom uint64 inputs:queueSize
-            custom string inputs:topicName
-            token node:type = "omni.isaac.ros2_bridge.ROS2SubscribeClock"
-            int node:typeVersion = 1
-            custom uint outputs:execOut (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom double outputs:timeStamp
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (484.5255, 957.3963)
-        }
-
-        def OmniGraphNode "orient_writer" (
-            apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
-            custom token inputs:name = "xformOp:orient"
-            custom rel inputs:prim = </Root/Xform> (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            string relType = "target"
-                        }
-                    }
-                }
-            )
-            custom token inputs:primPath
-            custom bool inputs:usdWriteBack
-            custom bool inputs:usePath
-            custom token inputs:value (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            double4 attrValue = (0, 0, 0, 0)
-                            string resolvedType = "quatd[4]"
-                        }
-                    }
-                }
-            )
-            delete token inputs:value.connect = [
-                </Root/ROS2OdomSync/ros2_odometry_subscribe.outputs:orientation>,
-                </Root/ROS2OdomSync/ros2_absolute_pose_subscriber.outputs:orientation>,
-            ]
-            prepend token inputs:value.connect = [
-                </ROS2OdomSub/ros2_odometry_subscribe.outputs:orientation>,
-                </Root/ROS2OdomSync/ros2_absolute_pose_subscriber.outputs:orientation>,
-                </Root/ROS2OdomSync/global_position_to_local_position.outputs:local_orientation>,
-            ]
-            token node:type = "omni.graph.nodes.WritePrimAttribute"
-            int node:typeVersion = 2
-            custom uint outputs:execOut (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom bool state:correctlySetup
-            custom uint64 state:destAttrib
-            custom uint64 state:destPath
-            custom uint64 state:destPathToken
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (1222.6108, 540.8966)
-        }
-
-        def OmniGraphNode "translate_writer" (
-            apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
-            custom token inputs:name = "xformOp:translate"
-            custom rel inputs:prim = </Root/Xform> (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            string relType = "target"
-                        }
-                    }
-                }
-            )
-            custom token inputs:primPath
-            custom bool inputs:usdWriteBack
-            custom bool inputs:usePath
-            custom token inputs:value (
-                customData = {
-                    dictionary omni = {
-                        dictionary graph = {
-                            double3 attrValue = (0, 0, 0)
-                            string resolvedType = "double[3]"
-                        }
-                    }
-                }
-            )
-            delete token inputs:value.connect = [
-                </Root/ROS2OdomSync/ros2_odometry_subscribe.outputs:position>,
-                </Root/ROS2OdomSync/ros2_absolute_pose_subscriber.outputs:position>,
-            ]
-            prepend token inputs:value.connect = [
-                </ROS2OdomSub/ros2_odometry_subscribe.outputs:position>,
-                </Root/ROS2OdomSync/ros2_absolute_pose_subscriber.outputs:position>,
-                </Root/ROS2OdomSync/global_position_to_local_position.outputs:local_position>,
-            ]
-            token node:type = "omni.graph.nodes.WritePrimAttribute"
-            int node:typeVersion = 2
-            custom uint outputs:execOut (
-                customData = {
-                    bool isExecution = 1
-                }
-            )
-            custom bool state:correctlySetup
-            custom uint64 state:destAttrib
-            custom uint64 state:destPath
-            custom uint64 state:destPathToken
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (1231.9552, 808.7284)
-        }
-
-        def OmniGraphNode "ros2_absolute_pose_subscriber" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
-            custom string inputs:topic_name
-            token node:type = "omni.ros2.absolute_pose_subscriber.ROS2AbsolutePoseSubscriber"
-            int node:typeVersion = 1
-            custom quatf outputs:orientation
-            custom vector3f outputs:position
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (620.9332, 641.38495)
-        }
-
-        def OmniGraphNode "global_position_to_local_position" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom vector3d inputs:enu_reference
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
-            custom vector3d inputs:global_orientation
-            prepend vector3d inputs:global_orientation.connect = </Root/ROS2OdomSync/ros2_to_global_position.outputs:global_orientation>
-            custom vector3d inputs:global_position
-            prepend vector3d inputs:global_position.connect = </Root/ROS2OdomSync/ros2_to_global_position.outputs:global_position>
-            custom float inputs:offset_pitch
-            custom float inputs:offset_roll
-            custom float inputs:offset_yaw
-            token node:type = "omni.sim.math.GlobalPositionToLocalPosition"
-            int node:typeVersion = 1
-            custom vector3f outputs:global_orientation
-            custom vector3d outputs:global_position
-            custom quatf outputs:local_orientation
-            custom vector3f outputs:local_position
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (857.79987, 746.9807)
-        }
-
-        def OmniGraphNode "ros2_to_global_position" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
-            custom string inputs:lla_topic
-            custom string inputs:orientation_topic
-            token node:type = "omni.sim.position.ROS2ToGlobalPosition"
-            int node:typeVersion = 1
-            custom vector3d outputs:global_orientation
-            custom vector3d outputs:global_position
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (552.27454, 727.3599)
-        }
-
-        def OmniGraphNode "ros_2_global_pose_publisher" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
-            custom vector3d inputs:global_orientation
-            prepend vector3d inputs:global_orientation.connect = </Root/ROS2OdomSync/global_position_to_local_position.outputs:global_orientation>
-            custom vector3d inputs:global_position
-            prepend vector3d inputs:global_position.connect = </Root/ROS2OdomSync/global_position_to_local_position.outputs:global_position>
-            custom int inputs:hz = 50
-            custom string inputs:topic_name
-            token node:type = "omni.sim.sensors.OgnSimROS2GlobalPosePublisher"
-            int node:typeVersion = 1
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (1226.2711, 1058.8624)
         }
     }
 }

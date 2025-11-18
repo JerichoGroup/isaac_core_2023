@@ -82,7 +82,7 @@ def Xform "Root"
 
     def Xform "Xform"
     {
-        quatd xformOp:orient = (0, 0, 0, 0)
+        quatd xformOp:orient = (1, 0, 0, 0)
         double3 xformOp:scale = (1, 1, 1)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
@@ -402,7 +402,7 @@ def Xform "Root"
             )
             custom double outputs:time
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (80.70294, 538.2162)
+            uniform float2 ui:nodegraph:node:pos = (-87.76831, 504.82544)
         }
 
         def OmniGraphNode "orient_writer" (
@@ -437,6 +437,7 @@ def Xform "Root"
             delete token inputs:value.connect = [
                 </Root/UDPOdomSync/ros2_odometry_subscribe.outputs:orientation>,
                 </Root/UDPOdomSync/ros2_absolute_pose_subscriber.outputs:orientation>,
+                </Root/UDPOdomSync/global_position_to_local_position.outputs:local_orientation>,
             ]
             prepend token inputs:value.connect = [
                 </ROS2OdomSub/ros2_odometry_subscribe.outputs:orientation>,
@@ -455,7 +456,7 @@ def Xform "Root"
             custom uint64 state:destPath
             custom uint64 state:destPathToken
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (942.31274, 557.7145)
+            uniform float2 ui:nodegraph:node:pos = (1221.2931, 504.59283)
         }
 
         def OmniGraphNode "translate_writer" (
@@ -490,6 +491,7 @@ def Xform "Root"
             delete token inputs:value.connect = [
                 </Root/UDPOdomSync/ros2_odometry_subscribe.outputs:position>,
                 </Root/UDPOdomSync/ros2_absolute_pose_subscriber.outputs:position>,
+                </Root/UDPOdomSync/global_position_to_local_position.outputs:local_position>,
             ]
             prepend token inputs:value.connect = [
                 </ROS2OdomSub/ros2_odometry_subscribe.outputs:position>,
@@ -508,7 +510,7 @@ def Xform "Root"
             custom uint64 state:destPath
             custom uint64 state:destPathToken
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (957.2632, 791.9105)
+            uniform float2 ui:nodegraph:node:pos = (1224.1014, 799.66315)
         }
 
         def OmniGraphNode "ros2_absolute_pose_subscriber" (
@@ -526,19 +528,24 @@ def Xform "Root"
             uniform float2 ui:nodegraph:node:pos = (620.9332, 641.38495)
         }
 
-        def OmniGraphNode "udp_to_global_position" (
+        def OmniGraphNode "ros_2_global_pose_publisher" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
         {
             custom uint inputs:execIn
             prepend uint inputs:execIn.connect = </Root/UDPOdomSync/on_playback_tick.outputs:tick>
-            custom int inputs:udp_port
-            token node:type = "omni.sim.position.UDPToGlobalPosition"
+            custom vector3d inputs:global_orientation
+            delete vector3d inputs:global_orientation.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_orientation>
+            prepend vector3d inputs:global_orientation.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_orientation>
+            custom vector3d inputs:global_position
+            delete vector3d inputs:global_position.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_position>
+            prepend vector3d inputs:global_position.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_position>
+            custom int inputs:hz = 50
+            custom string inputs:topic_name = "/global_pose"
+            token node:type = "omni.sim.sensors.OgnSimROS2GlobalPosePublisher"
             int node:typeVersion = 1
-            custom vector3d outputs:global_orientation
-            custom vector3d outputs:global_position
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (341.11313, 620.46277)
+            uniform float2 ui:nodegraph:node:pos = (1221.6962, 287.18573)
         }
 
         def OmniGraphNode "global_position_to_local_position" (
@@ -552,9 +559,9 @@ def Xform "Root"
             prepend vector3d inputs:global_orientation.connect = </Root/UDPOdomSync/udp_to_global_position.outputs:global_orientation>
             custom vector3d inputs:global_position
             prepend vector3d inputs:global_position.connect = </Root/UDPOdomSync/udp_to_global_position.outputs:global_position>
-            custom float inputs:offset_pitch = 0
-            custom float inputs:offset_roll = 0
-            custom float inputs:offset_yaw = 0
+            custom float inputs:offset_pitch
+            custom float inputs:offset_roll
+            custom float inputs:offset_yaw
             token node:type = "omni.sim.math.GlobalPositionToLocalPosition"
             int node:typeVersion = 1
             custom vector3f outputs:global_orientation
@@ -562,38 +569,22 @@ def Xform "Root"
             custom quatf outputs:local_orientation
             custom vector3f outputs:local_position
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (574.0184, 664.91754)
+            uniform float2 ui:nodegraph:node:pos = (519.6989, 714.297)
         }
 
-        def OmniGraphNode "ros_2_global_pose_publisher" (
+        def OmniGraphNode "udp_to_global_position" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
         {
             custom uint inputs:execIn
             prepend uint inputs:execIn.connect = </Root/UDPOdomSync/on_playback_tick.outputs:tick>
-            custom vector3d inputs:global_orientation
-            prepend vector3d inputs:global_orientation.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_orientation>
-            custom vector3d inputs:global_position
-            prepend vector3d inputs:global_position.connect = </Root/UDPOdomSync/global_position_to_local_position.outputs:global_position>
-            custom int inputs:hz = 50
-            custom string inputs:topic_name = "/global_pose"
-            token node:type = "omni.sim.sensors.OgnSimROS2GlobalPosePublisher"
+            custom int inputs:udp_port
+            token node:type = "omni.sim.position.UDPToGlobalPosition"
             int node:typeVersion = 1
+            custom vector3d outputs:global_orientation
+            custom vector3d outputs:global_position
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (953.8128, 1037.6367)
-        }
-
-        def OmniGraphNode "ros2_context" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uchar inputs:domain_id
-            custom bool inputs:useDomainIDEnvVar
-            token node:type = "omni.isaac.ros2_bridge.ROS2Context"
-            int node:typeVersion = 2
-            custom uint64 outputs:context
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (92.53906, 757.1577)
+            uniform float2 ui:nodegraph:node:pos = (204.76999, 680.1386)
         }
     }
 }

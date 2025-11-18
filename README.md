@@ -292,6 +292,13 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 
 ---
 
+## Eular angles conventions
+All usage of roll, pitch, yaw in inputs and outputs of the simulation are based on Tait-Bryan Euler angles conventions.
+Which is rxyz axsis (r represents intrensic).
+This can be configured in
+EULAR_ANGLES_AXSES
+
+
 ## Take pictures
 TODO
 

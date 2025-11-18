@@ -611,6 +611,9 @@ def Xform "Root"
             custom uint inputs:execIn
             prepend uint inputs:execIn.connect = </Root/UDPOdomSync/on_playback_tick.outputs:tick>
             custom string inputs:gimbal_topic
+            custom float inputs:start_pitch
+            custom float inputs:start_roll
+            custom float inputs:start_yaw
             token node:type = "omni.sim.sensors.ROS2Gimbal"
             int node:typeVersion = 1
             custom float outputs:pitch

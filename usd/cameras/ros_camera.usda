@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (2.6915690792767677, 3.974855376954017, 2.4477885184388333)
-                double3 target = (0.018210440609939038, -0.1509244156136491, 0.012607523310392832)
+                double3 target = (0.01821044060993815, -0.1509244156136509, 0.012607523310392832)
             }
             dictionary Right = {
                 double3 position = (0, -500, 0)
@@ -636,6 +636,9 @@ def Xform "Root"
             custom uint inputs:execIn
             prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
             custom string inputs:gimbal_topic
+            custom float inputs:start_pitch
+            custom float inputs:start_roll
+            custom float inputs:start_yaw
             token node:type = "omni.sim.sensors.ROS2Gimbal"
             int node:typeVersion = 1
             custom float outputs:pitch

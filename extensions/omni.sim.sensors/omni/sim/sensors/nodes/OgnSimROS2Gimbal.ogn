@@ -22,6 +22,30 @@
         "metadata": {
           "uiName": "Gimbal Topic"
         }
+      },
+      "start_roll": {
+        "type": "float",
+        "description": "Initial roll offset in degrees",
+        "default": 0.0,
+        "metadata": {
+          "uiName": "Start Roll"
+        }
+      },
+      "start_pitch": {
+        "type": "float",
+        "description": "Initial pitch offset in degrees",
+        "default": 0.0,
+        "metadata": {
+          "uiName": "Start Pitch"
+        }
+      },
+      "start_yaw": {
+        "type": "float",
+        "description": "Initial yaw offset in degrees",
+        "default": 0.0,
+        "metadata": {
+          "uiName": "Start Yaw"
+        }
       }
     },
     "outputs": {

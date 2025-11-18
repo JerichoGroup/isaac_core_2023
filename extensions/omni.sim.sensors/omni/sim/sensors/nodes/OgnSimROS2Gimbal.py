@@ -28,6 +28,7 @@ class OgnSimROS2GimbalInternalState:
         self.lock = threading.Lock()
         self.spinning = False
         self.gimbal_subscription = None
+        self.start2publish = False
         self.latest_gimbal = Gimbal()
         self.qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
@@ -98,9 +99,13 @@ class OgnSimROS2Gimbal:
             pitch = state.latest_gimbal.pitch
             yaw = state.latest_gimbal.yaw
 
-        db.outputs.roll = roll
-        db.outputs.pitch = pitch
-        db.outputs.yaw = yaw
+        if any([roll, pitch, yaw]):
+            state.start2publish = True
+
+        if state.start2publish:
+            db.outputs.roll = roll
+            db.outputs.pitch = pitch
+            db.outputs.yaw = yaw
 
         return True
     
@@ -120,6 +125,7 @@ class OgnSimROS2Gimbal:
         if state is not None:
             try:
                 state.node.destroy_node()
+                state.start2publish = False
             except Exception as e:
                 carb.log_error(f"SIM | RG | Failed to destroy node: {e}")
             try:

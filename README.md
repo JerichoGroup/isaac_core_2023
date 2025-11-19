@@ -249,24 +249,25 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 
 ## Special configurations
 under simulation/consts.py you can change:
-```bash
-GIMBAL_ROLL_DEG           # gimbal roll angel
-GIMBAL_PITCH_DEG          # gimbal pitch angel
-GIMBAL_YAW_DEG            # gimbal yaw angel
-RESOLUTION_WIDTH          # frame width resolution
-RESOLUTION_HEIGHT         # frame height resolution
-CAMERA_FOV                # camera's FOV           
-FOCAL_LENGTH              # camera's focal length
+```bash     
+GIMBAL_ROLL_DEG                 # gimbal roll angel
+GIMBAL_PITCH_DEG                # gimbal pitch angel
+GIMBAL_YAW_DEG                  # gimbal yaw angel
+RESOLUTION_WIDTH                # frame width resolution
+RESOLUTION_HEIGHT               # frame height resolution
+CAMERA_FOV                      # camera's FOV           
+FOCAL_LENGTH                    # camera's focal length
 
-TILESETS_HTTP_SERVER_URL  # cesium server address
+TILESETS_HTTP_SERVER_URL        # cesium server address
 
-LASER_MIN_RANGE           # distance sensor min range
-LASER_MAX_RANGE           # distance sensor max range
+LASER_MIN_RANGE                 # distance sensor min range
+LASER_MAX_RANGE                 # distance sensor max range
 
-MAX_OUTPUTS_ROS_HRZ       # data topic publish frequency       
-GLOBAL_POSE_TOPIC_NAME    # global pose data topic name
-LASER_TOPIC_NAME          # distance sensor topic name
-BBOXES_TOPIC_NAME         # bbox data topic name
+MAX_OUTPUTS_ROS_HRZ             # data topic publish frequency       
+GLOBAL_POSE_TOPIC_NAME          # global pose data topic name
+LASER_TOPIC_NAME                # distance sensor topic name
+BBOXES_TOPIC_NAME               # bbox data topic name
+IMAGE_PUBLISHER_TOPIC_NAME      # image rgb topic name
 ```
 
 ### Gimbal Angle (Reference Image)
@@ -304,8 +305,8 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 | Topic                                | Type                                 | Description                 |
 |--------------------------------------|--------------------------------------|-----------------------------|
 | `/isaac_core/global_pose`            | `geometry_msgs/GeoPoseStamped`       | Camera's global position (overriding quaternions with RPY, x=roll, y=pitch, z=yaw, w=not used)    |
-| `/isaac_core/range_distance_sensor"` | `sensor_msgs/Range`                  | Simulated laser range data  |
-| `/isaac_core/camera/image_raw`       | `sensor_msgs/Image`                  | Camera feed from simulation |
+| `/isaac_core/distance_sensor`       | `sensor_msgs/Range`                  | Simulated laser range data  |
+| `/isaac_core/camera/image_rgb`       | `sensor_msgs/Image`                  | Camera feed from simulation |
 | `/isaac_core/bbox`                   | `isaac_ros2_messages/msg/FrameBboxes`| BBOX data per object        |
 
 
@@ -390,10 +391,10 @@ The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 <details>
 <summary><strong>Node: OgnSimROS2ToGlobalPosition</strong></summary>
 
-- **Purpose**: Subscribes to a ROS 2 topic and extracts global position and orientation.
+- **Purpose**: Subscribes to a ROS2 topic and extracts global position and orientation.
 - **Inputs**:
-  - `LLA topic_name` — ROS 2 topic string  
-  - `orientation topic_name` — ROS 2 topic string  
+  - `LLA topic_name` — ROS2 topic string  
+  - `orientation topic_name` — ROS2 topic string  
 - **Outputs**:
   - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
   - `global_orientation` — `[roll, pitch, yaw]` in radians, ZYX
@@ -406,26 +407,56 @@ The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 <details>
 <summary><strong>Node: OgnSimROS2GlobalPosePublisher</strong></summary>
 
-- **Purpose**: Publishes global position and orientation to a ROS 2 topic using `GeoPoseStamped`.
+- **Purpose**: Publishes global position and orientation to a ROS2 topic using `GeoPoseStamped`.
 - **Inputs**:
   - `global_position` — `[lat, lon, alt]` in degrees/meters (WGS84)
   - `global_orientation` — `[roll, pitch, yaw]` in degrees, ZYX
   - `hz` — publish frequency  
-  - `topic_name` — ROS 2 topic string  
-- **Outputs**: None (publishes to ROS 2)  
+  - `topic_name` — ROS2 topic string  
+- **Outputs**: None (publishes to ROS2)  
 
 </details>
 
 <details>
 <summary><strong>Node: OgnSimROS2RangePublisher</strong></summary>
 
-- **Purpose**: Publishes range sensor data to a ROS 2 topic using `sensor_msgs/Range`.
+- **Purpose**: Publishes range sensor data to a ROS2 topic using `sensor_msgs/Range`.
 - **Inputs**:
   - `max range` — float value in meters  
   - `min range` — float value in meters  
   - `publish Rate HZ` — publish frequency
-  - `topicName` — ROS 2 topic string  
-- **Outputs**: None (publishes to ROS 2)  
+  - `topicName` — ROS2 topic string  
+- **Outputs**: None (publishes to ROS2)  
+
+</details>
+
+<details>
+<summary><strong>Node: OgnSimROS2ImagePublisher</strong></summary>
+
+- **Purpose**:  
+  Publishes RGB images from a render product to ROS2 topics.  
+  Subscribes to a raw RGB topic (`/isaac_core/raw_rgb`) and republishes the images at a configurable rate to `/isaac_core/image_rgb`.
+
+- **Inputs**:
+  - `enabled` — Enable or disable image publishing  
+  - `context` — Render context used to retrieve images  
+  - `frameId` — Frame ID used in the ROS2 message header  
+  - `nodeNamespace` — Optional ROS2 node namespace  
+  - `rawTopic` — Input topic for raw RGB images (`/isaac_core/raw_rgb`)  
+  - `repubTopic` — Output topic for republished images (`/isaac_core/image_rgb`)  
+  - `queueSize` — ROS2 publisher/subscriber queue size  
+  - `renderProductPath` — USD path to the render product (camera output)  
+  - `publishRateHZ` — Publish frequency in Hz  
+  - `execIn` — Execution trigger to initiate image publishing  
+
+- **Outputs**:  
+  None (publishes to ROS2)
+
+- **Behavior**:
+  - Initializes a Replicator ROS2 RGB writer and a republisher node on first run.  
+  - Periodically republishes incoming images with an incrementing `frame_id`.  
+  - Supports dynamic rate updates through `publishRateHZ`.  
+  - Automatically resets and releases all ROS2 resources when disabled.
 
 </details>
 

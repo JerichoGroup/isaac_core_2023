@@ -1,26 +1,30 @@
-"""this file contains consts used to configure and initialize the simulation"""
+"""
+This file contains consts used to configure and initialize the simulation
+"""
 
-# ==================== Camera consts ====================
+# ========================= Camera consts ============================= #
 GIMBAL_ROLL_DEG = 0.0
 GIMBAL_PITCH_DEG = 0.0
 GIMBAL_YAW_DEG = 0.0
-RESOLUTION_WIDTH = 1280
-RESOLUTION_HEIGHT = 720
-CAMERA_FOV = 78.1               # degrees           
+RESOLUTION_WIDTH = 1280         
+RESOLUTION_HEIGHT = 720         
+CAMERA_FOV = 78.1               # degrees
 FOCAL_LENGTH = 22.7885          # mm, computed from FOV and sensor size
 
 
-# ==================== Cesium consts ====================
+# ========================== Cesium consts ============================ #
 TILESETS_HTTP_SERVER_URL = "http://10.20.15.122:8088"
 
 
-# ==================== Distance sensor consts ====================
+# ===================== Distance sensor consts ======================== #
 LASER_MIN_RANGE = 0.2
 LASER_MAX_RANGE = 180.0
 
 
-# ==================== ROS2 output consts ====================
-MAX_OUTPUTS_ROS_HRZ = 50.0                                  
+# ======================= ROS2 output consts ========================== #
+MAX_OUTPUTS_ROS_HRZ = 30.0   
+
 GLOBAL_POSE_TOPIC_NAME = "/isaac_core/global_pose"
-LASER_TOPIC_NAME = "/isaac_core/range_distance_sensor"
+LASER_TOPIC_NAME = "/isaac_core/distance_sensor"
 BBOXES_TOPIC_NAME = "/isaac_core/bbox"
+IMAGE_PUBLISHER_TOPIC_NAME = "/isaac_core/image_rgb"

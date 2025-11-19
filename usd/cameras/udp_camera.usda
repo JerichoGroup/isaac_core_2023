@@ -82,7 +82,7 @@ def Xform "Root"
 
     def Xform "Xform"
     {
-        quatd xformOp:orient = (0, 0, 0, 0)
+        quatd xformOp:orient = (1, 0, 0, 0)
         double3 xformOp:scale = (1, 1, 1)
         double3 xformOp:translate = (0, 0, 0)
         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
@@ -351,7 +351,7 @@ def Xform "Root"
             uniform float2 ui:nodegraph:node:pos = (-1197.8549, -317.87)
         }
 
-        def OmniGraphNode "ros2_image_publisher" (
+        def OmniGraphNode "ros2_image_publisher_01" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
         {
@@ -371,7 +371,7 @@ def Xform "Root"
             token node:type = "omni.sim.sensors.SimROS2ImagePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-517.2179, 3.5627308)
+            uniform float2 ui:nodegraph:node:pos = (-517.49603, 0.20931792)
         }
     }
 

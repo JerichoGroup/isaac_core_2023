@@ -126,61 +126,39 @@ class ROS2ImageRepublisher(Node):
         self.queue_size = queue_size
 
         self.frame_counter = 0
-        self.publish_period = self._compute_publish_period(publish_rate_hz)
+
+        self.max_hz = publish_rate_hz
+        self.min_period = 1.0 / publish_rate_hz
+        self.last_publish_time = self.get_clock().now()
 
         self.publisher = self.create_publisher(Image, repub_topic, queue_size)
-        self.subscriber = self.create_subscription(Image, raw_topic, self.store_latest_image, queue_size)
-
-        self.latest_image = None
-        self.timer = self.create_timer(self.publish_period, self.publish_latest_image)
+        self.subscriber = self.create_subscription(Image, raw_topic, self.on_raw_image, queue_size)
 
 
-    def store_latest_image(self, msg: Image) -> None:
-
-        self.latest_image = msg
-
-
-    def _build_republish_msg(self, msg: Image) -> Image:
+    def on_raw_image(self, msg: Image) -> None:
         """
-        Update the frame_id of the given Image message and return it.
+        Callback for raw image messages. Republishes with updated header.
         """
 
-        msg.header.frame_id = f"{self.frame_counter}"
+        now = self.get_clock().now()
+        dt = (now - self.last_publish_time).nanoseconds / 1e9
 
-        return msg
+        if dt < self.min_period:
+            return  # too soon → skip frame
 
+        self.last_publish_time = now
 
-    def _compute_publish_period(self, hz: float) -> float:
-        """
-        Compute the interval between publishes based on publish rate.
-        """
-
-        if hz <= 0:
-            raise ValueError(f"Publish rate must be > 0, got {hz}")
-        
-        return 1.0 / hz
-
-
-    def publish_latest_image(self) -> None:
-        """
-        Publish the latest stored image via the publisher, incrementing frame_counter.
-        Called periodically by the timer.
-        """
-
-        if self.latest_image is None:
-            return
-
-        repub_msg = self._build_republish_msg(self.latest_image)
-        self.publisher.publish(repub_msg)
+        msg.header.frame_id = str(self.frame_counter)
         self.frame_counter += 1
+
+        self.publisher.publish(msg)
 
 
     def update_publish_rate(self, hz: float) -> None:
-        """
-        Update the publish period to a new rate.
-        """
 
-        self.publish_period = self._compute_publish_period(hz)
+        if hz > 0:
+            self.max_hz = hz
+            self.min_period = 1.0 / hz
 
 
     def _init_rclpy_once(self) -> None:
@@ -256,7 +234,7 @@ class OgnSimROS2ImagePublisher:
         """
 
         try:
-            rclpy.spin_once(node, timeout_sec=0.001)
+            rclpy.spin_once(node, timeout_sec=0.0001)
             
         except Exception as exception:
             carb.log_warn(f"[OgnSimROS2ImagePublisher] Spin error: {exception}")

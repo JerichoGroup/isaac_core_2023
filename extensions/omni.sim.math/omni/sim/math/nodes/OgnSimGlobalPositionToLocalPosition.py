@@ -4,6 +4,8 @@
 import carb
 import math
 import numpy as np
+import transforms3d
+from pyproj import Transformer
 from typing import Any, Tuple, Dict
 from omni.sim.math.ogn.OgnSimGlobalPositionToLocalPositionDatabase import OgnSimGlobalPositionToLocalPositionDatabase
 
@@ -26,7 +28,7 @@ class OgnSimGlobalPositionToLocalPositionInternalState():
         """Define the ENU converter based on the geo reference point (lat, lon, alt)"""
 
         self.geo_reference = geo_reference
-        self.converter = ENUConverter(self.geo_reference[0], self.geo_reference[1], self.geo_reference[2])
+        self.converter = ENUConverter(*geo_reference)
 
 
 #==================== Helper - quaternion from Euler angles ====================
@@ -96,57 +98,6 @@ def euler_from_quaternion(qx: float, qy: float, qz: float, qw: float) -> Tuple[f
     return roll, pitch, yaw
 
 
-# ==================== The Transformer class ====================
-class Transformer:
-    """2025-10-05 08:28:34 [26,851ms] [Error] [omni.graph.core.plugin] /Environment/udp_receiver/UDPOdomSync/global_position_to_local_position: [/Environment/udp_receiver/UDPOdomSync] Assertion raised in compute - The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-  File "/home/ofer/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.sim.math/omni/sim/math/nodes/OgnSimGlobalPositionToLocalPosition.py", line 180, in compute
-    if state.converter is None or state.geo_reference != tuple(reference):
-
-
-    Minimal replacement for pyproj.Transformer to handle:
-    - EPSG:4979 (geodetic LLA) → EPSG:4978 (ECEF)
-    - Always assumes input is (lat, lon, alt) in degrees/meters
-    """
-
-    def __init__(self) -> None:
-        """Initialize the transformer with WGS84 ellipsoid parameters"""
-
-        # WGS84 ellipsoid parameters
-        self.a = 6378137.0          # semi-major axis (m)
-        self.f = 1 / 298.257223563  # flattening
-        self.e2 = self.f * (2 - self.f)  # eccentricity squared
-
-
-    @staticmethod
-    def from_crs(src_crs: str, dst_crs: str):
-        """
-        Returns a Transformer instance.
-        Only supports EPSG:4979 -> EPSG:4978 for now.
-        """
-
-        if src_crs != "EPSG:4979" or dst_crs != "EPSG:4978":
-            raise NotImplementedError("Only EPSG:4979 -> EPSG:4978 is implemented.")
-        return Transformer()
-
-
-    def transform(self, lat_deg: float, lon_deg: float, alt_m: float) -> Tuple[float, float, float]:
-        """
-        Convert LLA (lon, lat, alt) in degrees/meters to ECEF (X, Y, Z) in meters.
-        """
-
-        lon = math.radians(lon_deg)
-        lat = math.radians(lat_deg)
-        alt = alt_m
-
-        N = self.a / math.sqrt(1 - self.e2 * math.sin(lat) ** 2)
-
-        x = (N + alt) * math.cos(lat) * math.cos(lon)
-        y = (N + alt) * math.cos(lat) * math.sin(lon)
-        z = (N * (1 - self.e2) + alt) * math.sin(lat)
-
-        return x, y, z
-
-
 # ==================== The ENUConverter class ====================
 class ENUConverter:
     """
@@ -157,13 +108,10 @@ class ENUConverter:
     def __init__(self, ref_lat: float, ref_lon: float, ref_alt: float) -> None:
         """Initialize the converter with a reference point"""
 
-        # Transformer from geodetic to ECEF using WGS84 ellipsoid
-        self.transformer = Transformer.from_crs("EPSG:4979", "EPSG:4978")
+        self.lla_to_ecef = Transformer.from_crs("EPSG:4979", "EPSG:4978", always_xy=True)
+        self.x0, self.y0, self.z0 = self.lla_to_ecef.transform(ref_lon, ref_lat, ref_alt)
 
-        # Convert reference point to ECEF
-        self.x0, self.y0, self.z0 = self.transformer.transform(ref_lat, ref_lon, ref_alt)
-
-        # Precompute rotation matrix for ENU projection
+        # Rotation matrix for ENU
         lat_rad = np.radians(ref_lat)
         lon_rad = np.radians(ref_lon)
         self.rotation_matrix = np.array([
@@ -176,11 +124,11 @@ class ENUConverter:
     def convert_lla_enu(self, lat: float, lon: float, alt: float) -> Dict[str, float]:
         """Convert LLA to ENU and return pose as a dictionary"""
 
-        ecef_x, ecef_y, ecef_z = self.transformer.transform(lat, lon, alt)
-        return self.convert_ecef_enu(ecef_x, ecef_y, ecef_z)
-    
+        x, y, z = self.lla_to_ecef.transform(lon, lat, alt)
+        return self.convert_ecef_enu(x, y, z)
 
-    def convert_ecef_enu(self, x: float, y: float, z:float) -> Dict[str, float]:
+
+    def convert_ecef_enu(self, x: float, y: float, z: float) -> Dict[str, float]:
         """Convert ECEF to ENU and return pose as a dictionary"""
 
         dx, dy, dz = x - self.x0, y - self.y0, z - self.z0
@@ -189,7 +137,7 @@ class ENUConverter:
             "east": float(enu[0]),
             "north": float(enu[1]),
             "up": float(enu[2])
-            }
+        }
 
 
 #==================== The OgnSimGlobalPositionToLocalPosition class ====================

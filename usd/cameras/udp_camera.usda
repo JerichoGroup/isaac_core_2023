@@ -553,8 +553,11 @@ def Xform "Root"
             custom vector3d inputs:global_position
             prepend vector3d inputs:global_position.connect = </Root/UDPOdomSync/udp_to_global_position.outputs:global_position>
             custom float inputs:offset_pitch = 0
+            prepend float inputs:offset_pitch.connect = </Root/UDPOdomSync/ros2_gimbal.outputs:pitch>
             custom float inputs:offset_roll = 0
+            prepend float inputs:offset_roll.connect = </Root/UDPOdomSync/ros2_gimbal.outputs:roll>
             custom float inputs:offset_yaw = 0
+            prepend float inputs:offset_yaw.connect = </Root/UDPOdomSync/ros2_gimbal.outputs:yaw>
             token node:type = "omni.sim.math.GlobalPositionToLocalPosition"
             int node:typeVersion = 1
             custom vector3f outputs:global_orientation
@@ -594,6 +597,22 @@ def Xform "Root"
             custom uint64 outputs:context
             uniform token ui:nodegraph:node:expansionState = "open"
             uniform float2 ui:nodegraph:node:pos = (92.53906, 757.1577)
+        }
+
+        def OmniGraphNode "ros2_gimbal" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/UDPOdomSync/on_playback_tick.outputs:tick>
+            custom string inputs:gimbal_topic
+            token node:type = "omni.sim.sensors.ROS2Gimbal"
+            int node:typeVersion = 1
+            custom float outputs:pitch
+            custom float outputs:roll
+            custom float outputs:yaw
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (335.8957, 801.16376)
         }
     }
 }

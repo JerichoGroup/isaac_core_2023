@@ -1,0 +1,54 @@
+{
+  "ROS2Gimbal": {
+    "version": 1,
+    "description": "Subscribe to ROS2 topic and read gimbal angles, and update the cameras offsets live",
+    "language": "Python",
+    "metadata": {
+      "uiName": "ROS2 Gimbal"
+    },
+    "inputs": {
+      "execIn": {
+        "type": "execution",
+        "description": "Execution trigger to read ROS2 messages",
+        "default": 0,
+        "metadata": {
+          "uiName": "Exec In"
+        }
+      },
+      "gimbal_topic": {
+        "type": "string",
+        "description": "ROS 2 topic for Gimbal(roll, pitch, yaw)",
+        "default": "/isaac_core/gimbal",
+        "metadata": {
+          "uiName": "Gimbal Topic"
+        }
+      }
+    },
+    "outputs": {
+      "roll": {
+        "type": "float",
+        "description": "roll in degrees",
+        "default": 0.0,
+        "metadata": {
+          "uiName": "roll"
+        }
+      },
+      "pitch": {
+        "type": "float",
+        "description": "pitch in degrees",
+        "default": 0.0,
+        "metadata": {
+          "uiName": "pitch"
+        }
+      },
+      "yaw": {
+      "type": "float",
+      "description": "yaw in degrees",
+      "default": 0.0,
+      "metadata": {
+          "uiName": "yaw"
+        }
+      }
+    }
+  }
+}

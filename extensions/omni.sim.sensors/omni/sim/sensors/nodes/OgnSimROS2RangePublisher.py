@@ -2,9 +2,10 @@
 
 # ==================== Imports ====================
 import rclpy
+import threading
 from sensor_msgs.msg import Range
-
 from rclpy.qos import qos_profile_sensor_data
+from rclpy.executors import MultiThreadedExecutor
 from omni.sim.sensors.ogn.OgnSimROS2RangePublisherDatabase import OgnSimROS2RangePublisherDatabase
 
 
@@ -18,7 +19,9 @@ class OgnSimROS2RangePublisherInternalState():
         """
         Initialize the internal state of the node
         """
-
+        self.lock = threading.Lock()
+        self.publish_period = 50
+        self.spinning = False
         self.publisher = None
         self.last_publish_time = None
         self.frame_id_counter = 0
@@ -51,31 +54,44 @@ class OgnSimROS2RangePublisherInternalState():
             qos_profile_sensor_data
         )
 
+        if not self.spinning:
+            threading.Thread(target=self._spin, daemon=True).start()
+            self.spinning = True
+
     def publish_range(self, range_value: float) -> None:
         """
         Publish the range message if the publish period has elapsed
         """
 
-        now = self.node.get_clock().now()
-        if self.last_publish_time is None:
-            self.last_publish_time = now
+        with self.lock:
+            now = self.node.get_clock().now()
+            if self.last_publish_time is None:
+                self.last_publish_time = now
 
-        time_since_last_publish = (now - self.last_publish_time).nanoseconds / 1e9
+            time_since_last_publish = (now - self.last_publish_time).nanoseconds / 1e9
 
-        if time_since_last_publish >= self.publish_period:
-            current_msg = Range()
+            if time_since_last_publish >= self.publish_period:
+                current_msg = Range()
 
-            current_msg.header.stamp = now.to_msg()
-            current_msg.header.frame_id = str(self.frame_id_counter)
-            current_msg.radiation_type = 1
-            current_msg.min_range = self.min_range
-            current_msg.max_range = self.max_range
-            current_msg.range = range_value
-            
-            self.publisher.publish(current_msg)
-            self.last_publish_time = now
+                current_msg.header.stamp = now.to_msg()
+                current_msg.header.frame_id = str(self.frame_id_counter)
+                current_msg.radiation_type = 1
+                current_msg.min_range = self.min_range
+                current_msg.max_range = self.max_range
+                current_msg.range = range_value
+                
+                self.publisher.publish(current_msg)
+                self.last_publish_time = now
 
-            self.frame_id_counter += 1
+                self.frame_id_counter += 1
+
+    
+    def _spin(self) -> None:
+        """spin the node in a separate thread"""
+
+        executor = MultiThreadedExecutor()
+        executor.add_node(self.node)
+        executor.spin()
 
             
 # ==================== the OgnSimROS2RangePublisher class ====================
@@ -89,11 +105,12 @@ class OgnSimROS2RangePublisher:
         """
         Create and return the internal state for the node
         """
+        if not rclpy.ok():
+            try:
+                rclpy.init()
+            except Exception:
+                pass
 
-        try:
-            rclpy.init()
-        except Exception:
-            pass
         return OgnSimROS2RangePublisherInternalState()
 
 
@@ -111,8 +128,6 @@ class OgnSimROS2RangePublisher:
 
         internal_state.publish_range(db.inputs.range)
 
-        rclpy.spin_once(internal_state.node, timeout_sec=0.01)
-
         return True
 
 
@@ -129,4 +144,5 @@ class OgnSimROS2RangePublisher:
 
         if internal_state is not None:
             internal_state.node.destroy_node()
-            rclpy.shutdown()
+            if rclpy.ok():
+                rclpy.shutdown()

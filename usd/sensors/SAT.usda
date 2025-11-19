@@ -7,7 +7,7 @@
                 double radius = 5
             }
             dictionary Perspective = {
-                double3 position = (4.442899554198803, 4.442899554198803, 4.442899567495805)
+                double3 position = (5, 5, 5)
                 double3 target = (-3.978038431995401e-8, -3.978038254359717e-8, 7.956076863990802e-8)
             }
             dictionary Right = {
@@ -28,7 +28,6 @@
             double voxelCeiling = 460
         }
         dictionary omni_layer = {
-            string authoring_layer = "./bbox_publisher.usda"
             dictionary locked = {
             }
             dictionary muteness = {
@@ -79,7 +78,7 @@
 
 def Xform "World"
 {
-    def OmniGraph "BboxPublisher"
+    def OmniGraph "takeSAT"
     {
         token evaluationMode = "Automatic"
         token evaluator:type = "execution"
@@ -102,20 +101,7 @@ def Xform "World"
             )
             custom double outputs:time
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (24.457712, 42.13392)
-        }
-
-        def OmniGraphNode "ros2_context" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uchar inputs:domain_id
-            custom bool inputs:useDomainIDEnvVar
-            token node:type = "omni.isaac.ros2_bridge.ROS2Context"
-            int node:typeVersion = 2
-            custom uint64 outputs:context
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (25.269114, 224.09654)
+            uniform float2 ui:nodegraph:node:pos = (172, 39)
         }
 
         def OmniGraphNode "script_node" (
@@ -123,9 +109,7 @@ def Xform "World"
         )
         {
             custom uint inputs:execIn
-            custom double inputs:hz
-            custom string inputs:topic_name
-            prepend uint inputs:execIn.connect = </World/BboxPublisher/on_playback_tick.outputs:tick>
+            prepend uint inputs:execIn.connect = </World/takeSAT/on_playback_tick.outputs:tick>
             custom string inputs:script = """# This script is executed the first time the script node computes, or the next time
 # it computes after this script is modified or the 'Reset' button is pressed.
 #
@@ -149,7 +133,7 @@ def cleanup(db: og.Database):
 
 def compute(db: og.Database):
     return True"""
-            custom token inputs:scriptPath = "../../../../../../simulation/script_nodes/bbox_node.py"
+            custom token inputs:scriptPath = "../../../simulation/script_nodes/sat_node.py"
             custom bool inputs:usePath = 1
             token node:type = "omni.graph.scriptnode.ScriptNode"
             int node:typeVersion = 2
@@ -160,7 +144,7 @@ def compute(db: og.Database):
             )
             custom bool state:omni_initialized
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (323.9904, 132.0645)
+            uniform float2 ui:nodegraph:node:pos = (412, 33)
         }
     }
 }

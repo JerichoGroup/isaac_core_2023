@@ -414,7 +414,7 @@ def Xform "Root"
             int node:typeVersion = 2
             custom uint64 outputs:context
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (182.14938, 820.4765)
+            uniform float2 ui:nodegraph:node:pos = (-61.183937, 980.4762)
         }
 
         def OmniGraphNode "ros2_subscribe_clock" (
@@ -439,7 +439,7 @@ def Xform "Root"
             )
             custom double outputs:timeStamp
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (484.5255, 957.3963)
+            uniform float2 ui:nodegraph:node:pos = (324.5255, 1224.0636)
         }
 
         def OmniGraphNode "orient_writer" (
@@ -575,8 +575,11 @@ def Xform "Root"
             custom vector3d inputs:global_position
             prepend vector3d inputs:global_position.connect = </Root/ROS2OdomSync/ros2_to_global_position.outputs:global_position>
             custom float inputs:offset_pitch
+            prepend float inputs:offset_pitch.connect = </Root/ROS2OdomSync/ros2_gimbal.outputs:pitch>
             custom float inputs:offset_roll
+            prepend float inputs:offset_roll.connect = </Root/ROS2OdomSync/ros2_gimbal.outputs:roll>
             custom float inputs:offset_yaw
+            prepend float inputs:offset_yaw.connect = </Root/ROS2OdomSync/ros2_gimbal.outputs:yaw>
             token node:type = "omni.sim.math.GlobalPositionToLocalPosition"
             int node:typeVersion = 1
             custom vector3f outputs:global_orientation
@@ -619,6 +622,22 @@ def Xform "Root"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
             uniform float2 ui:nodegraph:node:pos = (1226.2711, 1058.8624)
+        }
+
+        def OmniGraphNode "ros2_gimbal" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/ROS2OdomSync/on_playback_tick.outputs:tick>
+            custom string inputs:gimbal_topic
+            token node:type = "omni.sim.sensors.ROS2Gimbal"
+            int node:typeVersion = 1
+            custom float outputs:pitch
+            custom float outputs:roll
+            custom float outputs:yaw
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (569.9165, 925.63855)
         }
     }
 }

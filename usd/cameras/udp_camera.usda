@@ -371,7 +371,7 @@ def Xform "Root"
             token node:type = "omni.sim.sensors.SimROS2ImagePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-510.5532, -0.03752756)
+            uniform float2 ui:nodegraph:node:pos = (-517.078, 10.805405)
         }
     }
 

@@ -195,7 +195,7 @@ class ROS2ImageRepublisher(Node):
             self.spinning = True
 
 
-    def destroy_node(self) -> None:
+    def shutdown_node(self) -> None:
         """
         Stop the spinning thread and destroy the ROS2 node safely.
         """
@@ -276,7 +276,7 @@ class OgnSimROS2ImagePublisher:
                 node.internal_state.reset()
 
             if hasattr(node, "_republisher_node") and node._republisher_node:
-                node._republisher_node.destroy_node()
+                node._republisher_node.shutdown_node()
                 node._republisher_node = None
 
         except Exception as exception:

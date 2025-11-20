@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (2.6915690792767677, 3.974855376954017, 2.4477885184388333)
-                double3 target = (0.01821044060993593, -0.15092441561365444, 0.012607523310391056)
+                double3 target = (0.018210440609934597, -0.15092441561365533, 0.012607523310389723)
             }
             dictionary Right = {
                 double3 position = (0, -500, 0)
@@ -350,7 +350,7 @@ def Xform "Root"
             uniform float2 ui:nodegraph:node:pos = (-1197.8549, -317.87)
         }
 
-        def OmniGraphNode "ros2_image_publisher" (
+        def OmniGraphNode "ros2_image_publisher_01" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
         {
@@ -370,7 +370,7 @@ def Xform "Root"
             token node:type = "omni.sim.sensors.SimROS2ImagePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-517.0482, 6.345516)
+            uniform float2 ui:nodegraph:node:pos = (-515.4019, 3.4290473)
         }
     }
 

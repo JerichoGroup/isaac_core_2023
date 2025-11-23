@@ -19,6 +19,8 @@ from sensor_msgs.msg import Image
 import omni.syntheticdata
 import omni.syntheticdata._syntheticdata as sd
 from std_msgs.msg import Header
+import threading
+from rclpy.executors import MultiThreadedExecutor
 from omni.sim.sensors.ogn.OgnSimROS2ImagePublisherDatabase import OgnSimROS2ImagePublisherDatabase
 
 
@@ -121,18 +123,21 @@ class ROS2ImageRepublisher(Node):
 
         super().__init__("isaac_ros2_image_republisher")
         
+        self.lock = threading.Lock()
         self.raw_topic = raw_topic
         self.repub_topic = repub_topic
         self.queue_size = queue_size
 
         self.frame_counter = 0
-
         self.max_hz = publish_rate_hz
         self.min_period = 1.0 / publish_rate_hz
         self.last_publish_time = self.get_clock().now()
+        self.spinning = False
 
         self.publisher = self.create_publisher(Image, repub_topic, queue_size)
         self.subscriber = self.create_subscription(Image, raw_topic, self.on_raw_image, queue_size)
+
+        self._start_spin_thread()
 
 
     def on_raw_image(self, msg: Image) -> None:
@@ -140,18 +145,19 @@ class ROS2ImageRepublisher(Node):
         Callback for raw image messages. Republishes with updated header.
         """
 
-        now = self.get_clock().now()
-        dt = (now - self.last_publish_time).nanoseconds / 1e9
+        with self.lock:
+            now = self.get_clock().now()
+            dt = (now - self.last_publish_time).nanoseconds / 1e9
 
-        if dt < self.min_period:
-            return  # too soon → skip frame
+            if dt < self.min_period:
+                return  # too soon → skip frame
 
-        self.last_publish_time = now
+            self.last_publish_time = now
 
-        msg.header.frame_id = str(self.frame_counter)
-        self.frame_counter += 1
+            msg.header.frame_id = str(self.frame_counter)
+            self.frame_counter += 1
 
-        self.publisher.publish(msg)
+            self.publisher.publish(msg)
 
 
     def update_publish_rate(self, hz: float) -> None:
@@ -165,6 +171,39 @@ class ROS2ImageRepublisher(Node):
 
         if not rclpy.ok():
             rclpy.init()
+
+
+    def _spin(self) -> None:
+        """
+        spin the node in a separate thread
+        """
+
+        executor = MultiThreadedExecutor()
+        executor.add_node(self)
+       
+        while rclpy.ok():
+            executor.spin_once(timeout_sec=0.001)
+
+
+    def _start_spin_thread(self) -> None:
+        """
+        Start the spinning thread if not already started
+        """
+
+        if not self.spinning:
+            threading.Thread(target=self._spin, daemon=True).start()
+            self.spinning = True
+
+
+    def shutdown_node(self) -> None:
+        """
+        Stop the spinning thread and destroy the ROS2 node safely.
+        """
+                
+        self.spinning = False
+
+        if rclpy.ok():
+            super().destroy_node()
 
 
 # =================== OmniGraph Node ========================== #
@@ -218,26 +257,12 @@ class OgnSimROS2ImagePublisher:
                 # Dynamic publish rate
                 db._republisher_node.update_publish_rate(db.inputs.publishRateHZ)
 
-            OgnSimROS2ImagePublisher._spin_node(db._republisher_node)
             return True
         
         except Exception as exception:
             carb.log_error(f"[OgnSimROS2ImagePublisher] Compute failed: {exception}")
             traceback.print_exc()
             return False
-
-
-    @staticmethod
-    def _spin_node(node: ROS2ImageRepublisher) -> None:
-        """
-        Spin the ROS2 node briefly to process messages.
-        """
-
-        try:
-            rclpy.spin_once(node, timeout_sec=0.0001)
-            
-        except Exception as exception:
-            carb.log_warn(f"[OgnSimROS2ImagePublisher] Spin error: {exception}")
 
 
     @staticmethod
@@ -251,7 +276,7 @@ class OgnSimROS2ImagePublisher:
                 node.internal_state.reset()
 
             if hasattr(node, "_republisher_node") and node._republisher_node:
-                node._republisher_node.destroy_node()
+                node._republisher_node.shutdown_node()
                 node._republisher_node = None
 
         except Exception as exception:

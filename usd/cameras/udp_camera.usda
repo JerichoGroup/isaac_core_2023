@@ -351,7 +351,7 @@ def Xform "Root"
             uniform float2 ui:nodegraph:node:pos = (-1197.8549, -317.87)
         }
 
-        def OmniGraphNode "ros2_image_publisher_01" (
+        def OmniGraphNode "ros2_image_publisher" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
         {
@@ -371,7 +371,7 @@ def Xform "Root"
             token node:type = "omni.sim.sensors.SimROS2ImagePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-517.49603, 0.20931792)
+            uniform float2 ui:nodegraph:node:pos = (-517.078, 10.805405)
         }
     }
 
@@ -402,7 +402,7 @@ def Xform "Root"
             )
             custom double outputs:time
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (80.70294, 538.2162)
+            uniform float2 ui:nodegraph:node:pos = (-18.756365, 522.67554)
         }
 
         def OmniGraphNode "orient_writer" (
@@ -455,7 +455,7 @@ def Xform "Root"
             custom uint64 state:destPath
             custom uint64 state:destPathToken
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (942.31274, 557.7145)
+            uniform float2 ui:nodegraph:node:pos = (1096.1555, 555.5167)
         }
 
         def OmniGraphNode "translate_writer" (
@@ -508,7 +508,7 @@ def Xform "Root"
             custom uint64 state:destPath
             custom uint64 state:destPathToken
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (957.2632, 791.9105)
+            uniform float2 ui:nodegraph:node:pos = (1093.5239, 798.5038)
         }
 
         def OmniGraphNode "ros2_absolute_pose_subscriber" (
@@ -538,7 +538,7 @@ def Xform "Root"
             custom vector3d outputs:global_orientation
             custom vector3d outputs:global_position
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (341.11313, 620.46277)
+            uniform float2 ui:nodegraph:node:pos = (330.2348, 718.36865)
         }
 
         def OmniGraphNode "global_position_to_local_position" (
@@ -565,7 +565,7 @@ def Xform "Root"
             custom quatf outputs:local_orientation
             custom vector3f outputs:local_position
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (574.0184, 664.91754)
+            uniform float2 ui:nodegraph:node:pos = (690.5727, 720.8635)
         }
 
         def OmniGraphNode "ros_2_global_pose_publisher" (
@@ -583,7 +583,7 @@ def Xform "Root"
             token node:type = "omni.sim.sensors.OgnSimROS2GlobalPosePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (953.8128, 1037.6367)
+            uniform float2 ui:nodegraph:node:pos = (1090.0735, 1044.23)
         }
 
         def OmniGraphNode "ros2_context" (
@@ -596,7 +596,7 @@ def Xform "Root"
             int node:typeVersion = 2
             custom uint64 outputs:context
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (92.53906, 757.1577)
+            uniform float2 ui:nodegraph:node:pos = (-11.582379, 935.8741)
         }
 
         def OmniGraphNode "ros2_gimbal" (
@@ -615,7 +615,7 @@ def Xform "Root"
             custom float outputs:roll
             custom float outputs:yaw
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (335.8957, 801.16376)
+            uniform float2 ui:nodegraph:node:pos = (339.0038, 886.6372)
         }
     }
 }

@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (2.6915690792767677, 3.974855376954017, 2.4477885184388333)
-                double3 target = (0.018210440609934597, -0.15092441561365622, 0.012607523310389723)
+                double3 target = (0.018210440609933265, -0.150924415613658, 0.012607523310388835)
             }
             dictionary Right = {
                 double3 position = (0, -500, 0)
@@ -370,7 +370,7 @@ def Xform "Root"
             token node:type = "omni.sim.sensors.SimROS2ImagePublisher"
             int node:typeVersion = 1
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (-514.85455, 1.2075617)
+            uniform float2 ui:nodegraph:node:pos = (-518.6661, 4.19303)
         }
     }
 

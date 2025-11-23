@@ -165,16 +165,16 @@ class Simulation:
 
         graph_name = "ROS2OdomSync" if self.camera_key == "com_ros" else "UDPOdomSync"
         graph_root = self.usds_to_add[self.camera_key][1]
-        math_node_path = f"{graph_root}/{graph_name}/global_position_to_local_position"
-        math_node_prim = get_prim_at_path(math_node_path)
+        gimbal_node_path = f"{graph_root}/{graph_name}/ros2_gimbal"
+        gimbal_node_prim = get_prim_at_path(gimbal_node_path)
 
-        if not math_node_prim:
-            carb.log_warn(f"Math node not found at {math_node_path}")
+        if not gimbal_node_prim:
+            carb.log_warn(f"Math node not found at {gimbal_node_path}")
             return
-
-        math_node_prim.GetAttribute("inputs:offset_roll").Set(consts.GIMBAL_ROLL_DEG)
-        math_node_prim.GetAttribute("inputs:offset_pitch").Set(consts.GIMBAL_PITCH_DEG)
-        math_node_prim.GetAttribute("inputs:offset_yaw").Set(consts.GIMBAL_YAW_DEG)
+        
+        gimbal_node_prim.GetAttribute("inputs:start_roll").Set(consts.GIMBAL_ROLL_DEG)
+        gimbal_node_prim.GetAttribute("inputs:start_pitch").Set(consts.GIMBAL_PITCH_DEG)
+        gimbal_node_prim.GetAttribute("inputs:start_yaw").Set(consts.GIMBAL_YAW_DEG)
 
 
 # ==================== config simulation methods

@@ -27,6 +27,7 @@ class OgnSimROS2GimbalInternalState:
         
         self.lock = threading.Lock()
         self.spinning = False
+        self.start_ros = False
         self.gimbal_subscription = None
         self.latest_gimbal = Gimbal()
         self.qos_profile = QoSProfile(
@@ -41,6 +42,9 @@ class OgnSimROS2GimbalInternalState:
 
         with self.lock:
             self.latest_gimbal = msg
+
+        if not self.start_ros:
+            self.start_ros = True
 
 
     def create_subscription(self, gimbal_topic: str) -> None:
@@ -94,13 +98,23 @@ class OgnSimROS2Gimbal:
         state.create_subscription(gimbal_topic)
 
         with state.lock:
-            roll = state.latest_gimbal.roll
-            pitch = state.latest_gimbal.pitch
-            yaw = state.latest_gimbal.yaw
+            cur_roll = state.latest_gimbal.roll
+            cur_pitch = state.latest_gimbal.pitch
+            cur_yaw = state.latest_gimbal.yaw
 
-        db.outputs.roll = roll
-        db.outputs.pitch = pitch
-        db.outputs.yaw = yaw
+        start_roll = db.inputs.start_roll
+        start_pitch = db.inputs.start_pitch
+        start_yaw = db.inputs.start_yaw
+
+        if not state.start_ros:
+            db.outputs.roll = start_roll
+            db.outputs.pitch = start_pitch
+            db.outputs.yaw = start_yaw
+
+        else:
+            db.outputs.roll = cur_roll
+            db.outputs.pitch = cur_pitch
+            db.outputs.yaw = cur_yaw
 
         return True
     

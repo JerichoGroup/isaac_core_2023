@@ -9,7 +9,7 @@ BBOX="--bbox-publisher"
 DISTANCE_SENSOR="--distance-sensor"
 SAT="--sat"
 
-RUN_SIMULATION="/isaac-sim/python.sh ./simulation/main_sim.py $USD_PATH $COM"
+RUN_SIMULATION="/isaac-sim/python.sh ./simulation/main_sim.py $USD_PATH $COM $BBOX"
 
 bash -ic "$RUN_SIMULATION"
 

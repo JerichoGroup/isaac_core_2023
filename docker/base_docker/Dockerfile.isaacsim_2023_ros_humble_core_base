@@ -68,4 +68,7 @@ RUN bash -c "source /opt/ros/humble/setup.bash \
 
 RUN /isaac-sim/python.sh -m pip install pyproj transforms3d
 
+RUN echo "source /opt/ros/humble/setup.bash" >> /root/.bashrc \
+    && echo "source /root/IsaacSim-ros_workspaces/humble_ws/install/setup.bash" >> /root/.bashrc
+
 COPY ./isaacsim_warmup.sh /root/isaacsim_warmup.sh

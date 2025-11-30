@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.isaacsim_2023_ros_humble_core_base
-      network: host
+      network: host     # needed to help isaac sim python env access the internet during build
     image: isaacsim_2023_ros_humble:core_base
     container_name: isaacsim_2023_ros_humble_core_base
 
@@ -27,11 +27,8 @@ services:
       - ${HOME}/.Xauthority:/root/.Xauthority:ro
 
     network_mode: host
-
     privileged: true
-
     stdin_open: true
-
     tty: true
 
     entrypoint: ["/bin/bash", "-c"]

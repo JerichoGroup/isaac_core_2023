@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile.isaacsim_2023_ros_humble_core_base
+      network: host
     image: isaacsim_2023_ros_humble:core_base
     container_name: isaacsim_2023_ros_humble_core_base
 

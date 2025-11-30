@@ -60,6 +60,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip install --upgrade pip numpy toml
 
+RUN cp /etc/resolv.conf /isaac-sim/
+RUN /isaac-sim/python.sh -m pip install pyproj transforms3d
+
 RUN git clone https://github.com/isaac-sim/IsaacSim-ros_workspaces.git /root/IsaacSim-ros_workspaces
 
 RUN bash -c "source /opt/ros/humble/setup.bash \

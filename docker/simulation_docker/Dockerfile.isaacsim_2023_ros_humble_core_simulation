@@ -17,7 +17,6 @@ COPY ./simulation/ros2_interfaces/* /root/IsaacSim-ros_workspaces/humble_ws/src/
 WORKDIR /root/IsaacSim-ros_workspaces/humble_ws/
 RUN bash -c "source /opt/ros/humble/setup.bash && colcon build --packages-select isaac_ros2_messages"
 
-
 WORKDIR /root/isaac_core_2023
 
 CMD ["/bin/bash"]

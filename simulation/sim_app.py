@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 import omni.usd
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
-from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage, get_prim_at_path
+from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage, get_prim_at_path, is_prim_valid
 
 
 # ===================== The Simulation class ======================= #
@@ -278,30 +278,24 @@ class Simulation:
 
         base_dir = os.path.dirname(os.path.abspath(__file__))
         script_nodes_map = {
-            "bbox_publisher":
-                ["/Environment/bbox_publisher/BboxPublisher/script_node",
-                os.path.join(base_dir, "script_nodes", "bbox_node.py")],
-            "distance_sensor":
-                ["/Environment/distance_sensor/ActionGraph/laser_depth_node",
-                os.path.join(base_dir, "script_nodes", "sensor_node.py")],
-            "sat":
-                ["/Environment/SAT/takeSAT/script_node",
-                 os.path.join(base_dir, "script_nodes", "sat_node.py")]
+                "/Environment/bbox_publisher/BboxPublisher/script_node":
+                    os.path.join(base_dir, "script_nodes", "bbox_node.py"),
+                "/Environment/distance_sensor/ActionGraph/laser_depth_node":
+                    os.path.join(base_dir, "script_nodes", "sensor_node.py"),
+                "/Environment/SAT/takeSAT/script_node":
+                    os.path.join(base_dir, "script_nodes", "sat_node.py")
         }
 
-        for flag in self.usds_to_add.keys():
-            if flag not in script_nodes_map:
+        for prim_path in script_nodes_map.keys():
+
+            if not is_prim_valid(prim_path):
                 continue
 
-            prim_path, abs_script_path = script_nodes_map[flag]
+            abs_script_path = script_nodes_map[prim_path]
 
-            try:
-                prim = get_prim_at_path(prim_path)
-                prim.GetAttribute("inputs:scriptPath").Set(abs_script_path)
-                carb.log_info(f"Updated {prim_path} script path → {abs_script_path}")
-
-            except Exception as e:
-                continue
+            prim = get_prim_at_path(prim_path)
+            prim.GetAttribute("inputs:scriptPath").Set(abs_script_path)
+            carb.log_info(f"Updated {prim_path} script path → {abs_script_path}")
 
 
 # ==================== laser sensor methods

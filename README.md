@@ -529,4 +529,7 @@ In order to add a new object to get its bbox data, you need to follow there step
 ## Deleting cesium cache
 * While running isaac sim overnight, some computers will have trouble opening it again after closing the overnight session.
 * That is because cesium has a cache file, that is flushed (deleted) after the isaac sim is shutdown, but for long session that file wont be deleted, and it might get so big (600-700GB), that the next time you try to open isaac sim it wont manage to open the file causing isaac sim to fail.
-* the cache file is located on .cache and can be deleted like this: `rm -rf ~/.cache/ov/cesium-request-cache.sqlite-wal`
+* the cache file is located on .cache and can be deleted like this:
+```bash
+rm -rf ~/.cache/ov/cesium-request-cache.sqlite-wal
+```

@@ -278,13 +278,22 @@ class Simulation:
 
         base_dir = os.path.dirname(os.path.abspath(__file__))
         script_nodes_map = {
-            "/Environment/bbox_publisher/BboxPublisher/script_node": os.path.join(base_dir, "script_nodes", "bbox_node.py"),
-            "/Environment/distance_sensor/ActionGraph/laser_depth_node": os.path.join(base_dir, "script_nodes", "sensor_node.py"),
-            "/Environment/SAT/takeSAT/script_node": os.path.join(base_dir, "script_nodes", "sat_node.py")
+            "bbox_publisher":
+                ["/Environment/bbox_publisher/BboxPublisher/script_node",
+                os.path.join(base_dir, "script_nodes", "bbox_node.py")],
+            "distance_sensor":
+                ["/Environment/distance_sensor/ActionGraph/laser_depth_node",
+                os.path.join(base_dir, "script_nodes", "sensor_node.py")],
+            "sat":
+                ["/Environment/SAT/takeSAT/script_node",
+                 os.path.join(base_dir, "script_nodes", "sat_node.py")]
         }
 
-        for prim_path, abs_script_path in script_nodes_map.items():
-            prim = None
+        for flag in self.usds_to_add.keys():
+            if flag not in script_nodes_map:
+                continue
+
+            prim_path, abs_script_path = script_nodes_map[flag]
 
             try:
                 prim = get_prim_at_path(prim_path)

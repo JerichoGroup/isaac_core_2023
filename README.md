@@ -23,6 +23,7 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 1. [Auto completion in vscode](#auto-completion-in-vscode)
 1. [Extension Overview](#Extension-Overview)
 1. [Using Bbox](#Using-Bbox)
+1. [Deleting cesium cache](#Deleting-cesium-cache)
 
 ---
 
@@ -525,3 +526,7 @@ In order to add a new object to get its bbox data, you need to follow there step
 
 #### Make sure to save the .usda file after adding your object and setting it
 
+## Deleting cesium cache
+* While running isaac sim overnight, some computers will have trouble opening it again after closing the overnight session.
+* That is because cesium has a cache file, that is flushed (deleted) after the isaac sim is shutdown, but for long session that file wont be deleted, and it might get so big (600-700GB), that the next time you try to open isaac sim it wont manage to open the file causing isaac sim to fail.
+* the cache file is located on .cache and can be deleted like this: `rm -rf ~/.cache/ov/cesium-request-cache.sqlite-wal`

@@ -43,7 +43,7 @@
       },
       "global_orientation": {
         "type": "vectord[3]",
-        "description": "Global orientation [roll, pitch, yaw]",
+        "description": "Global orientation [roll, pitch, yaw] in radians",
         "default": [0.0, 0.0, 0.0],
         "metadata": {
           "uiName": "Global Orientation"

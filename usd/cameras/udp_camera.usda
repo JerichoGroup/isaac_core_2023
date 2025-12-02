@@ -8,7 +8,7 @@
             }
             dictionary Perspective = {
                 double3 position = (-1.383864785509338, 3.0470284229017777, 0.7023307688547672)
-                double3 target = (0.22774294174390408, -0.1572590309354136, 0.022409033885144036)
+                double3 target = (0.22774294174391851, -0.1572590309354407, 0.022409033885138152)
             }
             dictionary Right = {
                 double3 position = (0, -500, 0)
@@ -451,21 +451,6 @@ def Xform "Root"
             uniform float2 ui:nodegraph:node:pos = (620.9332, 641.38495)
         }
 
-        def OmniGraphNode "udp_to_global_position" (
-            prepend apiSchemas = ["NodeGraphNodeAPI"]
-        )
-        {
-            custom uint inputs:execIn
-            prepend uint inputs:execIn.connect = </Root/UDPOdomSync/on_playback_tick.outputs:tick>
-            custom int inputs:udp_port
-            token node:type = "omni.sim.position.UDPToGlobalPosition"
-            int node:typeVersion = 1
-            custom vector3d outputs:global_orientation
-            custom vector3d outputs:global_position
-            uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (330.2348, 718.36865)
-        }
-
         def OmniGraphNode "ros_2_global_pose_publisher" (
             prepend apiSchemas = ["NodeGraphNodeAPI"]
         )
@@ -540,7 +525,22 @@ def Xform "Root"
             custom quatf outputs:local_orientation
             custom vector3f outputs:local_position
             uniform token ui:nodegraph:node:expansionState = "open"
-            uniform float2 ui:nodegraph:node:pos = (713.82874, 719.6048)
+            uniform float2 ui:nodegraph:node:pos = (708.66223, 718.7684)
+        }
+
+        def OmniGraphNode "udp_to_global_position" (
+            prepend apiSchemas = ["NodeGraphNodeAPI"]
+        )
+        {
+            custom uint inputs:execIn
+            prepend uint inputs:execIn.connect = </Root/UDPOdomSync/on_playback_tick.outputs:tick>
+            custom int inputs:udp_port
+            token node:type = "omni.sim.position.UDPToGlobalPosition"
+            int node:typeVersion = 1
+            custom vector3d outputs:global_orientation
+            custom vector3d outputs:global_position
+            uniform token ui:nodegraph:node:expansionState = "open"
+            uniform float2 ui:nodegraph:node:pos = (342.48773, 720.6294)
         }
     }
 

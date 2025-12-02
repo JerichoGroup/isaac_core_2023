@@ -1,6 +1,6 @@
 """This file contains the implementation of the ROS2ToGlobalPosition node"""
 
-# ==================== Imports ====================
+# ==================== Imports ====================== #
 import carb
 import math
 import rclpy
@@ -10,7 +10,12 @@ from sensor_msgs.msg import NavSatFix
 from geometry_msgs.msg import PoseStamped
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
+from transforms3d.euler import quat2euler
 from omni.sim.position.ogn.OgnSimROS2ToGlobalPositionDatabase import OgnSimROS2ToGlobalPositionDatabase
+
+
+# ==================== Constants ==================== #
+EULER_AXES = 'rxyz' # Roll-Pitch-Yaw convention
 
 
 # ==================== the OgnSimROS2ToGlobalPositionInternalState class ====================
@@ -32,8 +37,10 @@ class OgnSimROS2ToGlobalPositionInternalState:
         self.spinning = False
         self.lla_subscription = None
         self.orientation_subscription = None
+        
         self.latest_lla = NavSatFix()
         self.latest_orientation = PoseStamped()
+       
         self.qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
@@ -84,22 +91,14 @@ class OgnSimROS2ToGlobalPositionInternalState:
 
 
 # ==================== Helper - quaternion to Euler ====================
-def quaternion_to_euler(x, y, z, w) -> Tuple[float, float, float]:
-    """Convert quaternion to roll, pitch, yaw (in radians)"""
+def convert_euler_from_quaternion(qw: float, qx: float, qy: float, qz: float) -> Tuple[float, float, float]:
+    """
+    Convert quaternion to Euler angles using transforms3d.
+    """
 
-    t0 = +2.0 * (w * x + y * z)
-    t1 = +1.0 - 2.0 * (x * x + y * y)
-    roll = math.atan2(t0, t1)
+    quaternion = (qw, qx, qy, qz)
 
-    t2 = +2.0 * (w * y - z * x)
-    t2 = max(min(t2, +1.0), -1.0)
-    pitch = math.asin(t2)
-
-    t3 = +2.0 * (w * z + x * y)
-    t4 = +1.0 - 2.0 * (y * y + z * z)
-    yaw = math.atan2(t3, t4)
-
-    return roll, pitch, yaw
+    return quat2euler(quaternion, axes=EULER_AXES)
 
 
 # ==================== the OgnSimROS2ToGlobalPosition class ====================
@@ -140,7 +139,7 @@ class OgnSimROS2ToGlobalPosition:
 
             q = state.latest_orientation.pose.orientation
             
-        roll, pitch, yaw = quaternion_to_euler(q.x, q.y, q.z, q.w)
+        roll, pitch, yaw = convert_euler_from_quaternion(q.w, q.x, q.y, q.z)
 
         db.outputs.global_position = [lat, lon, alt]
         db.outputs.global_orientation = [roll, pitch, yaw]

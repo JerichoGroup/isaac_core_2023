@@ -64,6 +64,7 @@ def is_invalid_global_position(global_position: Tuple[float, float, float], stat
     state.warned_no_data = False
     return False
 
+
 # ==================== Quaternion/Euler ====================
 def convert_quaternion_from_euler(roll: float, pitch: float, yaw: float) -> Tuple[float, float, float, float]:
     """
@@ -74,14 +75,16 @@ def convert_quaternion_from_euler(roll: float, pitch: float, yaw: float) -> Tupl
 
     return q[0], q[1], q[2], q[3]  # transforms3d returns (w, x, y, z)
 
+
 def convert_euler_from_quaternion(qw: float, qx: float, qy: float, qz: float) -> Tuple[float, float, float]:
     """
     Convert quaternion to Euler angles using transforms3d.
     """
 
-    wxyz = (qw, qx, qy, qz)
+    q = (qw, qx, qy, qz)
 
-    return quat2euler(wxyz, axes=EULER_AXES)
+    return quat2euler(q, axes=EULER_AXES)
+
 
 def quaternion_multiply(q1: Tuple[float, float, float, float],
                         q2: Tuple[float, float, float, float]) -> Tuple[float, float, float, float]:
@@ -171,6 +174,8 @@ class OgnSimGlobalPositionToLocalPosition:
         enu = state.converter.convert_lla_enu(*global_position)
         x, y, z = enu["east"], enu["north"], enu["up"]
 
+        carb.log_error(global_orientation)
+
         q_drone = convert_quaternion_from_euler(*global_orientation)
 
         offset_roll = np.radians(db.inputs.offset_roll)
@@ -180,6 +185,8 @@ class OgnSimGlobalPositionToLocalPosition:
 
         qw, qx, qy, qz = quaternion_multiply(q_drone, q_offset)
         roll, pitch, yaw = convert_euler_from_quaternion(qw, qx, qy, qz)
+
+        carb.log_error(f"SIM | GPTLP | roll: {roll}, pitch: {pitch}, yaw: {yaw}")
 
         db.outputs.global_position = global_position
         db.outputs.global_orientation = [

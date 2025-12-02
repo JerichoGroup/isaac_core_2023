@@ -5,6 +5,7 @@ import carb
 import socket
 import struct
 from typing import Any
+import math
 from dataclasses import dataclass
 from omni.sim.position.ogn.OgnSimUDPToGlobalPositionDatabase import OgnSimUDPToGlobalPositionDatabase
 
@@ -19,6 +20,21 @@ PAYLOAD_START_INDEX = 2
 CHECKSUM_INDEX = 50
 LITTLE_ENDIAN_STRING = "<6d"
 BROADCAST_ADDRESS = '0.0.0.0'
+
+
+# ==================== Helper Functions ====================
+def convert_ned_to_enu(roll: float, pitch: float, yaw: float) -> tuple[float, float, float]:
+    """
+    Convert Euler angles from NED (aerospace convention: +X forward, +Y right, +Z down)
+    to ENU (+X east, +Y north, +Z up).
+    Angles are in radians.
+    """
+
+    roll_enu = roll               # same
+    pitch_enu = -pitch            # Z-axis flip
+    yaw_enu = -yaw                # rotate heading: NED(0°)=North → ENU(0°)=East
+
+    return roll_enu, pitch_enu, yaw_enu
 
 
 # ==================== Internal State ====================
@@ -142,12 +158,15 @@ class OgnSimUDPToGlobalPosition:
         state = db.internal_state
         state.create_parser(port)
 
-        pose = state.parser.get_cur_data()
+        ned_pose = state.parser.get_cur_data()
 
-        if pose is not None:
-            db.outputs.global_position = [pose.lat, pose.lon, pose.alt]
-            db.outputs.global_orientation = [pose.roll, pose.pitch, pose.yaw]
+        if ned_pose is not None:
+            lat, lon, alt = ned_pose.lat, ned_pose.lon, ned_pose.alt
 
+            enu_roll, enu_pitch, enu_yaw = convert_ned_to_enu(ned_pose.roll, ned_pose.pitch, ned_pose.yaw) 
+            db.outputs.global_position = [lat, lon, alt]
+            db.outputs.global_orientation = [enu_roll, enu_pitch, enu_yaw]
+        
         return True
 
 

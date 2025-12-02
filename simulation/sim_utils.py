@@ -54,6 +54,7 @@ PROJECT_HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 def validate_cameras_mode(args):
     """
     Validate that exactly one communication mode is selected.
+    
     Raises:
         ValueError: if zero or more than one modes are selected.
     """

@@ -23,6 +23,7 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 1. [Auto completion in vscode](#auto-completion-in-vscode)
 1. [Extension Overview](#Extension-Overview)
 1. [Using Bbox](#Using-Bbox)
+1. [Isaac Core Debuger](#isaac-core-debuger)
 
 ---
 
@@ -524,4 +525,90 @@ In order to add a new object to get its bbox data, you need to follow there step
 </details>
 
 #### Make sure to save the .usda file after adding your object and setting it
+
+## Isaac Core Debuger
+
+The `debuger/` folder contains lightweight Python GUI tools for manually sending camera pose data to Isaac Sim.
+
+<details>
+<summary><strong>Overview</strong></summary>
+
+* GUIs built with **Tkinter** to control camera pose.
+
+* Allows setting:
+  * Latitude, Longitude, Altitude
+  * Roll, Pitch, Yaw
+  * Publish rate and optional offsets
+
+* Targets ROS 2 Humble and UDP receivers.
+
+* Requires Python **3.10** for ROS 2 Humble compatibility.
+
+</details>
+
+<details>
+<summary><strong>Files</strong></summary>
+
+| File               | Description                                                                                             |
+| ------------------ | ------------------------------------------------------------------------------------------------------- |
+| `ros_sender.py`    | Publishes camera pose via ROS 2 topics (compatible with ROS 2 Humble).                                  |
+| `udp_sender.py`    | Sends camera pose via UDP packets (compatible with `OgnSimUDPToGlobalPosition` or other UDP receivers). |
+| `setup.py`         | Optional installer to create CLI entry points (`ros-sender` & `udp-sender`).                            |
+
+</details>
+
+<details>
+<summary><strong>Requirements Installation</strong></summary>
+
+#### Python Requirements
+
+```bash
+python3 --version  # Verify Python version (should be 3.10)
+
+cd ./debuger
+python3 -m pip install .
+```
+
+#### Adding Local Bin to PATH (Bash)
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### Adding Local Bin to PATH (Zsh)
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+Now the CLI commands (`ros-sender`, `udp-sender`) can be launched from any directory.
+
+</details>
+
+
+<details>
+<summary><strong>Running the Debugger GUIs</strong></summary>
+
+* Launch ROS 2 GUI for sending camera poses
+
+```bash
+ros-sender
+```
+
+* Launch UDP GUI for sending camera poses
+
+```bash
+udp-sender
+```
+
+Adjust latitude, longitude, altitude, roll, pitch, and yaw in real time.
+
+* Use `ros-sender` for ROS2 camera.
+* Use `udp-sender` for UDP camera.
+
+#### GUI updates are published at the configured rate.
+
+</details>
 

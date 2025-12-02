@@ -45,9 +45,39 @@ OPTIONAL_USDS = {
 }
 
 
-# =============== Project directory =================== #
+# =============== Project directory ==================== #
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
+
+
+# ======== Helper - validate communication mode ======== #
+def validate_cameras_mode(args):
+    """
+    Validate that exactly one communication mode is selected.
+    Raises:
+        ValueError: if zero or more than one modes are selected.
+    """
+
+    modes = {
+        "com_ros": args.com_ros,
+        "com_udp": args.com_udp,
+    }
+
+    selected = [name for name, enabled in modes.items() if enabled]
+
+    if len(selected) == 0:
+        raise ValueError(
+            "No communication mode selected. You must specify exactly one of: "
+            "--com-ros, --com-udp."
+        )
+
+    if len(selected) > 1:
+        raise ValueError(
+            f"Multiple communication modes selected ({', '.join(selected)}). "
+            "Only one of --com-ros or --com-udp may be used."
+        )
+
+    return selected[0]  # return the chosen mode for downstream code
 
 
 # ============ Helper - get user arguments ============ #
@@ -67,6 +97,8 @@ def parse_arguments():
     parser.add_argument("--sat", default=False, action="store_true", help="Add a script node that takes images")
 
     args, _ = parser.parse_known_args()
+    validate_cameras_mode(args)
+   
     return args
 
 

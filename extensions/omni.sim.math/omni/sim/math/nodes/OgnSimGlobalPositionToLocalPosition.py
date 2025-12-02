@@ -174,7 +174,7 @@ class OgnSimGlobalPositionToLocalPosition:
         enu = state.converter.convert_lla_enu(*global_position)
         x, y, z = enu["east"], enu["north"], enu["up"]
 
-        carb.log_error(global_orientation)
+        # carb.log_error(global_orientation)
 
         q_drone = convert_quaternion_from_euler(*global_orientation)
 
@@ -186,7 +186,7 @@ class OgnSimGlobalPositionToLocalPosition:
         qw, qx, qy, qz = quaternion_multiply(q_drone, q_offset)
         roll, pitch, yaw = convert_euler_from_quaternion(qw, qx, qy, qz)
 
-        carb.log_error(f"SIM | GPTLP | roll: {roll}, pitch: {pitch}, yaw: {yaw}")
+        # carb.log_error(f"SIM | GPTLP | roll: {roll}, pitch: {pitch}, yaw: {yaw}")
 
         db.outputs.global_position = global_position
         db.outputs.global_orientation = [

@@ -54,7 +54,6 @@ PROJECT_HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 def parse_arguments():
     """
     get the simulation optional args from the user
-    enforces mutually exclusive communication method selection
     """
 
     parser = argparse.ArgumentParser("Launch flying camera simulation environment", allow_abbrev=False)
@@ -86,3 +85,5 @@ def get_usds_to_add(args, project_home_dir: str) -> dict:
             full_path = os.path.join(project_home_dir, path)
             usds[key] = (full_path, prim_path, name)
     return usds
+
+

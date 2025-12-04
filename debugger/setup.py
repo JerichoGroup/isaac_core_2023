@@ -7,7 +7,7 @@ from setuptools import setup
 # ==================== the package setup ====================
 setup(
     name="debug_isaac_core",
-    version="0.1.0",
+    version="1.0.0",
     py_modules=["ros_sender", "udp_sender"],
     install_requires=[
         "rclpy",

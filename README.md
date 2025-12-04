@@ -12,26 +12,23 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 
 ## Table of Contents 📑
 
-1. [System Requirements](#system-requirements)  
-1. [Docker Workflow (Optional)](#docker-workflow-optional)
-1. [Running the Simulation](#running-the-simulation)  
-1. [Simulation Flags](#simulation-flags)  
-1. [Special configurations](#Special-configurations)
-1. [ROS2 input topics](#ros2-input-topics)  
-1. [ROS2 outputs topics](#ros2-outputs-topics)  
-1. [Take pictures](#take-pictures)  
-1. [Auto completion in vscode](#auto-completion-in-vscode)
-1. [Extension Overview](#Extension-Overview)
-1. [Using Bbox](#Using-Bbox)
-<<<<<<< HEAD
-1. [Isaac Core Debugger](#Isaac-Core-Debugger)
-=======
-1. [Deleting cesium cache](#Deleting-cesium-cache)
->>>>>>> dev
+1. [System Requirements️](#system-requirements)
+1. [Docker Workflow (Optional)](#docker-workflow-optional-)
+1. [Running the Simulation](#running-the-simulation-)  
+1. [Simulation Flags](#simulation-flags-)
+1. [Special configurations](#special-configurations-)
+1. [ROS2 input topics](#ros2-input-topics-)
+1. [ROS2 outputs topics](#ros2-outputs-topics-)  
+1. [Take pictures](#take-pictures-)
+1. [Auto completion in vscode](#auto-completion-in-vscode-)
+1. [Extension Overview](#extension-overview-)
+1. [Using Bbox](#using-bbox-)
+1. [Isaac Core Debugger](#isaac-core-debugger-)
+1. [Deleting cesium cache](#deleting-cesium-cache)
 
 ---
 
-## System Requirements 🖥️
+## System Requirements🖥️
 
 <details>
 <summary><strong>NVIDIA GPU — Driver 535+ recommended for Isaac Sim 2023.1+</strong></summary>
@@ -539,7 +536,6 @@ In order to add a new object to get its bbox data, you need to follow there step
 
 #### Make sure to save the .usda file after adding your object and setting it
 
-<<<<<<< HEAD
 </details>
 
 ## Isaac Core Debugger 🐞
@@ -592,12 +588,18 @@ udp-sender
 
 </details>
 
-=======
 ## Deleting cesium cache
+
+<details>
+
+<summary><strong>Deleting cesium cache</strong></summary>
+
 * While running isaac sim overnight, some computers will have trouble opening it again after closing the overnight session.
 * That is because cesium has a cache file, that is flushed (deleted) after the isaac sim is shutdown, but for long session that file wont be deleted, and it might get so big (600-700GB), that the next time you try to open isaac sim it wont manage to open the file causing isaac sim to fail.
 * the cache file is located on .cache and can be deleted like this:
 ```bash
 rm -rf ~/.cache/ov/cesium-request-cache.sqlite-wal
 ```
->>>>>>> dev
+
+</details>
+

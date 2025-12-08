@@ -67,9 +67,13 @@ def parse_arguments():
     parser.add_argument("--distance-sensor", default=False, action="store_true", help="Add a distance sensor to the simulation")
     parser.add_argument("--bbox-publisher", default=False, action="store_true", help="Add a bounding box publisher to the simulation")
     parser.add_argument("--sat", default=False, action="store_true", help="Add a script node that takes images")
+    parser.add_argument("--header-injector", default=False, action="store_true", help="run a proxy that injects headers into cesium tileset requests")
 
-    args, _ = parser.parse_known_args()
+    args, unknown = parser.parse_known_args()
    
+    if unknown:
+        raise SystemExit(f"Error: Unknown or partial flags detected: {unknown}\n")
+
     return args
 
 
@@ -80,10 +84,12 @@ def get_usds_to_add(args, project_home_dir: str) -> dict:
     """
 
     usds = {}
+
     for key, (path, prim_path, name) in OPTIONAL_USDS.items():
         if getattr(args, key, False):
             full_path = os.path.join(project_home_dir, path)
             usds[key] = (full_path, prim_path, name)
+    
     return usds
 
 

@@ -3,6 +3,9 @@
 # ===================== Imports ======================== #
 import os
 import argparse
+import sys
+import subprocess
+from tileset_header_proxy.header_injection import set_parent_death_signal
 from consts import RESOLUTION_HEIGHT, RESOLUTION_WIDTH
 
 
@@ -50,7 +53,7 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
 
-# ============ Helper - get user arguments ============ #
+# ============ Helper - get user arguments ============= #
 def parse_arguments():
     """
     get the simulation optional args from the user
@@ -70,11 +73,47 @@ def parse_arguments():
     parser.add_argument("--header-injector", default=False, action="store_true", help="run a proxy that injects headers into cesium tileset requests")
 
     args, unknown = parser.parse_known_args()
-   
+
     if unknown:
         raise SystemExit(f"Error: Unknown or partial flags detected: {unknown}\n")
 
     return args
+
+
+# ============== Helper - header injector ============= #
+def start_header_injector():
+    """
+    Start the header injector proxy as a separate process.
+    Returns the subprocess.Popen object for the proxy process.
+    """
+
+    proxy_script_path = os.path.join(
+        PROJECT_HOME_DIR,
+        "simulation",
+        "tileset_header_proxy",
+        "header_injection.py",
+    )
+
+    proc = subprocess.Popen(
+        [sys.executable, proxy_script_path],
+        stdout=sys.stdout,
+        stderr=sys.stderr,
+        preexec_fn=set_parent_death_signal
+    )
+
+    print(f"[INFO] Started header injector proxy (PID={proc.pid})")
+    return proc
+
+
+def start_header_injector_if_enabled(args):
+    """
+    Starts the header injector subprocess only if --header-injector is enabled.
+    Returns subprocess.Popen or None.
+    """
+    
+    if not getattr(args, "header_injector", False):
+        return None
+    return start_header_injector()
 
 
 # ============= Helper - get usds to add ============== #

@@ -1,6 +1,5 @@
 """
 HTTP proxy server that injects an Origin header into requests before forwarding.
-SOLID design, single responsibility, uses built-in logging.
 Designed to run as a separate process in the background.
 """
 
@@ -9,6 +8,9 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 import requests
 import logging
 import sys
+import atexit
+import signal
+import ctypes
 
 
 # =========================== Constants =============================== #
@@ -23,6 +25,7 @@ class ColoredFormatter(logging.Formatter):
     """
     Custom logging formatter to add colors based on log level.
     """
+
     COLORS = {
         logging.DEBUG: "\033[94m",   # Blue
         logging.INFO: "\033[92m",    # Green
@@ -30,18 +33,26 @@ class ColoredFormatter(logging.Formatter):
         logging.ERROR: "\033[91m",   # Red
         logging.CRITICAL: "\033[95m" # Magenta
     }
+
     RESET = "\033[0m"
+
 
     def format(self, record):
         color = self.COLORS.get(record.levelno, self.RESET)
         record.msg = f"{color}{record.msg}{self.RESET}"
         return super().format(record)
 
-logger = logging.getLogger("ProxyLogger")
-logger.setLevel(logging.INFO)
-ch = logging.StreamHandler(sys.stdout)
-ch.setFormatter(ColoredFormatter("[%(levelname)s] %(message)s"))
-logger.addHandler(ch)
+
+def create_logger(name: str) -> logging.Logger:
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setFormatter(ColoredFormatter("[%(levelname)s] %(message)s"))
+    logger.addHandler(ch)
+    return logger
+
+
+logger = create_logger("ProxyLogger")
 
 
 # ======================= Request Handler ============================ #
@@ -80,7 +91,7 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
         Log the incoming request details.
         """
 
-        print("\nq_/========= Upcoming Request =========\_p\n")
+        print("\nq_/============== Upcoming Request ===============\_p\n")
         logger.info(f"Incoming Request: {self.command} {self.path}")
         
         for header, value in self.headers.items():
@@ -121,25 +132,57 @@ class ProxyRequestHandler(BaseHTTPRequestHandler):
         return  # suppress default logging
 
 
+# ======================= Cleanup Handler ============================ #
+def shutdown_server(server: HTTPServer):
+    """
+    Shutdown the HTTP server gracefully.
+    """
+
+    logger.info("Shutting down proxy server...")
+    server.shutdown()
+    server.server_close()
+    logger.info("Proxy server stopped.")
+
+
+def handle_signal(signum, frame, server: HTTPServer):
+    """
+    Handle termination signals to gracefully shut down the server.
+    """
+
+    logger.info(f"Received signal {signum}, shutting down...")
+    shutdown_server(server)
+    sys.exit(0)
+
+
+def set_parent_death_signal(sig=signal.SIGTERM):
+    """
+    Set the parent death signal for the current process.
+    This ensures that the process receives the specified signal when its parent dies.
+    """
+    libc = ctypes.CDLL("libc.so.6")
+    PR_SET_PDEATHSIG = 1
+    libc.prctl(PR_SET_PDEATHSIG, sig)
+
+
 # ================================ Main ============================== #
-def main():
+def run_proxy():
     """
     Main function to start the proxy server.
     """
     
     server = HTTPServer(("", LISTEN_PORT), ProxyRequestHandler)
-    logger.info(f"Proxy server running on port {LISTEN_PORT}, forwarding to {TARGET_URL} with Origin {ORIGIN_HEADER}")
-    
-    try:
-        server.serve_forever()
 
-    except KeyboardInterrupt:
-        logger.info("Stopping proxy server...")
-        server.shutdown()
-        server.server_close()
-        logger.info("Proxy server stopped.")
+    # Register cleanup at exit
+    atexit.register(shutdown_server, server)  
+    
+    # Register signal handlers
+    signal.signal(signal.SIGINT, lambda s, f: handle_signal(s, f, server))
+    signal.signal(signal.SIGTERM, lambda s, f: handle_signal(s, f, server))
+
+    logger.info(f"Proxy server running on port {LISTEN_PORT}, forwarding to {TARGET_URL} with Origin {ORIGIN_HEADER}")
+    server.serve_forever()
 
 
 # ============================== Entry Point ========================= #
 if __name__ == "__main__":
-    main()
+    run_proxy()

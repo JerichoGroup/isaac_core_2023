@@ -132,6 +132,21 @@ ros2 interface show isaac_ros2_messages/msg/Bbox
 <details>
 <summary><strong>Setup Extensions</strong></summary>
 
+Make sure isaacsim_2023 is installed. You can download at:
+https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/download.html
+```bash
+mkdir -p ~/.local/share/ov/pkg/
+# mv isaac_sim-2023.1.1 ~/.local/share/ov/pkg/
+```
+Add to bashrc:
+```bash
+# ISAACSIM Aliases
+export ISAACSIM_PATH="/home/user/.local/share/ov/pkg/isaac_sim-2023.1.1"
+alias ISAACSIM_PYTHON="${ISAACSIM_PATH}/python.sh"
+alias ISAACSIM="${ISAACSIM_PATH}/isaac-sim.sh"
+alias move_ext='cp -r /home/user/clones/isaac_core_2023/extensions/* $ISAACSIM_PATH/exts/'
+```
+
 Modify Omniverse config file:
 ```bash
 OMNI_CONFIG_FILE="$ISAACSIM_PATH/apps/omni.isaac.sim.python.kit"
@@ -154,6 +169,12 @@ Then run:
 cp -r ~/.local/share/ov/data/exts/v2/cesium.* "$ISAACSIM_PATH/exts"
 cp -r extensions/* $ISAACSIM_PATH/exts/
 ```
+
+Install extensions dependencies:  
+```bash
+sudo apt install -y ros-humble-geographic-msgs
+```
+
 
 </details>
 

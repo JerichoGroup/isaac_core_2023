@@ -1,7 +1,7 @@
 {
   "ROS2ToGlobalPosition": {
     "version": 1,
-    "description": "Subscribe to ROS2 topics to extract global position and orientation (lat, lon, alt, roll, pitch, yaw)",
+    "description": "Subscribe to ROS2 topics to extract global position and orientation (lat, lon, alt, roll, pitch, yaw).",
     "language": "Python",
     "metadata": {
       "uiName": "ROS2 to Global Position"
@@ -43,7 +43,7 @@
       },
       "global_orientation": {
         "type": "vectord[3]",
-        "description": "Global orientation [roll, pitch, yaw] in radians",
+        "description": "Global orientation [roll, pitch, yaw] in radians in ENU intrinsic xyz eular angle. -pi<=roll<=+pi, -pi/2<=pitch<=+pi/2, -pi<=yaw<=+pi",
         "default": [0.0, 0.0, 0.0],
         "metadata": {
           "uiName": "Global Orientation"

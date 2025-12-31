@@ -2,10 +2,9 @@
 
 # ==================== Imports ====================== #
 import carb
-import math
 import rclpy
 import threading
-from typing import Any, Tuple
+from typing import Any
 from sensor_msgs.msg import NavSatFix
 from geometry_msgs.msg import PoseStamped
 from rclpy.executors import MultiThreadedExecutor
@@ -13,9 +12,8 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy
 from transforms3d.euler import quat2euler
 from omni.sim.position.ogn.OgnSimROS2ToGlobalPositionDatabase import OgnSimROS2ToGlobalPositionDatabase
 
-
 # ==================== Constants ==================== #
-EULER_AXES = 'rxyz' # Roll-Pitch-Yaw convention
+EULER_AXES = 'rxyz'  # Roll-Pitch-Yaw convention
 
 
 # ==================== the OgnSimROS2ToGlobalPositionInternalState class ====================
@@ -24,7 +22,6 @@ class OgnSimROS2ToGlobalPositionInternalState:
 
     def __init__(self):
         """Initialize the internal state of the node"""
-
         carb.log_info("SIM | RTGP | Initializing ROS2ToGlobalPosition internal state")
 
         self.node = rclpy.create_node("ros2_global_position_subscriber")
@@ -32,35 +29,30 @@ class OgnSimROS2ToGlobalPositionInternalState:
             self.node.declare_parameter("use_sim_time", True)
         except rclpy.exceptions.ParameterAlreadyDeclaredException:
             pass
-        
+
         self.lock = threading.Lock()
         self.spinning = False
         self.lla_subscription = None
         self.orientation_subscription = None
-        
+
         self.latest_lla = NavSatFix()
         self.latest_orientation = PoseStamped()
-       
+
         self.qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
             history=HistoryPolicy.KEEP_LAST,
             depth=10
         )
 
-
     def lla_callback(self, msg: NavSatFix) -> None:
         """Callback for lla messages"""
-
         with self.lock:
             self.latest_lla = msg
 
-
     def orientation_callback(self, msg: PoseStamped) -> None:
         """Callback for orientation messages"""
-
         with self.lock:
             self.latest_orientation = msg
-
 
     def create_subscriptions(self, lla_topic: str, orientation_topic: str) -> None:
         """Create subscriptions to the specified topics if not already created"""
@@ -81,24 +73,11 @@ class OgnSimROS2ToGlobalPositionInternalState:
             threading.Thread(target=self._spin, daemon=True).start()
             self.spinning = True
 
-
     def _spin(self) -> None:
         """uses a MultiThreadedExecutor to spin the node in a separate thread"""
-
         executor = MultiThreadedExecutor()
         executor.add_node(self.node)
         executor.spin()
-
-
-# ==================== Helper - quaternion to Euler ====================
-def convert_euler_from_quaternion(qw: float, qx: float, qy: float, qz: float) -> Tuple[float, float, float]:
-    """
-    Convert quaternion to Euler angles using transforms3d.
-    """
-
-    quaternion = (qw, qx, qy, qz)
-
-    return quat2euler(quaternion, axes=EULER_AXES)
 
 
 # ==================== the OgnSimROS2ToGlobalPosition class ====================
@@ -118,11 +97,9 @@ class OgnSimROS2ToGlobalPosition:
 
         return OgnSimROS2ToGlobalPositionInternalState()
 
-
     @staticmethod
     def compute(db: OgnSimROS2ToGlobalPositionDatabase) -> bool:
         """Subscribe to the topics and update outputs"""
-
         carb.log_info("SIM | RTGP | ROS2ToGlobalPosition compute triggered")
 
         lla_topic = db.inputs.lla_topic
@@ -132,25 +109,21 @@ class OgnSimROS2ToGlobalPosition:
         state.create_subscriptions(lla_topic, orientation_topic)
 
         with state.lock:
-            
             lat = state.latest_lla.latitude
             lon = state.latest_lla.longitude
             alt = state.latest_lla.altitude
-
             q = state.latest_orientation.pose.orientation
-            
-        roll, pitch, yaw = convert_euler_from_quaternion(q.w, q.x, q.y, q.z)
+
+        roll, pitch, yaw = quat2euler((q.w, q.x, q.y, q.z), axes=EULER_AXES)
 
         db.outputs.global_position = [lat, lon, alt]
         db.outputs.global_orientation = [roll, pitch, yaw]
 
         return True
 
-
     @staticmethod
     def release(node: Any) -> None:
         """Release resources held by the node"""
-
         carb.log_info("SIM | RTGP | Node release triggered")
 
         state = None

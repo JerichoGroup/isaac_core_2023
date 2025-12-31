@@ -33,7 +33,7 @@
       },
       "global_orientation": {
         "type": "vectord[3]",
-        "description": "Global orientation [roll, pitch, yaw]",
+        "description": "Global orientation [roll, pitch, yaw]. Angles are for ENU intrinsic xyz eular angles. -pi<=roll<=+pi, -pi/2<=pitch<=+pi/2, -pi<=yaw<=+pi",
         "default": [0.0, 0.0, 0.0],
         "metadata": {
           "uiName": "Global Orientation"
@@ -41,7 +41,7 @@
       },
       "offset_roll": {
         "type": "float",
-        "description": "Offset to apply to roll (degrees)",
+        "description": "Offset to apply to roll (degrees). -180<=roll<=180",
         "default": 0.0,
         "metadata": {
           "uiName": "Offset Roll"
@@ -49,7 +49,7 @@
       },
       "offset_pitch": {
         "type": "float",
-        "description": "Offset to apply to pitch (degrees)",
+        "description": "Offset to apply to pitch (degrees). -90<=pitch<=+90",
         "default": 0.0,
         "metadata": {
           "uiName": "Offset Pitch"
@@ -57,7 +57,7 @@
       },
       "offset_yaw": {
         "type": "float",
-        "description": "Offset to apply to yaw (degrees)",
+        "description": "Offset to apply to yaw (degrees). -180<=yaw<=180",
         "default": 0.0,
         "metadata": {
           "uiName": "Offset Yaw"
@@ -75,7 +75,7 @@
       },
       "global_orientation": {
         "type": "vectorf[3]",
-        "description": "Echo the camera roll pitch yaw",
+        "description": "Echo the camera roll pitch yaw. angles are for ENU intrinsic xyz eular angles. -pi<=roll<=+pi, -pi/2<=pitch<=+pi/2, -pi<=yaw<=+pi",
         "default": [0.0, 0.0, 0.0],
         "metadata": {
           "uiName": "Global orientation"

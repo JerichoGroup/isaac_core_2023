@@ -10,23 +10,25 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 
 ---
 
-## Table of Contents
+## Table of Contents 📑
 
-1. [System Requirements](#system-requirements)  
-1. [Docker Workflow (Optional)](#docker-workflow-optional)
-1. [Running the Simulation](#running-the-simulation)  
-1. [Simulation Flags](#simulation-flags)  
-1. [Special configurations](#Special-configurations)
-1. [ROS2 input topics](#ros2-input-topics)  
-1. [ROS2 outputs topics](#ros2-outputs-topics)  
-1. [Take pictures](#take-pictures)  
-1. [Auto completion in vscode](#auto-completion-in-vscode)
-1. [Extension Overview](#Extension-Overview)
-1. [Using Bbox](#Using-Bbox)
+1. [System Requirements️](#system-requirements)
+1. [Docker Workflow (Optional)](#docker-workflow-optional-)
+1. [Running the Simulation](#running-the-simulation-)  
+1. [Simulation Flags](#simulation-flags-)
+1. [Special configurations](#special-configurations-)
+1. [ROS2 input topics](#ros2-input-topics-)
+1. [ROS2 outputs topics](#ros2-outputs-topics-)  
+1. [Take pictures](#take-pictures-)
+1. [Auto completion in vscode](#auto-completion-in-vscode-)
+1. [Extension Overview](#extension-overview-)
+1. [Using Bbox](#using-bbox-)
+1. [Isaac Core Debugger](#isaac-core-debugger-)
+1. [Deleting cesium cache](#deleting-cesium-cache)
 
 ---
 
-## System Requirements
+## System Requirements🖥️
 
 <details>
 <summary><strong>NVIDIA GPU — Driver 535+ recommended for Isaac Sim 2023.1+</strong></summary>
@@ -130,6 +132,21 @@ ros2 interface show isaac_ros2_messages/msg/Bbox
 <details>
 <summary><strong>Setup Extensions</strong></summary>
 
+Make sure isaacsim_2023 is installed. You can download at:
+https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/download.html
+```bash
+mkdir -p ~/.local/share/ov/pkg/
+# mv isaac_sim-2023.1.1 ~/.local/share/ov/pkg/
+```
+Add to bashrc:
+```bash
+# ISAACSIM Aliases
+export ISAACSIM_PATH="/home/user/.local/share/ov/pkg/isaac_sim-2023.1.1"
+alias ISAACSIM_PYTHON="${ISAACSIM_PATH}/python.sh"
+alias ISAACSIM="${ISAACSIM_PATH}/isaac-sim.sh"
+alias move_ext='cp -r /home/user/clones/isaac_core_2023/extensions/* $ISAACSIM_PATH/exts/'
+```
+
 Modify Omniverse config file:
 ```bash
 OMNI_CONFIG_FILE="$ISAACSIM_PATH/apps/omni.isaac.sim.python.kit"
@@ -153,6 +170,12 @@ cp -r ~/.local/share/ov/data/exts/v2/cesium.* "$ISAACSIM_PATH/exts"
 cp -r extensions/* $ISAACSIM_PATH/exts/
 ```
 
+Install extensions dependencies:  
+```bash
+sudo apt install -y ros-humble-geographic-msgs
+```
+
+
 </details>
 
 <details>
@@ -166,7 +189,7 @@ cp -r extensions/* $ISAACSIM_PATH/exts/
 
 ---
 
-## Docker Workflow (Optional)
+## Docker Workflow (Optional) 🐳
 
 <details>
 <summary>Architecture Overview</summary>
@@ -216,7 +239,7 @@ Development is designed to be flexible:
 </details>
 
 
-## Running the Simulation
+## Running the Simulation 🚀
 
 ### Run Inside Docker
 
@@ -233,7 +256,7 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 
 ---
 
-## Simulation Flags
+## Simulation Flags 🚩
 
 | Flag                     | Description                                                         |
 |--------------------------|---------------------------------------------------------------------|
@@ -247,7 +270,7 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 
 ---
 
-## Special configurations
+## Special configurations 🔧
 under simulation/consts.py you can change:
 ```bash     
 GIMBAL_ROLL_DEG                 # gimbal roll angel
@@ -287,7 +310,7 @@ ros2 topic pub /isaac_core/gimbal isaac_ros2_messages/msg/Gimbal "{roll: 0.0, pi
 
 ---
 
-## ROS2 input topics
+## ROS2 input topics 📥
 These are the MAVRos topic the isaac sim would be subscribing to if you choose com-ros
 
 | Topic                                | Type                                | Description                                      |
@@ -300,7 +323,7 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 
 ------
 
-## ROS2 outputs topics
+## ROS2 outputs topics 📤
 
 | Topic                                | Type                                 | Description                 |
 |--------------------------------------|--------------------------------------|-----------------------------|
@@ -340,7 +363,7 @@ ros2 topic pub /isaac_core/sat isaac_ros2_messages/msg/SATOutput "{output_path: 
 
 
 
-## Auto completion in vscode
+## Auto completion in vscode 💡
 <details>
 <summary>Expand to show more on setup</summary>
 `.vscode` folder is unique for each machine depending on the extensions installed, in order to get the right folder follow those steps:
@@ -364,7 +387,11 @@ Now reopen vscode in this folder an wait 30 seconds ~ for auto-completion.
 </details>
 
 
-## Extension Overview
+## Extension Overview 🧩
+
+<details>
+
+<summary><strong>Extension Overview</strong></summary>
 
 The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 
@@ -497,8 +524,13 @@ The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 
 </details>
 
+</details>
 
-## Using Bbox
+## Using Bbox 📦
+
+<details>
+
+<summary><strong>Using Bbox</strong></summary>
 
 You can enable the Bbox option with the `--bbox-publisher` flag.
 
@@ -534,8 +566,75 @@ In order to add a new object to get its bbox data, you need to follow there step
   * Notice: Make sure all your fields look like in the image, the `apply to` needs to be on stage and not selected
 - Click `Add`
 
-<img src="readme_images/bbox_semantics.png" alt="adding the correct semantics to a object" width="500"/>
+<img src="readme_images/bbox_semantics.png" alt="adding the correct semantics to a object" width="1000"/>
 </details>
 
 #### Make sure to save the .usda file after adding your object and setting it
+
+</details>
+
+## Isaac Core Debugger 🐞
+
+<details>
+
+<summary><strong>Isaac Core Debugger</strong></summary>
+
+* Allows manually sending camera pose data to Isaac Sim with GUI:
+  * Latitude, Longitude, Altitude
+  * Roll, Pitch, Yaw
+  * Publish rate and optional offsets
+
+<img src="readme_images/debugger.png" alt="Logo" width="1000"/>
+
+## Python Requirements
+
+```bash
+python3 --version  # Verify Python version (should be 3.10)
+
+cd ./debugger
+python3 -m pip install .
+```
+
+## Adding Local Bin to PATH (Bash)
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+## Adding Local Bin to PATH (Zsh)
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+## Running the Debugger GUIs
+
+* Launch GUI for sending camera poses
+
+```bash
+ros-sender
+```
+or:
+```bash
+udp-sender
+```
+
+</details>
+
+## Deleting cesium cache
+
+<details>
+
+<summary><strong>Deleting cesium cache</strong></summary>
+
+* While running isaac sim overnight, some computers will have trouble opening it again after closing the overnight session.
+* That is because cesium has a cache file, that is flushed (deleted) after the isaac sim is shutdown, but for long session that file wont be deleted, and it might get so big (600-700GB), that the next time you try to open isaac sim it wont manage to open the file causing isaac sim to fail.
+* the cache file is located on .cache and can be deleted like this:
+```bash
+rm -rf ~/.cache/ov/cesium-request-cache.sqlite-wal
+```
+
+</details>
 

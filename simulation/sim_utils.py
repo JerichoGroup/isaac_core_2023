@@ -45,7 +45,7 @@ OPTIONAL_USDS = {
 }
 
 
-# =============== Project directory =================== #
+# =============== Project directory ==================== #
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_HOME_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
@@ -56,17 +56,20 @@ def parse_arguments():
     get the simulation optional args from the user
     """
 
-    parser = argparse.ArgumentParser("Launch flying camera simulation environment")
+    parser = argparse.ArgumentParser("Launch flying camera simulation environment", allow_abbrev=False)
+
+    comm_group = parser.add_mutually_exclusive_group(required=True)
+    comm_group.add_argument("--com-ros", action="store_true", help="Enable communication via ROS")
+    comm_group.add_argument("--com-udp", action="store_true", help="Enable communication via UDP")
 
     parser.add_argument("--usd-path", type=str, default="usd/maps/earth/earth.usda", help="Path to usd file, should be relative to your default assets folder")
     parser.add_argument("--headless", default=False, action="store_true", help="Run stage headless")
-    parser.add_argument("--com-ros", default=False, action="store_true", help="Enable communication via ROS")
-    parser.add_argument("--com-udp", default=False, action="store_true", help="Enable communication via UDP")
     parser.add_argument("--distance-sensor", default=False, action="store_true", help="Add a distance sensor to the simulation")
     parser.add_argument("--bbox-publisher", default=False, action="store_true", help="Add a bounding box publisher to the simulation")
     parser.add_argument("--sat", default=False, action="store_true", help="Add a script node that takes images")
 
     args, _ = parser.parse_known_args()
+   
     return args
 
 
@@ -82,3 +85,5 @@ def get_usds_to_add(args, project_home_dir: str) -> dict:
             full_path = os.path.join(project_home_dir, path)
             usds[key] = (full_path, prim_path, name)
     return usds
+
+

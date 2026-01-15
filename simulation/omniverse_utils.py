@@ -4,10 +4,10 @@
 import sys
 import carb
 import omni.usd
+from pxr import Usd
 from omni.isaac.kit import SimulationApp
 from omni.isaac.core.utils.nucleus import is_file
 from omni.kit.viewport.utility import get_active_viewport
-from pxr import Usd
 
 
 # =============== helper functions =============== #
@@ -68,3 +68,11 @@ def get_prim_at_path(path: str) -> Usd.Prim:
     
     return prim
 
+
+def is_prim_valid(path: str) -> bool:
+    """"check if prim at path is valid in the current stage"""
+
+    stage = omni.usd.get_context().get_stage()
+    prim = stage.GetPrimAtPath(path)
+
+    return prim.IsValid()

@@ -1,7 +1,7 @@
 {
   "UDPToGlobalPosition": {
     "version": 1,
-    "description": "Listen to a UDP port for pose data and output global position and orientation (lat, lon, alt, roll, pitch, yaw)",
+    "description": "Listen to a UDP port for pose data and output global position and orientation (lat, lon, alt, roll, pitch, yaw). angles are for NED intrinsic xyz eular angles.  -pi<=roll<=+pi, -pi/2<=pitch<=+pi/2, -pi<=yaw<=+pi",
     "language": "Python",
     "metadata": {
       "uiName": "UDP to Global Position"
@@ -35,7 +35,7 @@
       },
       "global_orientation": {
         "type": "vectord[3]",
-        "description": "Global orientation [roll, pitch, yaw]",
+        "description": "Global orientation [roll, pitch, yaw] in ENU intrinsic xyz eular angle. -pi<=roll<=+pi, -pi/2<=pitch<=+pi/2, -pi<=yaw<=+pi",
         "default": [0.0, 0.0, 0.0],
         "metadata": {
           "uiName": "Global Orientation"

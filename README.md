@@ -335,7 +335,21 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 
 ---
 
-## Take pictures 📸
+## Angles conventions
+The angles of roll, pitch, yaw expected for udp are of the conventions of NED coordinates and intrensic xyz eular angles.
+This means:
++roll will turn the "nose" of the airplain (camera) to the right (right wing down, left wing up)
++pitch will trurn the "nose" of the airplain (camera) up
++yaw will trurn the "nose" of the airplain (camera) right
+
+This is true for gimbal angles as well.
+
+Behind the scences isaac core uses ENU (this is because of cesium)
+We fix this distinction by converting NED rotations to ENU (But you don't need to take care of this).
+And mavros convts autmatically from NED to ENU
+
+
+## Take pictures
 You can enable the take picture with the `--sat` flag
 
 Then the topic `/isaac_core/sat` will expect msg's that their content is a file path.

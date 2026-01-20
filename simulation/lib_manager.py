@@ -71,6 +71,7 @@ def main() -> None:
     args = parser.parse_args()
 
     libs_to_add = json.loads(args.libs)
+    print("[LibManager] Received libs:", libs_to_add)
 
     manager = SimLibManager(libs_to_add)
     manager.start_all_libs()

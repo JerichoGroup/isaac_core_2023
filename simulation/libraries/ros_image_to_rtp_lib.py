@@ -12,7 +12,7 @@ from gi.repository import Gst, GObject
 import threading
 import socket
 import struct
-from sim_lib import SimLibBase
+from libraries.sim_lib import SimLibBase
 
 
 # ==================== The GstRTPBridge class ====================
@@ -61,8 +61,6 @@ class GstRTPBridge:
 
     def _gst_caps_for_encoding(self, encoding: str, width: int, height: int) -> Gst.Caps:
         """Generate GStreamer caps for a given encoding."""
-
-        print(f"[RTP Bridge] Incoming encoding={encoding}, width={width}, height={height}")
 
         fmt_map = {
             "rgb8": "RGB",

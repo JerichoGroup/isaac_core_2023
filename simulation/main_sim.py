@@ -23,11 +23,11 @@ def main():
     simulation = Simulation(args.usd_path, usds_to_add)
 
     libs_to_run_json = json.dumps(sim_utils.get_libs_to_add(args))
-    lib_proc = subprocess.Popen(
-        ["/usr/bin/python3", "lib_manager.py", "--libs", libs_to_run_json],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True )
+    print(f"[main_sim] Starting LibManager with libs: {libs_to_run_json}")
+    lib_proc = subprocess.Popen(["/usr/bin/python3",
+                                 os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib_manager.py"),
+                                 "--libs",
+                                 libs_to_run_json])
 
     simulation.run_simulation()
 

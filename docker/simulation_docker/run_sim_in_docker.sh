@@ -8,8 +8,9 @@ COM="--com-udp"
 BBOX="--bbox-publisher"
 DISTANCE_SENSOR="--distance-sensor"
 SAT="--sat"
+RTP="--image-rtp"
 
-RUN_SIMULATION="/isaac-sim/python.sh ./simulation/main_sim.py $USD_PATH $COM $BBOX $DISTANCE_SENSOR $SAT"
+RUN_SIMULATION="/isaac-sim/python.sh ./simulation/main_sim.py $USD_PATH $COM $RTP"
 
 bash -ic "$RUN_SIMULATION"
 

@@ -4,6 +4,7 @@
 import os
 import json
 import sim_utils
+from lib_manager import SimLibManager
 
 
 # ==================== the main simulation func ====================
@@ -20,7 +21,17 @@ def main():
 
     simulation = Simulation(args.usd_path, usds_to_add)
 
-    simulation.run_simulation()
+    sim_lib_manager = SimLibManager(sim_utils.get_libs_to_add(args))
+    sim_lib_manager.start_all_libs()
+
+    try:
+        simulation.run_simulation()
+    except KeyboardInterrupt:
+        print("\n[Main] Caught KeyboardInterrupt, shutting down...")
+    except Exception as e:
+        print(f"\n[Main] Caught exception: {e}, shutting down...")
+    finally:
+        sim_lib_manager.shutdown_all_libs()
 
 
 # ==================== run the main ====================

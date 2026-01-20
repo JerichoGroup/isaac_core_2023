@@ -267,6 +267,7 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 | `--distance-sensor`      | Add range sensor to simulation (output is on ros topic)             |
 | `--bbox-publisher`       | Publish bbox data for each object specified                         |
 | `--sat`                  | enables to capture current frames to and output path via a ros topic|
+| `--image-rtp`            | exports the image from ros over RTP                                 |
 
 ---
 
@@ -291,6 +292,11 @@ GLOBAL_POSE_TOPIC_NAME          # global pose data topic name
 LASER_TOPIC_NAME                # distance sensor topic name
 BBOXES_TOPIC_NAME               # bbox data topic name
 IMAGE_PUBLISHER_TOPIC_NAME      # image rgb topic name
+
+RTP_VIDEO_PORT                  # defines the port to export the frames over udp
+RTP_META_PORT                   # defines the port to export the metadata over udp
+
+HOST_IP                         # defines the host ip to publish over udp from 
 ```
 
 ### Gimbal Angle (Reference Image)

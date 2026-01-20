@@ -3,8 +3,9 @@
 # ==================== imports ====================
 import os
 import json
+import subprocess
+
 import sim_utils
-from lib_manager import SimLibManager
 
 
 # ==================== the main simulation func ====================
@@ -21,17 +22,16 @@ def main():
 
     simulation = Simulation(args.usd_path, usds_to_add)
 
-    sim_lib_manager = SimLibManager(sim_utils.get_libs_to_add(args))
-    sim_lib_manager.start_all_libs()
+    libs_to_run_json = json.dumps(sim_utils.get_libs_to_add(args))
+    lib_proc = subprocess.Popen(
+        ["/usr/bin/python3", "lib_manager.py", "--libs", libs_to_run_json],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True )
 
-    try:
-        simulation.run_simulation()
-    except KeyboardInterrupt:
-        print("\n[Main] Caught KeyboardInterrupt, shutting down...")
-    except Exception as e:
-        print(f"\n[Main] Caught exception: {e}, shutting down...")
-    finally:
-        sim_lib_manager.shutdown_all_libs()
+    simulation.run_simulation()
+
+    lib_proc.terminate()
 
 
 # ==================== run the main ====================

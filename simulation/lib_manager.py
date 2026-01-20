@@ -1,8 +1,11 @@
 """This file defines a manager for simulation libraries."""
 
 # ==================== imports ====================
-from typing import Dict, List, Type
+import time
+import json
+import argparse
 import threading
+from typing import Dict, List, Type
 
 from libraries.sim_lib import SimLibBase
 from libraries.ros_image_to_rtp_lib import ImageRTPStreamer
@@ -57,3 +60,34 @@ class SimLibManager:
                 print(f"[SimLibManager] Error shutting down lib {lib}: {e}")
 
         print("[SimLibManager] All libs shutdown")
+
+
+# ==================== Main Function ====================
+def main() -> None:
+    """Main to run the SimLibManager, will be ran from main_sim in a subprocess."""
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--libs", type=str, required=True, help="JSON string of libraries to add")
+    args = parser.parse_args()
+
+    libs_to_add = json.loads(args.libs)
+
+    manager = SimLibManager(libs_to_add)
+    manager.start_all_libs()
+
+    print("[LibManager] Running.")
+
+    try:
+        while True:
+            time.sleep(0.25)
+    except KeyboardInterrupt:
+        print("\n[LibManager] Caught KeyboardInterrupt, shutting down...")
+    except Exception as e:
+        print(f"\n[LibManager] Caught exception: {e}, shutting down...")
+    finally:
+        manager.shutdown_all_libs()
+
+
+# ==================== Entrypoint ====================
+if __name__ == "__main__":
+    main()

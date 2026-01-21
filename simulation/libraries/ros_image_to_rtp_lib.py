@@ -1,6 +1,10 @@
 """This file defines a ROS2 node that subscribes to image messages and streams them over RTP with frame_id."""
 
 # ==================== Imports ====================
+import threading
+import socket
+import struct
+
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
@@ -9,9 +13,6 @@ import gi
 gi.require_version('Gst', '1.0')
 from gi.repository import Gst, GObject
 
-import threading
-import socket
-import struct
 from libraries.sim_lib import SimLibBase
 
 
@@ -163,6 +164,7 @@ class ImageRTPStreamer(SimLibBase):
 
     def __init__(self, topic, host, video_port, meta_port):
         """Initialize the Image RTP Streamer simulation library."""
+
         self.topic = topic
         self.host = host
         self.video_port = video_port
@@ -183,12 +185,10 @@ class ImageRTPStreamer(SimLibBase):
             self.meta_port
         )
 
-        self._spin_thread = threading.Thread(
-            target=rclpy.spin,
-            args=(self.node,),
-            daemon=True
-        )
-        self._spin_thread.start()
+        try:
+            rclpy.spin(self.node)
+        except Exception as e:
+            print("[Image RTP Streamer] Exception in rclpy.spin:", e)
 
     def shutdown(self):
         """Shutdown the Image RTP Streamer."""

@@ -53,6 +53,7 @@ class SimLibManager:
 
     def shutdown_all_libs(self) -> None:
         """Shutdown all simulation libraries."""
+
         for lib in self._libs:
             try:
                 lib.shutdown()

@@ -11,7 +11,7 @@ from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
 
 from simulation import consts
-from base_capture import BaseCapture
+from .base_capture import BaseCapture
 
 
 # ==================== The VideoCapture class ====================

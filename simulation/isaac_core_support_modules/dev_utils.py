@@ -80,6 +80,3 @@ def save_current_frame_to(image_path: str, shutdown_rclpy: bool = False) -> None
     sat_node.destroy_node()
     if shutdown_rclpy:
         safe_rclpy_shutdown()
-
-
-save_current_frame_to("/tmp/test_image.png")  # Example usage

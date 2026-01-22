@@ -4,7 +4,7 @@
 import time
 from pathlib import Path
 import rclpy
-from isaac_ros2_messages.msg import Gimbal
+from isaac_ros2_messages.msg import Gimbal, SATOutput
 
 
 # ==================== delete cesium cache ====================
@@ -58,6 +58,28 @@ def set_gimbal_angle(roll: float, pitch: float, yaw: float, times: int = 3, shut
         time.sleep(0.05)
 
     gimbal_node.destroy_node()
-
     if shutdown_rclpy:
         safe_rclpy_shutdown()
+
+
+# ==================== save_current_frame_to ====================
+def save_current_frame_to(image_path: str, shutdown_rclpy: bool = False) -> None:
+    """Save the current camera POV frame to the given image path (should end with .png), by publishing to the /isaac_core/sat topic."""
+
+    safe_rclpy_init()
+
+    sat_node = rclpy.create_node("save_sat_node")
+    pub = sat_node.create_publisher(SATOutput, "/isaac_core/sat", 10)
+
+    msg = SATOutput()
+    msg.output_path = image_path
+
+    pub.publish(msg)
+    print(f"Sent SATOutput msg: {msg}")
+    
+    sat_node.destroy_node()
+    if shutdown_rclpy:
+        safe_rclpy_shutdown()
+
+
+save_current_frame_to("/tmp/test_image.png")  # Example usage

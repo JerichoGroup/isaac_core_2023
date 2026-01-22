@@ -1,43 +1,23 @@
-"""this file defines a class to be used as a context manager for isaac sim"""
+"""Context manager for launching Isaac Sim with live stdout monitoring."""
 
-# ==================== imports ====================
-import os
-import time
-import itertools
+# ==================== Imports ====================
+from types import TracebackType
+from pathlib import Path
 import subprocess
+import threading
+import itertools
+import time
+import signal
+import os
 
 
-# ==================== Helper - wait with msg (animated) ====================
-def wait_with_msg_for_log(path: str,log: str,
-                          load_msg: str, end_msg: str,
-                          buffer: float = 0.25, timeout: float = 300):
-    """print a loading msg and run a 'loading' animation until the given log is found in the process output"""
-
-    start_time = time.time()
-    symbols_iter = itertools.cycle(["-", "\\", "|", "/"])
-    
-    with open(path, "r") as file:
-    
-        while True:
-
-            file.seek(0)
-            content = file.read()
-
-            if log in content:
-                print(end_msg)
-                break
-
-            if time.time() - start_time > timeout:
-                print(f"timeout reached while waiting for log: {log}")
-                break
-
-            print(f"{load_msg}  {next(symbols_iter)}", end="\r")
-            time.sleep(buffer)
+# ==================== Consts ====================
+READY_LOG = "rclpy loaded"
 
 
-# ==================== the IsaacManager class ====================
+# ==================== The IsaacManager class ====================
 class IsaacManager:
-    """a context manager to start and stop isaac sim"""
+    """A context manager to start and stop isaac sim"""
 
     FLAG_MAP = {
         "usd_path": "--usd-path",
@@ -46,14 +26,17 @@ class IsaacManager:
         "com_udp": "--com-udp",
         "distance_sensor": "--distance-sensor",
         "bbox_publisher": "--bbox-publisher",
-        "sat": "--sat"
+        "sat": "--sat",
+        "rtp": "--image-rtp",
     }
-    
+
     def __init__(self, usd_path: str = "./usd/maps/earth/earth.usda", headless: bool = False,
                  com_ros: bool = False, com_udp: bool = False, distance_sensor: bool = False,
-                 bbox_publisher: bool = False, sat: bool = False):
-        """initialize the context manager with the command to start isaac sim"""
+                 bbox_publisher: bool = False, sat: bool = False, rtp: bool = False,
+                 show_isaac_logs: bool = False):
+        """Initialize the context manager with the command to start isaac sim"""
 
+        self.show_isaac_logs = show_isaac_logs
         self.flags = {
             "usd_path": usd_path,
             "headless": headless,
@@ -61,17 +44,26 @@ class IsaacManager:
             "com_udp": com_udp,
             "distance_sensor": distance_sensor,
             "bbox_publisher": bbox_publisher,
-            "sat": sat
+            "sat": sat,
+            "rtp": rtp,
         }
-        self.process = None
-        self.isaac_core_cmd = ["/home/ofer/.local/share/ov/pkg/isaac_sim-2023.1.1/python.sh", "./simulation/main_sim.py"]
 
-    
+        self.process = None
+        self.stdout_thread = None
+        self.ready_log = READY_LOG
+        self.ready_event = threading.Event()
+
+        self.isaac_python_abs_path = Path.home() / ".local" / "share" / "ov" / "pkg" / "isaac_sim-2023.1.1" / "python.sh"
+
+        self.isaac_core_cmd = [
+            str(self.isaac_python_abs_path),
+            "./simulation/main_sim.py"
+        ]
+
     def _build_isaac_core_cmd(self) -> None:
-        """build the isaac core command with the given flags"""
+        """Build the isaac core command with the given flags"""
 
         for key, value in self.flags.items():
-
             if not value:
                 continue
 
@@ -82,57 +74,102 @@ class IsaacManager:
             elif isinstance(value, bool) and value:
                 self.isaac_core_cmd.append(flag)
 
+    def _stream_stdout(self) -> None:
+        """Read stdout line-by-line and detect readiness"""
 
-    def get_log_path(self) -> str:
-        """get the path to the last opened isaac sim log file"""
+        for line in iter(self.process.stdout.readline, ""):
+            if not line:
+                break
 
-        log_dir = os.path.expanduser("~/.nvidia-omniverse/logs/Kit/Isaac-Sim/2023.1")
-        files = [os.path.join(log_dir, f) for f in os.listdir(log_dir) if f.endswith(".log")]
+            line = line.rstrip()
+            if self.show_isaac_logs:
+                print(f"[ISAAC SIM] {line}")
 
-        if not files:
-            raise FileNotFoundError("No IsaacSim log files found.")
+            if self.ready_log in line:
+                self.ready_event.set()
+
+    def _wait_with_msg(self, timeout: float = 300, buffer: float = 0.25) -> None:
+        """Animated wait until the ready flag appears in stdout"""
+
+        start_time = time.time()
+        symbols = itertools.cycle(["-", "\\", "|", "/"])
+
+        while not self.ready_event.is_set():
+            if time.time() - start_time > timeout:
+                print(f"timeout reached while waiting for: {self.ready_log}")
+                return
+
+            print(f"waiting for IsaacSim to load...  {next(symbols)}", end="\r")
+            time.sleep(buffer)
         
-        return max(files, key=os.path.getctime)
-    
+        time.sleep(5)
 
-    def __enter__(self):
-        """starts isaac sim and wait for it to finish loading"""
+        print(f"\rIsaacSim loaded in {time.time() - start_time:.2f} seconds! {' ' * 30}")
 
-        print("starting IsaacSim...")
-        self._build_isaac_core_cmd()
-        cmd_str = " ".join(self.isaac_core_cmd)
-        print (f"current isaac cmd: |{cmd_str}|")
+    def _cleanup_process_group(self) -> None:
+        """Kill the entire process group of the isaac sim process"""
+
+        if not self.process:
+            return
+
+        try:
+            pgid = os.getpgid(self.process.pid)
+            os.killpg(pgid, signal.SIGTERM)
+            time.sleep(1)
+            os.killpg(pgid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+    def __enter__(self) -> "IsaacManager":
+        """Starts isaac sim and wait for it to finish loading"""
+
+        try:
+            print("Starting IsaacSim...")
+            self._build_isaac_core_cmd()
+
+            self.ready_event.clear()
+
+            cmd_str = " ".join(self.isaac_core_cmd)
+            print(f"current isaac cmd:\n\t{cmd_str}")
+
+            self.process = subprocess.Popen(
+                ["bash", "-c", cmd_str],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                bufsize=1,
+                preexec_fn=os.setsid
+            )
+
+            self.stdout_thread = threading.Thread(
+                target=self._stream_stdout,
+                daemon=True
+            )
+            self.stdout_thread.start()
+
+            self._wait_with_msg()
+
+            return self
+
+        except KeyboardInterrupt:
+            print("\nKeyboardInterrupt detected during startup, Cleaning up IsaacSim...")
+            self._cleanup_process_group()
+            raise
+        except Exception as e:
+            print(f"\nAn exception occurred during IsaacSim startup: {e}")
+            self._cleanup_process_group()
+            raise
 
 
-        self.process = subprocess.Popen(
-            ["gnome-terminal", "--", "bash", "-c", f"{cmd_str}; exec bash"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            bufsize=1
-        )
-
-        log_path = self.get_log_path()
-        print(f"Monitoring log file: {log_path}")
-        time.sleep(5)  # give some time for the log file to be created
-        wait_with_msg_for_log(log_path, "rclpy loaded", "waiting for IsaacSim to load...", "IsaacSim loaded!")
-        time.sleep(50)
-
-        return self
-    
-
-    def __exit__(self, exc_type, exc_value, exs_traceback):
-        """kill all isaac sim precesses after exiting the context"""
+    def __exit__(self,
+                 exc_type: type[BaseException] | None,
+                 exc_value: BaseException | None,
+                 exc_traceback: TracebackType | None) -> bool | None:
+        """Kill all isaac sim processes after exiting the context"""
 
         if exc_type:
             print(f"an exception occurred while in IsaacManager context: {exc_value}")
 
         print("closing IsaacSim...")
-        subprocess.run(["pkill", "-f", "main_sim.py"])
-
-
-if __name__ == "__main__":
-    with IsaacManager(com_ros=True):
-        print("IsaacSim is running...")
-        time.sleep(5)
-    print("IsaacSim has been closed.")
+        self._cleanup_process_group()
+        print("IsaacSim closed.")

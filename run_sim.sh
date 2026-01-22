@@ -7,7 +7,7 @@ DISTANCE_SENSOR="--distance-sensor"
 SAT="--sat"
 RTP="--image-rtp"
 
-RUN_SIMULATION="ISAACSIM_PYTHON ./simulation/main_sim.py $USD_PATH $COM $RTP"
+RUN_SIMULATION="ISAACSIM_PYTHON ./simulation/main_sim.py $USD_PATH $COM"
 
 bash -ic "$RUN_SIMULATION"
 

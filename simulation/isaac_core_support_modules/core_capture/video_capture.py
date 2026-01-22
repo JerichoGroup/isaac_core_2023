@@ -2,10 +2,8 @@
 
 # ==================== Imports ====================
 import cv2
-import numpy as np
 from cv_bridge import CvBridge
 
-import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
@@ -18,10 +16,10 @@ from .base_capture import BaseCapture
 class VideoCapture(Node, BaseCapture):
     """A class to capture video from isaac sim over ros2"""
 
-    def __init__(self, topic: str = consts.IMAGE_PUBLISHER_TOPIC_NAME):
+    def __init__(self, topic: str = consts.IMAGE_PUBLISHER_TOPIC_NAME, name: str = "video_capture_node") -> None:
         """Initialize the VideoCapture class"""
 
-        Node.__init__(self, node_name="video_capture_node")
+        Node.__init__(self, node_name=name)
         BaseCapture.__init__(self)
 
         self.topic = topic
@@ -31,13 +29,15 @@ class VideoCapture(Node, BaseCapture):
 
         self.isaac_qos_profile = QoSProfile(
             reliability=ReliabilityPolicy.BEST_EFFORT,
-            depth=10)
+            depth=10
+        )
 
         self.sub = self.create_subscription(
             Image,
             self.topic,
             self.image_callback,
-            qos_profile=self.isaac_qos_profile)
+            qos_profile=self.isaac_qos_profile
+        )
 
     def start_capture(self) -> None:
         """Enable video capturing"""
@@ -74,8 +74,7 @@ class VideoCapture(Node, BaseCapture):
         self.is_capturing = False
 
         height, width, _ = self.frames[0].shape
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-        video_writer = cv2.VideoWriter(file_path, fourcc, fps, (width, height))
+        video_writer = cv2.VideoWriter(file_path, cv2.VideoWriter_fourcc(*'mp4v'), fps, (width, height))
 
         for frame in self.frames:
             video_writer.write(frame)

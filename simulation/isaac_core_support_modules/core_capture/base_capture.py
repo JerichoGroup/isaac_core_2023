@@ -4,8 +4,9 @@
 import threading
 from abc import ABC, abstractmethod
 
-import rclpy
 from rclpy.executors import MultiThreadedExecutor
+
+from simulation.isaac_core_support_modules.dev_utils import safe_rclpy_init, safe_rclpy_shutdown
 
 
 # ==================== The BaseCapture class ====================
@@ -14,7 +15,8 @@ class BaseCapture(ABC):
 
     def __init__(self) -> None:
         """Initialize the BaseCapture class."""
-        
+
+        safe_rclpy_init()
         self._executor = MultiThreadedExecutor()
         self._spin_thread = None
 
@@ -34,15 +36,30 @@ class BaseCapture(ABC):
         pass
 
     def spin(self) -> None:
-        """Spin the Node in a separate thread to process incoming messages."""
+        """Spin capture node in a background thread."""
+
+        self._executor.add_node(self)
 
         if self._spin_thread is None:
-            self._executor.add_node(self)
             self._spin_thread = threading.Thread(target=self._executor.spin, daemon=True)
             self._spin_thread.start()
 
-    def shutdown(self) -> None:
-        """Shutdown the Node and clean up resources."""
-        self._executor.shutdown()
-        self.destroy_node()
-        self._spin_thread = None
+    def shutdown(self, shutdown_rclpy=False) -> None:
+        """Shutdown executor and capture node."""
+        
+        try:
+            if self._executor is not None:
+                self._executor.remove_node(self)
+                self._executor.shutdown()
+            
+            if self._spin_thread is not None:
+                self._spin_thread.join(timeout=0.1)
+            
+            self.destroy_node()
+            if shutdown_rclpy:
+                safe_rclpy_shutdown()
+            
+            self._executor = None
+            self._spin_thread = None
+        except Exception as e:
+            print(f"[BaseCapture] Error during shutdown: {e}")

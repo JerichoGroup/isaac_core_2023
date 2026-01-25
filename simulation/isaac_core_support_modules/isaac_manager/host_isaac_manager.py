@@ -1,4 +1,4 @@
-"""Context manager for launching Isaac Sim with live stdout monitoring."""
+"""Context manager for launching Isaac Sim on your host machine with live stdout monitoring."""
 
 # ==================== Imports ====================
 from types import TracebackType
@@ -15,8 +15,8 @@ import os
 READY_LOG = "rclpy loaded"
 
 
-# ==================== The IsaacManager class ====================
-class IsaacManager:
+# ==================== The HostIsaacManager class ====================
+class HostIsaacManager:
     """A context manager to start and stop isaac sim"""
 
     FLAG_MAP = {
@@ -34,7 +34,7 @@ class IsaacManager:
                  com_ros: bool = False, com_udp: bool = False, distance_sensor: bool = False,
                  bbox_publisher: bool = False, sat: bool = False, rtp: bool = False,
                  show_isaac_logs: bool = False):
-        """Initialize the context manager with the command to start isaac sim"""
+        """Initialize the context manager with the command to start isaac sim on your host machine"""
 
         self.show_isaac_logs = show_isaac_logs
         self.flags = {
@@ -83,7 +83,7 @@ class IsaacManager:
 
             line = line.rstrip()
             if self.show_isaac_logs:
-                print(f"[ISAAC SIM] {line}")
+                print(f"[HOST ISAAC SIM] {line}")
 
             if self.ready_log in line:
                 self.ready_event.set()
@@ -120,8 +120,8 @@ class IsaacManager:
         except ProcessLookupError:
             pass
 
-    def __enter__(self) -> "IsaacManager":
-        """Starts isaac sim and wait for it to finish loading"""
+    def __enter__(self) -> "HostIsaacManager":
+        """Starts isaac sim on your host machine and wait for it to finish loading"""
 
         try:
             print("Starting IsaacSim...")
@@ -138,7 +138,7 @@ class IsaacManager:
                 stderr=subprocess.STDOUT,
                 text=True,
                 bufsize=1,
-                preexec_fn=os.setsid
+                preexec_fn=os.setsid    # Unite all child processes into a single process group
             )
 
             self.stdout_thread = threading.Thread(
@@ -168,7 +168,7 @@ class IsaacManager:
         """Kill all isaac sim processes after exiting the context"""
 
         if exc_type:
-            print(f"an exception occurred while in IsaacManager context: {exc_value}")
+            print(f"an exception occurred while in HostIsaacManager context: {exc_value}")
 
         print("closing IsaacSim...")
         self._cleanup_process_group()

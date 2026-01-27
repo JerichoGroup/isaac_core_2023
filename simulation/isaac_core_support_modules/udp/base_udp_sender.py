@@ -38,14 +38,14 @@ class BaseUDPSender(ABC):
 
     @abstractmethod
     def get_next_point(self, step: int) -> Optional[Tuple[float, float, float, float, float, float]]:
-        """Return the next point as: (lon, lat, alt, roll, pitch, yaw) or None if the sending should stop."""
+        """Return the next point as: (lat, lon, alt, roll, pitch, yaw) or None if the sending should stop."""
         pass
 
-    def _build_packet(self, lon: float, lat: float, alt: float,
+    def _build_packet(self, lat: float, lon: float, alt: float,
                       roll: float, pitch: float, yaw: float) -> bytes:
         """Build a UDP packet with the expected Isaac Sim format."""
 
-        fields = [lon, lat, alt, roll, pitch, yaw]
+        fields = [lat, lon, alt, roll, pitch, yaw]
         payload = struct.pack(self.PACKET_FORMAT, *fields)
 
         checksum = 0
@@ -55,11 +55,11 @@ class BaseUDPSender(ABC):
         packet = bytes([self.HEADER1, self.HEADER2]) + payload + bytes([checksum])
         return packet
 
-    def send_once(self, lon: float, lat: float, alt: float,
+    def send_once(self, lat: float, lon: float, alt: float,
                   roll: float, pitch: float, yaw: float) -> None:
         """Send a single packet with the given pose."""
 
-        packet = self._build_packet(lon, lat, alt, roll, pitch, yaw)
+        packet = self._build_packet(lat, lon, alt, roll, pitch, yaw)
         self._sock.sendto(packet, (self.target_ip, self.udp_port))
 
     def run(self, max_steps: Optional[int] = None) -> None:
@@ -78,8 +78,8 @@ class BaseUDPSender(ABC):
                 if point is None:
                     break
 
-                lon, lat, alt, roll, pitch, yaw = point
-                packet = self._build_packet(lon, lat, alt, roll, pitch, yaw)
+                lat, lon, alt, roll, pitch, yaw = point
+                packet = self._build_packet(lat, lon, alt, roll, pitch, yaw)
                 self._sock.sendto(packet, (self.target_ip, self.udp_port))
 
                 cur_step += 1

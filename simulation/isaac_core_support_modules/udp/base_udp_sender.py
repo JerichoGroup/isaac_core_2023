@@ -4,6 +4,7 @@
 import time
 import socket
 import struct
+import threading
 from typing import Tuple, Optional
 from abc import ABC, abstractmethod
 
@@ -32,6 +33,7 @@ class BaseUDPSender(ABC):
 
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._running = False
+        self._thread: Optional[threading.Thread] = None
 
         if self.broadcast:
             self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)            
@@ -62,7 +64,7 @@ class BaseUDPSender(ABC):
         packet = self._build_packet(lat, lon, alt, roll, pitch, yaw)
         self._sock.sendto(packet, (self.target_ip, self.udp_port))
 
-    def run(self, max_steps: Optional[int] = None) -> None:
+    def _run_loop(self, max_steps: Optional[int] = None) -> None:
         """Run the sender loop until stopped or max_steps is reached."""
 
         self._running = True
@@ -88,11 +90,36 @@ class BaseUDPSender(ABC):
             pass
         except Exception as e:
             print(f"Error in UDP sender to {self.udp_port}: {e}")
+        finally:
+            self._running = False
+            self._thread = None
+
+    def run(self, max_steps: Optional[int] = None, blocking: bool = False) -> None:
+        """Runs the sender loop in a blocking or non-blocking way"""
+
+        if blocking:
+            self._run_loop(max_steps)
+            return
+        
+        if self._thread is not None and self._thread.is_alive():
+            print("[BaseUDPSender] sender already running")
+            return
+        
+        self._thread = threading.Thread(target=self._run_loop,
+                                        args=(max_steps,),
+                                        daemon=True)
+        self._thread.start()
 
     def stop(self) -> None:
         """Stop the sender loop."""
 
         self._running = False
+
+    def join(self, timeout: Optional[float] = 0.1) -> None:
+        """Wait for the sender thread to finish"""
+
+        if self._thread is not None:
+            self._thread.join(timeout=timeout)
 
     def close(self) -> None:
         """Close the underlying socket."""

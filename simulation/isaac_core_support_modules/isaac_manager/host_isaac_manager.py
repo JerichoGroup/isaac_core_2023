@@ -6,8 +6,8 @@ from pathlib import Path
 import subprocess
 import threading
 import itertools
-import time
 import signal
+import time
 import os
 
 
@@ -32,12 +32,19 @@ class HostIsaacManager:
         "rtp": "--image-rtp",
     }
 
-    def __init__(self, usd_path: str = "usd/maps/earth/earth.usda", headless: bool = False,
-                 com_ros: bool = False, com_udp: bool = False, distance_sensor: bool = False,
-                 bbox_publisher: bool = False, sat: bool = False, rtp: bool = False,
+    def __init__(self,
+                 usd_path: str = "usd/maps/earth/earth.usda",
+                 headless: bool = False,
+                 com_ros: bool = False,
+                 com_udp: bool = False,
+                 distance_sensor: bool = False,
+                 bbox_publisher: bool = False,
+                 sat: bool = False,
+                 rtp: bool = False,
                  show_isaac_logs: bool = False,
-                 core_path: str = DEFAULT_CORE_PATH, isaac_path: str = DEFAULT_ISAAC_PATH) -> None:
-        """Initialize the context manager with the command to start isaac sim on your host machine"""
+                 core_path: str = DEFAULT_CORE_PATH,
+                 isaac_path: str = DEFAULT_ISAAC_PATH) -> None:
+        """Initialize the context manager with the flags to start isaac sim on your host machine"""
 
         self.core_path = Path(core_path).resolve()
         self.isaac_path = Path(isaac_path).resolve()

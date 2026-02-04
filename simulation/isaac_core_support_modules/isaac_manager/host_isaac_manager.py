@@ -13,6 +13,8 @@ import os
 
 # ==================== Consts ====================
 READY_LOG = "rclpy loaded"
+DEFAULT_CORE_PATH = '.'
+DEFAULT_ISAAC_PATH = Path.home() / ".local" / "share" / "ov" / "pkg" / "isaac_sim-2023.1.1"
 
 
 # ==================== The HostIsaacManager class ====================
@@ -30,13 +32,21 @@ class HostIsaacManager:
         "rtp": "--image-rtp",
     }
 
-    def __init__(self, usd_path: str = "./usd/maps/earth/earth.usda", headless: bool = False,
+    def __init__(self, usd_path: str = "usd/maps/earth/earth.usda", headless: bool = False,
                  com_ros: bool = False, com_udp: bool = False, distance_sensor: bool = False,
                  bbox_publisher: bool = False, sat: bool = False, rtp: bool = False,
-                 show_isaac_logs: bool = False):
+                 show_isaac_logs: bool = False,
+                 core_path: str = DEFAULT_CORE_PATH, isaac_path: str = DEFAULT_ISAAC_PATH) -> None:
         """Initialize the context manager with the command to start isaac sim on your host machine"""
 
+        self.core_path = Path(core_path).resolve()
+        self.isaac_path = Path(isaac_path).resolve()
         self.show_isaac_logs = show_isaac_logs
+
+        if not Path(usd_path).is_absolute():
+            usd_path = str(self.core_path / usd_path)
+        usd_path = str(usd_path)
+
         self.flags = {
             "usd_path": usd_path,
             "headless": headless,
@@ -53,15 +63,17 @@ class HostIsaacManager:
         self.ready_log = READY_LOG
         self.ready_event = threading.Event()
 
-        self.isaac_python_abs_path = Path.home() / ".local" / "share" / "ov" / "pkg" / "isaac_sim-2023.1.1" / "python.sh"
-
-        self.isaac_core_cmd = [
-            str(self.isaac_python_abs_path),
-            "./simulation/main_sim.py"
-        ]
+        self.isaac_python_abs_path = self.isaac_path / "python.sh"
+        self.main_sim_path = self.core_path / "simulation" / "main_sim.py"
+        self.isaac_core_cmd = []
 
     def _build_isaac_core_cmd(self) -> None:
         """Build the isaac core command with the given flags"""
+
+        self.isaac_core_cmd = [
+            str(self.isaac_python_abs_path),
+            str(self.main_sim_path)
+        ]
 
         for key, value in self.flags.items():
             if not value:

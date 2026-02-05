@@ -7,7 +7,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from isaac_ros2_messages.msg import FrameBboxes
 
-from simulation import consts
+from isaac_core_dev_kit import consts
 from .base_capture import BaseCapture
 
 

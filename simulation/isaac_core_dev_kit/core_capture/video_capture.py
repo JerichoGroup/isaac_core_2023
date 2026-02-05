@@ -8,7 +8,7 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
 
-from simulation import consts
+from isaac_core_dev_kit import consts
 from .base_capture import BaseCapture
 
 

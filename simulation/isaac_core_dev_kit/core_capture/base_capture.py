@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 
 from rclpy.executors import MultiThreadedExecutor
 
-from simulation.isaac_core_support_modules.dev_utils import safe_rclpy_init, safe_rclpy_shutdown
+from isaac_core_dev_kit.dev_utils import safe_rclpy_init, safe_rclpy_shutdown
 
 
 # ==================== The BaseCapture class ====================

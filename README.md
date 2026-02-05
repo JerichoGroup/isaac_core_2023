@@ -14,7 +14,8 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 
 1. [System Requirements️](#system-requirements)
 1. [Docker Workflow (Optional)](#docker-workflow-optional-)
-1. [Running the Simulation](#running-the-simulation-)  
+1. [Running the Simulation](#running-the-simulation-)
+1. [Using isaac_core_dev_kit](#Using-isaac_core_dev_kit)
 1. [Simulation Flags](#simulation-flags-)
 1. [Special configurations](#special-configurations-)
 1. [ROS2 input topics](#ros2-input-topics-)
@@ -254,13 +255,14 @@ xhost +
 ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.usda --com-ros
 ```
 
-### Using isaac_core_dev_kit
+## Using isaac_core_dev_kit
 The isaac_core_dev_kit package provides a modular interface for running, controlling, and capturing data from Isaac Sim - based simulation. It is designed to be used in other projects without needed to fork or branch the original isaac_core repo.
 <details>
 <summary><strong>Installation</strong></summary>
 
 From the repo's root:
-* `pip install ./simulation/`
+```cd ~/clones/isaac_core_2023```
+```pip install ./simulation/```
 
 This Installs the package and makes the following modules available:
 ```python
@@ -282,7 +284,7 @@ import isaac_core_dev_kit.dev_utils as core_utils
 
 The isaac_manger module provides a unified interface for launching and controlling Isaac Sim, either directly on the host machine or inside a docker container using the isaac_core simulation docker image.
 
-Usage:
+Class definitions:
 ```python
 from isaac_core_dev_kit.isaac_manager.host_isaac_manager import HostIsaacManager
 from isaac_core_dev_kit.isaac_manager.docker_isaac_manager import DockerIsaacManager
@@ -314,7 +316,9 @@ DockerIsaacManager(
     core_path: str = DEFAULT_CORE_PATH,
     compose_rel_path: str = DEFAULT_COMPOSE_REL_PATH
 )
-
+```
+Usage:
+```python
 # example use case:
 with HostIsaacManager(core_path=".", usd_path="./usd/maps/earth/earth.usda", com_udp=True, show_isaac_logs=False):
   #do something
@@ -328,14 +332,18 @@ with HostIsaacManager(core_path=".", usd_path="./usd/maps/earth/earth.usda", com
 The core_capture module contains a set of capture utilities designed to extract ros2 data from the simulation at runtime.
 Each capture class inherits from `BaseCapture`, which defines a consistent interface for initialization, starting, stopping, saving the data, and shutdown.
 
-Usage:
+Class definitions:
 ```python
 from isaac_core_dev_kit.core_capture.video_capture import VideoCapture
 from isaac_core_dev_kit.core_capture.pose_capture import PoseCapture
 from isaac_core_dev_kit.core_capture.distance_capture import DistanceCapture
 from isaac_core_dev_kit.core_capture.bbox_capture import BboxCapture
-# all capture classes gets a name (for the ros2 node) and a topic (to subscribe to)
 
+# all capture classes gets a name (for the ros2 node) and a topic (to subscribe to)
+```
+
+Usage:
+```python
 # example use case:
 video_capture_node = VideoCapture()
 
@@ -358,7 +366,7 @@ video_capture_node.shutdown()
 The udp module provides a real-time communication utilities for publishing UDP control commands to the simulation.
 Each Sender class inherits from `BaseUDPSender`, which defines a consistent UDP interface, it defines the packet struct and payload convention, and methods to start publishing packets in a blocking or non-blocking manor. 
 
-Usage:
+Class definitions:
 ```python
 from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
 from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
@@ -403,7 +411,10 @@ PathSender(
     broadcast: bool = True,
     target_ip: str = "127.0.0.1"
 )
+```
 
+Usage:
+```python
 # example use case:
 point_sender = OnePointSender(lat=32.22481, lon=35.25621, alt=1000.0,
                               roll=0.0, pitch=0.0, yaw=0.0,
@@ -426,6 +437,7 @@ point_sender.close()
 
 The dev_utils module is a collection of utilities function that can help developers in any project.
 
+Usage:
 ```python
 import isaac_core_dev_kit.dev_utils as core_utils
 

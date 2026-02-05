@@ -288,9 +288,7 @@ The isaac_manger module provides a unified interface for launching and controlli
 
 Class definitions:
 ```python
-from isaac_core_dev_kit.isaac_manager.host_isaac_manager import HostIsaacManager
-from isaac_core_dev_kit.isaac_manager.docker_isaac_manager import DockerIsaacManager
-
+# This is the HostIsaacManager class definition and its attributes
 HostIsaacManager(
     usd_path: str = "usd/maps/earth/earth.usda",
     headless: bool = False,
@@ -305,6 +303,7 @@ HostIsaacManager(
     isaac_path: str = DEFAULT_ISAAC_PATH
 )
 
+# This is the DockerIsaacManager class definition and its attributes
 DockerIsaacManager(
     usd_path: str = "usd/maps/earth/earth.usda",
     headless: bool = False,
@@ -321,6 +320,9 @@ DockerIsaacManager(
 ```
 Usage:
 ```python
+from isaac_core_dev_kit.isaac_manager.host_isaac_manager import HostIsaacManager
+from isaac_core_dev_kit.isaac_manager.docker_isaac_manager import DockerIsaacManager
+
 # example use case:
 with HostIsaacManager(core_path=".", usd_path="./usd/maps/earth/earth.usda", com_udp=True, show_isaac_logs=False):
   #do something
@@ -336,16 +338,21 @@ Each capture class inherits from `BaseCapture`, which defines a consistent inter
 
 Class definitions:
 ```python
+# all capture classes gets a name (for the ros2 node) and a topic (to subscribe to)
+# for example:
+VideoCapture(
+    topic: str = IMAGE_PUBLISHER_TOPIC_NAME,
+    name: str = "video_capture_node"
+)
+```
+
+Usage:
+```python
 from isaac_core_dev_kit.core_capture.video_capture import VideoCapture
 from isaac_core_dev_kit.core_capture.pose_capture import PoseCapture
 from isaac_core_dev_kit.core_capture.distance_capture import DistanceCapture
 from isaac_core_dev_kit.core_capture.bbox_capture import BboxCapture
 
-# all capture classes gets a name (for the ros2 node) and a topic (to subscribe to)
-```
-
-Usage:
-```python
 # example use case:
 video_capture_node = VideoCapture()
 
@@ -370,11 +377,7 @@ Each Sender class inherits from `BaseUDPSender`, which defines a consistent UDP 
 
 Class definitions:
 ```python
-from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
-from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
-from isaac_core_dev_kit.udp.path_sender import PathSender
-from isaac_core_dev_kit.udp.udp_utils import LLAPoint
-
+# This is the OnePointSender class definition and its attributes
 OnePointSender(
     lat: float,
     lon: float,
@@ -388,6 +391,7 @@ OnePointSender(
     target_ip: str = "127.0.0.1"
 )
 
+# This is the OrbitSender class definition and its attributes
 OrbitSender(
     center_lat: float,
     center_lon: float,
@@ -403,6 +407,7 @@ OrbitSender(
     target_ip: str = "127.0.0.1"
 )
 
+# This is the PathSender class definition and its attributes
 PathSender(
     points: List[LLAPoint],
     speed_mps: float,
@@ -417,6 +422,11 @@ PathSender(
 
 Usage:
 ```python
+from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
+from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
+from isaac_core_dev_kit.udp.path_sender import PathSender
+from isaac_core_dev_kit.udp.udp_utils import LLAPoint
+
 # example use case:
 point_sender = OnePointSender(lat=32.22481, lon=35.25621, alt=1000.0,
                               roll=0.0, pitch=0.0, yaw=0.0,

@@ -254,6 +254,197 @@ xhost +
 ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.usda --com-ros
 ```
 
+### Using isaac_core_dev_kit
+The isaac_core_dev_kit package provides a modular interface for running, controlling, and capturing data from Isaac Sim - based simulation. It is designed to be used in other projects without needed to fork or branch the original isaac_core repo.
+<details>
+<summary><strong>Installation</strong></summary>
+
+From the repo's root:
+* `pip install ./simulation/`
+
+This Installs the package and makes the following modules available:
+```python
+from isaac_core_dev_kit.isaac_manager.host_isaac_manager import HostIsaacManager
+from isaac_core_dev_kit.isaac_manager.docker_isaac_manager import DockerIsaacManager
+from isaac_core_dev_kit.core_capture.video_capture import VideoCapture
+from isaac_core_dev_kit.core_capture.pose_capture import PoseCapture
+from isaac_core_dev_kit.core_capture.distance_capture import DistanceCapture
+from isaac_core_dev_kit.core_capture.bbox_capture import BboxCapture
+from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
+from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
+from isaac_core_dev_kit.udp.path_sender import PathSender
+import isaac_core_dev_kit.dev_utils as core_utils
+```
+</details>
+
+<details>
+<summary><strong>isaac_manager</strong></summary>
+
+The isaac_manger module provides a unified interface for launching and controlling Isaac Sim, either directly on the host machine or inside a docker container using the isaac_core simulation docker image.
+
+Usage:
+```python
+from isaac_core_dev_kit.isaac_manager.host_isaac_manager import HostIsaacManager
+from isaac_core_dev_kit.isaac_manager.docker_isaac_manager import DockerIsaacManager
+
+HostIsaacManager(
+    usd_path: str = "usd/maps/earth/earth.usda",
+    headless: bool = False,
+    com_ros: bool = False,
+    com_udp: bool = False,
+    distance_sensor: bool = False,
+    bbox_publisher: bool = False,
+    sat: bool = False,
+    rtp: bool = False,
+    show_isaac_logs: bool = False,
+    core_path: str = DEFAULT_CORE_PATH,
+    isaac_path: str = DEFAULT_ISAAC_PATH
+)
+
+DockerIsaacManager(
+    usd_path: str = "usd/maps/earth/earth.usda",
+    headless: bool = False,
+    com_ros: bool = False,
+    com_udp: bool = False,
+    distance_sensor: bool = False,
+    bbox_publisher: bool = False,
+    sat: bool = False,
+    rtp: bool = False,
+    show_isaac_logs: bool = False,
+    core_path: str = DEFAULT_CORE_PATH,
+    compose_rel_path: str = DEFAULT_COMPOSE_REL_PATH
+)
+
+# example use case:
+with HostIsaacManager(core_path=".", usd_path="./usd/maps/earth/earth.usda", com_udp=True, show_isaac_logs=False):
+  #do something
+```
+
+</details>
+
+<details>
+<summary><strong>core_capture</strong></summary>
+
+The core_capture module contains a set of capture utilities designed to extract ros2 data from the simulation at runtime.
+Each capture class inherits from `BaseCapture`, which defines a consistent interface for initialization, starting, stopping, saving the data, and shutdown.
+
+Usage:
+```python
+from isaac_core_dev_kit.core_capture.video_capture import VideoCapture
+from isaac_core_dev_kit.core_capture.pose_capture import PoseCapture
+from isaac_core_dev_kit.core_capture.distance_capture import DistanceCapture
+from isaac_core_dev_kit.core_capture.bbox_capture import BboxCapture
+# all capture classes gets a name (for the ros2 node) and a topic (to subscribe to)
+
+# example use case:
+video_capture_node = VideoCapture()
+
+video_capture_node.spin()
+video_capture_node.start_capture()
+
+# run a scenario
+
+video_capture_node.stop_capture()
+video_capture_node.save_data_to("./video.mp4", 30)
+
+video_capture_node.shutdown()
+```
+
+</details>
+
+<details>
+<summary><strong>udp</strong></summary>
+
+The udp module provides a real-time communication utilities for publishing UDP control commands to the simulation.
+Each Sender class inherits from `BaseUDPSender`, which defines a consistent UDP interface, it defines the packet struct and payload convention, and methods to start publishing packets in a blocking or non-blocking manor. 
+
+Usage:
+```python
+from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
+from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
+from isaac_core_dev_kit.udp.path_sender import PathSender
+from isaac_core_dev_kit.udp.udp_utils import LLAPoint
+
+OnePointSender(
+    lat: float,
+    lon: float,
+    alt: float,
+    roll: float,
+    pitch: float,
+    yaw: float,
+    udp_port: float = 33333,
+    send_rate_hz: float = 30,
+    broadcast: bool = True,
+    target_ip: str = "127.0.0.1"
+)
+
+OrbitSender(
+    center_lat: float,
+    center_lon: float,
+    radius_m: float,
+    height_m: float,
+    speed_mps: float,
+    duration_s: float,
+    roll_deg: float = 0,
+    pitch_deg: float = 0,
+    udp_port: int = 33333,
+    send_rate_hz: float = 30,
+    broadcast: bool = True,
+    target_ip: str = "127.0.0.1"
+)
+
+PathSender(
+    points: List[LLAPoint],
+    speed_mps: float,
+    roll_deg: float = 0,
+    pitch_deg: float = 0,
+    udp_port: int = 33333,
+    send_rate_hz: float = 30,
+    broadcast: bool = True,
+    target_ip: str = "127.0.0.1"
+)
+
+# example use case:
+point_sender = OnePointSender(lat=32.22481, lon=35.25621, alt=1000.0,
+                              roll=0.0, pitch=0.0, yaw=0.0,
+                              udp_port=33333, send_rate_hz=30, 
+                              broadcast=True, target_ip="127.0.0.1")
+
+point_sender.run(blocking=False)
+
+point_sender.join()
+
+point_sender.send_once(32.2245, 35.2563, 500.0, 0.0, 0.0, 0.0)  # all sender classes has a send_once method to send a single point 
+
+point_sender.close()
+```
+
+</details>
+
+<details>
+<summary><strong>dev_utils</strong></summary>
+
+The dev_utils module is a collection of utilities function that can help developers in any project.
+
+```python
+import isaac_core_dev_kit.dev_utils as core_utils
+
+# deletes the cesium cache on the local computer
+core_utils.delete_cesium_cache()
+
+# used to safely init or shutdown rclpy
+core_utils.safe_rclpy_init()
+core_utils.safe_rclpy_shutdown()
+
+# used to send a ros2 msg with new angels to set the cameras gimbal to
+core_utils.set_gimbal_angle(roll=0.0, pitch=-90.0, yaw=0.0)
+
+# used to capture the current frame from Isaac Sim, work with --sat flag
+core_utils.save_current_frame_to("./picture.png")
+```
+
+</details>
+
 ---
 
 ## Simulation Flags 🚩

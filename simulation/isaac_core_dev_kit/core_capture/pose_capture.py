@@ -7,15 +7,18 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from geographic_msgs.msg import GeoPoseStamped
 
-from isaac_core_dev_kit import consts
 from .base_capture import BaseCapture
+
+
+# ==================== Consts ====================
+GLOBAL_POSE_TOPIC_NAME = "/isaac_core/global_pose"
 
 
 # ==================== The PoseCapture class ====================
 class PoseCapture(Node, BaseCapture):
     """A class to capture pose from isaac sim over ros2"""
 
-    def __init__(self, topic: str = consts.GLOBAL_POSE_TOPIC_NAME, name: str = "pose_capture_node") -> None:
+    def __init__(self, topic: str = GLOBAL_POSE_TOPIC_NAME, name: str = "pose_capture_node") -> None:
         """Initialize the PoseCapture class"""
 
         Node.__init__(self, node_name=name)

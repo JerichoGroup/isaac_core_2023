@@ -7,15 +7,18 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Range
 
-from isaac_core_dev_kit import consts
 from .base_capture import BaseCapture
+
+
+# ==================== Consts ====================
+LASER_TOPIC_NAME = "/isaac_core/distance_sensor"
 
 
 # ==================== The DistanceCapture class ====================
 class DistanceCapture(Node, BaseCapture):
     """A class to capture distance from isaac sim over ros2"""
 
-    def __init__(self, topic: str = consts.LASER_TOPIC_NAME, name: str = "distance_capture_node") -> None:
+    def __init__(self, topic: str = LASER_TOPIC_NAME, name: str = "distance_capture_node") -> None:
         """Initialize the DistanceCapture class"""
 
         Node.__init__(self, node_name=name)

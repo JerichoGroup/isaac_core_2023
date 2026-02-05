@@ -7,15 +7,18 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from isaac_ros2_messages.msg import FrameBboxes
 
-from isaac_core_dev_kit import consts
 from .base_capture import BaseCapture
+
+
+# ==================== Consts ====================
+BBOXES_TOPIC_NAME = "/isaac_core/bbox"
 
 
 # ==================== The BboxCapture class ====================
 class BboxCapture(Node, BaseCapture):
     """A class to capture bbox from isaac sim over ros2"""
 
-    def __init__(self, topic: str = consts.BBOXES_TOPIC_NAME, name: str = "bbox_capture_node") -> None:
+    def __init__(self, topic: str = BBOXES_TOPIC_NAME, name: str = "bbox_capture_node") -> None:
         """Initialize the BboxCapture class"""
 
         Node.__init__(self, node_name=name)

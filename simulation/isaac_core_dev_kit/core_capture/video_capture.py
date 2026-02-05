@@ -8,15 +8,18 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import Image
 
-from isaac_core_dev_kit import consts
 from .base_capture import BaseCapture
+
+
+# ==================== Consts ====================
+IMAGE_PUBLISHER_TOPIC_NAME = "/isaac_core/image_rgb"
 
 
 # ==================== The VideoCapture class ====================
 class VideoCapture(Node, BaseCapture):
     """A class to capture video from isaac sim over ros2"""
 
-    def __init__(self, topic: str = consts.IMAGE_PUBLISHER_TOPIC_NAME, name: str = "video_capture_node") -> None:
+    def __init__(self, topic: str = IMAGE_PUBLISHER_TOPIC_NAME, name: str = "video_capture_node") -> None:
         """Initialize the VideoCapture class"""
 
         Node.__init__(self, node_name=name)

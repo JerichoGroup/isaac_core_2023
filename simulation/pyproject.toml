@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "isaac_core_dev_kit"
-version = "0.1.0"
+version = "1.0.0"
 description = "A development kit for running Isaac Sim, capturing data, and sending UDP commands, using the isaac_core_2023 repo."
 authors = [
     { name="Mr_Blum", email="master420shifu420@tutamail.com" }

@@ -23,16 +23,19 @@ CONTAINER_CORE_PATH = "/root/isaac_core_2023"
 class DockerIsaacManager:
     """A context manager to start and stop Isaac Sim inside Docker."""
 
-    FLAG_MAP = {
-        "usd_path": "--usd-path",
-        "headless": "--headless",
-        "com_ros": "--com-ros",
-        "com_udp": "--com-udp",
-        "distance_sensor": "--distance-sensor",
-        "bbox_publisher": "--bbox-publisher",
-        "sat": "--sat",
-        "rtp": "--image-rtp",
-    }
+    FLAGS = [
+        "usd_path",
+        "headless",
+        "com_ros",
+        "com_udp",
+        "distance_sensor",
+        "bbox_publisher",
+        "sat",
+        "image_rtp",
+    ]
+
+    FLAG_MAP = {flag: f"--{flag.replace('_', '-')}" for flag in FLAGS}
+
 
     def __init__(self,
                  usd_path: str = "usd/maps/earth/earth.usda",
@@ -42,7 +45,7 @@ class DockerIsaacManager:
                  distance_sensor: bool = False,
                  bbox_publisher: bool = False,
                  sat: bool = False,
-                 rtp: bool = False,
+                 image_rtp: bool = False,
                  show_isaac_logs: bool = False,
                  core_path: str = DEFAULT_CORE_PATH,
                  compose_rel_path: str = DEFAULT_COMPOSE_REL_PATH) -> None:
@@ -78,7 +81,7 @@ class DockerIsaacManager:
             "distance_sensor": distance_sensor,
             "bbox_publisher": bbox_publisher,
             "sat": sat,
-            "rtp": rtp,
+            "image_rtp": image_rtp,
         }
 
         self.ready_log = READY_LOG

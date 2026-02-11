@@ -21,16 +21,18 @@ DEFAULT_ISAAC_PATH = Path.home() / ".local" / "share" / "ov" / "pkg" / "isaac_si
 class HostIsaacManager:
     """A context manager to start and stop isaac sim"""
 
-    FLAG_MAP = {
-        "usd_path": "--usd-path",
-        "headless": "--headless",
-        "com_ros": "--com-ros",
-        "com_udp": "--com-udp",
-        "distance_sensor": "--distance-sensor",
-        "bbox_publisher": "--bbox-publisher",
-        "sat": "--sat",
-        "rtp": "--image-rtp",
-    }
+    FLAGS = [
+        "usd_path",
+        "headless",
+        "com_ros",
+        "com_udp",
+        "distance_sensor",
+        "bbox_publisher",
+        "sat",
+        "image_rtp",
+    ]
+
+    FLAG_MAP = {flag: f"--{flag.replace('_', '-')}" for flag in FLAGS}
 
     def __init__(self,
                  usd_path: str = "usd/maps/earth/earth.usda",
@@ -40,7 +42,7 @@ class HostIsaacManager:
                  distance_sensor: bool = False,
                  bbox_publisher: bool = False,
                  sat: bool = False,
-                 rtp: bool = False,
+                 image_rtp: bool = False,
                  show_isaac_logs: bool = False,
                  core_path: str = DEFAULT_CORE_PATH,
                  isaac_path: str = DEFAULT_ISAAC_PATH) -> None:
@@ -62,7 +64,7 @@ class HostIsaacManager:
             "distance_sensor": distance_sensor,
             "bbox_publisher": bbox_publisher,
             "sat": sat,
-            "rtp": rtp,
+            "image_rtp": image_rtp,
         }
 
         self.process = None

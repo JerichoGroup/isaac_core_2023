@@ -8,10 +8,6 @@ from .base_udp_sender import BaseUDPSender
 from .udp_utils import meters_to_latlon
 
 
-# ==================== Consts ====================
-TWO_PI = math.pi * 2.0
-
-
 # ==================== the OrbitSender class ====================
 class OrbitSender(BaseUDPSender):
     """Sends a circular orbit around a center point over UDP."""
@@ -40,7 +36,7 @@ class OrbitSender(BaseUDPSender):
 
         self._total_steps = int(self.duration_s * self.send_rate_hz)
 
-        loop_length = TWO_PI * self.radius_m
+        loop_length = math.pi * 2.0 * self.radius_m
         self._num_cycles = (self.speed_mps * self.duration_s) / loop_length
 
 
@@ -50,7 +46,7 @@ class OrbitSender(BaseUDPSender):
         if step >= self._total_steps:
             return None
         
-        t = TWO_PI * self._num_cycles * (step / self._total_steps)
+        t = math.pi * 2.0 * self._num_cycles * (step / self._total_steps)
 
         x = self.radius_m * math.cos(t)
         y = self.radius_m * math.sin(t)
@@ -60,7 +56,7 @@ class OrbitSender(BaseUDPSender):
         lon = self.center_lon + d_lon
         alt = self.height_m
 
-        t_next = TWO_PI * self._num_cycles * ((step + 1) / self._total_steps)
+        t_next = math.pi * 2.0 * self._num_cycles * ((step + 1) / self._total_steps)
         x_next = self.radius_m * math.cos(t_next)
         y_next = self.radius_m * math.sin(t_next)
         dx = x_next - x

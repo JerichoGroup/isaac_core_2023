@@ -70,6 +70,7 @@ class BaseUDPSender(ABC):
         self._running = True
         cur_step = 0
         dt = 1.0 / self.send_rate_hz
+        next_time = time.perf_counter()
 
         try:
             while self._running:
@@ -85,7 +86,10 @@ class BaseUDPSender(ABC):
                 self._sock.sendto(packet, (self.target_ip, self.udp_port))
 
                 cur_step += 1
-                time.sleep(dt)
+                next_time += dt
+                sleep_time = next_time - time.perf_counter()
+                if sleep_time > 0:
+                    time.sleep(sleep_time)
         except KeyboardInterrupt:
             pass
         except Exception as e:

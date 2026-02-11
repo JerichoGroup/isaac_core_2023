@@ -469,6 +469,57 @@ core_utils.save_current_frame_to("./picture.png")
 
 </details>
 
+<details>
+<summary><strong>full usage example</strong></summary>
+
+This is a use case example. The following code works like this: 
+1. imports the needed modules from the dev kit
+2. defines a CORE_PATH (if not running from the isaac_core_2023 repo) 
+3. initialize a ros2-IsaacSim env with deleting the cesium cache and init'ing rclpy
+4. starts a local IsaacSim session with HostIsaacManager
+5. initialize and start's a video_capture_node and a orbit_sender
+6. runs the orbit_sender once
+7. changes gimbal's angle mid run/flight
+8. run the orbit_sender another time
+9. stop's recording and saving the video
+10. cleaning up the video_capture_node and the orbit_sender
+
+```python
+from isaac_core_dev_kit.isaac_manager.host_isaac_manager import HostIsaacManager
+from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
+from isaac_core_dev_kit.core_capture.video_capture import VideoCapture
+import isaac_core_dev_kit.dev_utils as core_utils
+
+CORE_PATH = "/home/user/clones/isaac_core_2023"
+
+core_utils.delete_cesium_cache()
+core_utils.safe_rclpy_init()
+
+with HostIsaacManager(core_path=CORE_PATH, com_udp=True, show_isaac_logs=False):
+
+    video_capture_node = VideoCapture()
+    orbit_sender = OrbitSender(center_lat=32.22481, center_lon=35.25621,
+                               radius_m=1000.0, height_m=1000.0,
+                               speed_mps=30.0, duration_s=50.0)
+
+    video_capture_node.spin()
+    video_capture_node.start_capture()
+    
+    orbit_sender.run(blocking=True)
+
+    core_utils.set_gimbal_angle(-45.0, 0.0, 0.0)
+    
+    orbit_sender.run(blocking=True)
+
+    video_capture_node.stop_capture()
+    video_capture_node.save_data_to("video.mp4", 30)
+
+    orbit_sender.close()
+    video_capture_node.shutdown()
+```
+
+</details>
+
 ---
 
 ## Simulation Flags 🚩

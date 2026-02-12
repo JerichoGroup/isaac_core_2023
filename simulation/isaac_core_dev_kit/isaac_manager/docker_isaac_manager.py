@@ -18,7 +18,6 @@ DEFAULT_CORE_PATH = "."
 DEFAULT_COMPOSE_REL_PATH = "docker/simulation_docker/docker-compose.yml"
 CONTAINER_NAME = "isaacsim_2023_ros_humble_core_simulation"
 CONTAINER_CORE_PATH = "/root/isaac_core_2023"
-COMPOSE_SERVICE_NAME = "isaac_sim_2023_ros_humble"
 
 
 # ==================== The DockerIsaacManager class ====================
@@ -132,10 +131,11 @@ class DockerIsaacManager:
         full_cmd = self._build_core_cmd()
 
         try:
-            compose_data["services"][COMPOSE_SERVICE_NAME]["command"] = [full_cmd]
+            first_service_name = next(iter(compose_data["services"]))
+            compose_data["services"][first_service_name]["command"] = [full_cmd]
         except Exception as e:
             raise RuntimeError(
-                f"Failed to update 'command' for service {COMPOSE_SERVICE_NAME} in temp compose file"
+                f"Failed to update 'command' for service {first_service_name} in temp compose file"
                 ) from e
 
         temp_dir = self.compose_template_path.parent

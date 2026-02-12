@@ -8,6 +8,7 @@ import threading
 import itertools
 import tempfile
 import time
+import yaml
 import os
 
 
@@ -17,6 +18,7 @@ DEFAULT_CORE_PATH = "."
 DEFAULT_COMPOSE_REL_PATH = "docker/simulation_docker/docker-compose.yml"
 CONTAINER_NAME = "isaacsim_2023_ros_humble_core_simulation"
 CONTAINER_CORE_PATH = "/root/isaac_core_2023"
+COMPOSE_SERVICE_NAME = "isaac_sim_2023_ros_humble"
 
 
 # ==================== The DockerIsaacManager class ====================
@@ -124,26 +126,17 @@ class DockerIsaacManager:
         if not self.compose_template_path.is_file():
             raise FileNotFoundError(f"docker-compose template not found at: {self.compose_template_path}")
 
-        original_text = self.compose_template_path.read_text()
+        with open(self.compose_template_path, "r") as f:
+            compose_data = yaml.safe_load(f)
 
         full_cmd = self._build_core_cmd()
 
-        lines = original_text.splitlines()
-        new_lines = []
-        replaced = False
-
-        for line in lines:
-            stripped = line.lstrip()
-            if stripped.startswith("command:"):
-                indent = line[:len(line) - len(stripped)]
-                new_line = f'{indent}command: ["{full_cmd}"]'
-                new_lines.append(new_line)
-                replaced = True
-            else:
-                new_lines.append(line)
-
-        if not replaced:
-            raise RuntimeError("Could not find a 'command:' line to replace in docker-compose template.")
+        try:
+            compose_data["services"][COMPOSE_SERVICE_NAME]["command"] = [full_cmd]
+        except Exception as e:
+            raise RuntimeError(
+                f"Failed to update 'command' for service {COMPOSE_SERVICE_NAME} in temp compose file"
+                ) from e
 
         temp_dir = self.compose_template_path.parent
         fd, temp_path_str = tempfile.mkstemp(
@@ -154,7 +147,9 @@ class DockerIsaacManager:
         os.close(fd)
 
         self.temp_compose_path = Path(temp_path_str)
-        self.temp_compose_path.write_text("\n".join(new_lines))
+
+        with open(self.temp_compose_path, 'w') as f:
+            yaml.safe_dump(compose_data, f, sort_keys=False)
 
     def _docker_compose_up(self) -> None:
         """Run 'docker compose up -d' with the temporary compose file."""

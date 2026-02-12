@@ -28,3 +28,12 @@ GLOBAL_POSE_TOPIC_NAME = "/isaac_core/global_pose"
 LASER_TOPIC_NAME = "/isaac_core/distance_sensor"
 BBOXES_TOPIC_NAME = "/isaac_core/bbox"
 IMAGE_PUBLISHER_TOPIC_NAME = "/isaac_core/image_rgb"
+
+
+# ======================= Image RTP ========================== #
+RTP_VIDEO_PORT = 5004
+RTP_META_PORT = 5005
+
+
+# ======================= Network ========================== #
+HOST_IP = "127.0.0.1"

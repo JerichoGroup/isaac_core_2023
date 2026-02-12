@@ -27,13 +27,9 @@ services:
       - ../..:/root/isaac_core_2023
 
     working_dir: /root/isaac_core_2023
-
     network_mode: host
-
     privileged: true
-
     stdin_open: true
-
     tty: true
 
     entrypoint: ["/bin/bash", "-c"]

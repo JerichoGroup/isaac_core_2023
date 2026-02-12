@@ -1,7 +1,7 @@
 {
   "ROS2Gimbal": {
     "version": 1,
-    "description": "Subscribe to ROS2 topic and read gimbal angles, and update the cameras offsets live",
+    "description": "Subscribe to ROS2 topic and read gimbal angles, and update the cameras offsets live. Angles are for ENU intrinsic xyz eular angles in degrees. -180<=roll<=+180, -90<=pitch<=+90, -180<=yaw<=+180",
     "language": "Python",
     "metadata": {
       "uiName": "ROS2 Gimbal"
@@ -25,7 +25,7 @@
       },
       "start_roll": {
         "type": "float",
-        "description": "Initial roll offset in degrees",
+        "description": "Initial roll offset in degrees. -180<=roll<=+180",
         "default": 0.0,
         "metadata": {
           "uiName": "Start Roll"
@@ -59,7 +59,7 @@
       },
       "pitch": {
         "type": "float",
-        "description": "pitch in degrees",
+        "description": "pitch in degrees. -90<=pitch<=+90",
         "default": 0.0,
         "metadata": {
           "uiName": "pitch"
@@ -67,7 +67,7 @@
       },
       "yaw": {
       "type": "float",
-      "description": "yaw in degrees",
+      "description": "yaw in degrees. -180<=yaw<=+180",
       "default": 0.0,
       "metadata": {
           "uiName": "yaw"

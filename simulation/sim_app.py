@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 import omni.usd
 from omni.isaac.core import SimulationContext
 from omni.isaac.core.utils.extensions import enable_extension
-from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage, get_prim_at_path
+from omniverse_utils import set_camera_viewport, add_usd_to_stage, open_usd_stage, get_prim_at_path, is_prim_valid
 
 
 # ===================== The Simulation class ======================= #
@@ -48,6 +48,7 @@ class Simulation:
         self._set_viewport()
         self._update_laser_sensor()
         self._set_cesium_tilesets_url(consts.TILESETS_HTTP_SERVER_URL)
+        self._update_script_node_paths()
         self._configure_camera()
         self._configure_extensions_ros2()
 
@@ -270,7 +271,32 @@ class Simulation:
         
         for prim in tilesets.GetChildren():
             self._update_tileset_url(prim, url)
+
         
+    def _update_script_node_paths(self) -> None:
+        """"updates all the script nodes for activated flags to absolute paths on current computer"""
+
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        script_nodes_map = {
+                "/Environment/bbox_publisher/BboxPublisher/script_node":
+                    os.path.join(base_dir, "script_nodes", "bbox_node.py"),
+                "/Environment/distance_sensor/ActionGraph/laser_depth_node":
+                    os.path.join(base_dir, "script_nodes", "sensor_node.py"),
+                "/Environment/SAT/takeSAT/script_node":
+                    os.path.join(base_dir, "script_nodes", "sat_node.py")
+        }
+
+        for prim_path in script_nodes_map.keys():
+
+            if not is_prim_valid(prim_path):
+                continue
+
+            abs_script_path = script_nodes_map[prim_path]
+
+            prim = get_prim_at_path(prim_path)
+            prim.GetAttribute("inputs:scriptPath").Set(abs_script_path)
+            carb.log_info(f"Updated {prim_path} script path → {abs_script_path}")
+
 
 # ==================== laser sensor methods
     def _update_laser_sensor(self) -> None:

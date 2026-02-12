@@ -5,6 +5,7 @@ COM="--com-udp"
 BBOX="--bbox-publisher"
 DISTANCE_SENSOR="--distance-sensor"
 SAT="--sat"
+RTP="--image-rtp"
 
 RUN_SIMULATION="ISAACSIM_PYTHON ./simulation/main_sim.py $USD_PATH $COM"
 

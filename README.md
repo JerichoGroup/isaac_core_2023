@@ -10,23 +10,26 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 
 ---
 
-## Table of Contents
+## Table of Contents 📑
 
-1. [System Requirements](#system-requirements)  
-1. [Docker Workflow (Optional)](#docker-workflow-optional)
-1. [Running the Simulation](#running-the-simulation)  
-1. [Simulation Flags](#simulation-flags)  
-1. [Special configurations](#Special-configurations)
-1. [ROS2 input topics](#ros2-input-topics)  
-1. [ROS2 outputs topics](#ros2-outputs-topics)  
-1. [Take pictures](#take-pictures)  
-1. [Auto completion in vscode](#auto-completion-in-vscode)
-1. [Extension Overview](#Extension-Overview)
-1. [Using Bbox](#Using-Bbox)
+1. [System Requirements️](#system-requirements)
+1. [Docker Workflow (Optional)](#docker-workflow-optional-)
+1. [Running the Simulation](#running-the-simulation-)
+1. [Using isaac_core_dev_kit](#Using-isaac_core_dev_kit)
+1. [Simulation Flags](#simulation-flags-)
+1. [Special configurations](#special-configurations-)
+1. [ROS2 input topics](#ros2-input-topics-)
+1. [ROS2 outputs topics](#ros2-outputs-topics-)  
+1. [Take pictures](#take-pictures-)
+1. [Auto completion in vscode](#auto-completion-in-vscode-)
+1. [Extension Overview](#extension-overview-)
+1. [Using Bbox](#using-bbox-)
+1. [Isaac Core Debugger](#isaac-core-debugger-)
+1. [Deleting cesium cache](#deleting-cesium-cache)
 
 ---
 
-## System Requirements
+## System Requirements🖥️
 
 <details>
 <summary><strong>NVIDIA GPU — Driver 535+ recommended for Isaac Sim 2023.1+</strong></summary>
@@ -130,6 +133,21 @@ ros2 interface show isaac_ros2_messages/msg/Bbox
 <details>
 <summary><strong>Setup Extensions</strong></summary>
 
+Make sure isaacsim_2023 is installed. You can download at:
+https://docs.isaacsim.omniverse.nvidia.com/4.5.0/installation/download.html
+```bash
+mkdir -p ~/.local/share/ov/pkg/
+# mv isaac_sim-2023.1.1 ~/.local/share/ov/pkg/
+```
+Add to bashrc:
+```bash
+# ISAACSIM Aliases
+export ISAACSIM_PATH="/home/user/.local/share/ov/pkg/isaac_sim-2023.1.1"
+alias ISAACSIM_PYTHON="${ISAACSIM_PATH}/python.sh"
+alias ISAACSIM="${ISAACSIM_PATH}/isaac-sim.sh"
+alias move_ext='cp -r /home/user/clones/isaac_core_2023/extensions/* $ISAACSIM_PATH/exts/'
+```
+
 Modify Omniverse config file:
 ```bash
 OMNI_CONFIG_FILE="$ISAACSIM_PATH/apps/omni.isaac.sim.python.kit"
@@ -153,6 +171,12 @@ cp -r ~/.local/share/ov/data/exts/v2/cesium.* "$ISAACSIM_PATH/exts"
 cp -r extensions/* $ISAACSIM_PATH/exts/
 ```
 
+Install extensions dependencies:  
+```bash
+sudo apt install -y ros-humble-geographic-msgs
+```
+
+
 </details>
 
 <details>
@@ -166,7 +190,7 @@ cp -r extensions/* $ISAACSIM_PATH/exts/
 
 ---
 
-## Docker Workflow (Optional)
+## Docker Workflow (Optional) 🐳
 
 <details>
 <summary>Architecture Overview</summary>
@@ -216,7 +240,7 @@ Development is designed to be flexible:
 </details>
 
 
-## Running the Simulation
+## Running the Simulation 🚀
 
 ### Run Inside Docker
 
@@ -231,9 +255,274 @@ xhost +
 ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.usda --com-ros
 ```
 
+## Using isaac_core_dev_kit
+The isaac_core_dev_kit package provides a modular interface for running, controlling, and capturing data from Isaac Sim - based simulation. It is designed to be used in other projects without needed to fork or branch the original isaac_core repo.
+<details>
+<summary><strong>Installation</strong></summary>
+
+From the repo's root:
+```bash
+cd ~/clones/isaac_core_2023
+pip install ./simulation/
+```
+
+This Installs the package and makes the following modules available:
+```python
+from isaac_core_dev_kit.isaac_manager.host_isaac_manager import HostIsaacManager
+from isaac_core_dev_kit.isaac_manager.docker_isaac_manager import DockerIsaacManager
+from isaac_core_dev_kit.core_capture.video_capture import VideoCapture
+from isaac_core_dev_kit.core_capture.pose_capture import PoseCapture
+from isaac_core_dev_kit.core_capture.distance_capture import DistanceCapture
+from isaac_core_dev_kit.core_capture.bbox_capture import BboxCapture
+from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
+from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
+from isaac_core_dev_kit.udp.path_sender import PathSender
+import isaac_core_dev_kit.dev_utils as core_utils
+```
+</details>
+
+<details>
+<summary><strong>isaac_manager</strong></summary>
+
+The isaac_manger module provides a unified interface for launching and controlling Isaac Sim, either directly on the host machine or inside a docker container using the isaac_core simulation docker image.
+
+Class definitions:
+```python
+# This is the HostIsaacManager class definition and its attributes
+HostIsaacManager(
+    usd_path: str = "usd/maps/earth/earth.usda",
+    headless: bool = False,
+    com_ros: bool = False,
+    com_udp: bool = False,
+    distance_sensor: bool = False,
+    bbox_publisher: bool = False,
+    sat: bool = False,
+    rtp: bool = False,
+    show_isaac_logs: bool = False,
+    core_path: str = DEFAULT_CORE_PATH,
+    isaac_path: str = DEFAULT_ISAAC_PATH
+)
+
+# This is the DockerIsaacManager class definition and its attributes
+DockerIsaacManager(
+    usd_path: str = "usd/maps/earth/earth.usda",
+    headless: bool = False,
+    com_ros: bool = False,
+    com_udp: bool = False,
+    distance_sensor: bool = False,
+    bbox_publisher: bool = False,
+    sat: bool = False,
+    rtp: bool = False,
+    show_isaac_logs: bool = False,
+    core_path: str = DEFAULT_CORE_PATH,
+    compose_rel_path: str = DEFAULT_COMPOSE_REL_PATH
+)
+```
+Usage:
+```python
+from isaac_core_dev_kit.isaac_manager.host_isaac_manager import HostIsaacManager
+from isaac_core_dev_kit.isaac_manager.docker_isaac_manager import DockerIsaacManager
+
+# example use case:
+with HostIsaacManager(core_path=".", usd_path="./usd/maps/earth/earth.usda", com_udp=True, show_isaac_logs=False):
+  #do something
+```
+
+</details>
+
+<details>
+<summary><strong>core_capture</strong></summary>
+
+The core_capture module contains a set of capture utilities designed to extract ros2 data from the simulation at runtime.
+Each capture class inherits from `BaseCapture`, which defines a consistent interface for initialization, starting, stopping, saving the data, and shutdown.
+
+Class definitions:
+```python
+# all capture classes gets a name (for the ros2 node) and a topic (to subscribe to)
+# for example:
+VideoCapture(
+    topic: str = IMAGE_PUBLISHER_TOPIC_NAME,
+    name: str = "video_capture_node"
+)
+```
+
+Usage:
+```python
+from isaac_core_dev_kit.core_capture.video_capture import VideoCapture
+from isaac_core_dev_kit.core_capture.pose_capture import PoseCapture
+from isaac_core_dev_kit.core_capture.distance_capture import DistanceCapture
+from isaac_core_dev_kit.core_capture.bbox_capture import BboxCapture
+
+# example use case:
+video_capture_node = VideoCapture()
+
+video_capture_node.spin()
+video_capture_node.start_capture()
+
+# run a scenario
+
+video_capture_node.stop_capture()
+video_capture_node.save_data_to("./video.mp4", 30)
+
+video_capture_node.shutdown()
+```
+
+</details>
+
+<details>
+<summary><strong>udp</strong></summary>
+
+The udp module provides a real-time communication utilities for publishing UDP control commands to the simulation.
+Each Sender class inherits from `BaseUDPSender`, which defines a consistent UDP interface, it defines the packet struct and payload convention, and methods to start publishing packets in a blocking or non-blocking manor. 
+
+Class definitions:
+```python
+# This is the OnePointSender class definition and its attributes
+OnePointSender(
+    lat: float,
+    lon: float,
+    alt: float,
+    roll: float,
+    pitch: float,
+    yaw: float,
+    udp_port: float = 33333,
+    send_rate_hz: float = 30,
+    broadcast: bool = True,
+    target_ip: str = "127.0.0.1"
+)
+
+# This is the OrbitSender class definition and its attributes
+OrbitSender(
+    center_lat: float,
+    center_lon: float,
+    radius_m: float,
+    height_m: float,
+    speed_mps: float,
+    duration_s: float,
+    roll_deg: float = 0,
+    pitch_deg: float = 0,
+    udp_port: int = 33333,
+    send_rate_hz: float = 30,
+    broadcast: bool = True,
+    target_ip: str = "127.0.0.1"
+)
+
+# This is the PathSender class definition and its attributes
+PathSender(
+    points: List[LLAPoint],
+    speed_mps: float,
+    roll_deg: float = 0,
+    pitch_deg: float = 0,
+    udp_port: int = 33333,
+    send_rate_hz: float = 30,
+    broadcast: bool = True,
+    target_ip: str = "127.0.0.1"
+)
+```
+
+Usage:
+```python
+from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
+from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
+from isaac_core_dev_kit.udp.path_sender import PathSender
+from isaac_core_dev_kit.udp.udp_utils import LLAPoint
+
+# example use case:
+point_sender = OnePointSender(lat=32.22481, lon=35.25621, alt=1000.0,
+                              roll=0.0, pitch=0.0, yaw=0.0,
+                              udp_port=33333, send_rate_hz=30, 
+                              broadcast=True, target_ip="127.0.0.1")
+
+point_sender.run(blocking=False)
+
+point_sender.join()
+
+point_sender.send_once(32.2245, 35.2563, 500.0, 0.0, 0.0, 0.0)  # all sender classes has a send_once method to send a single point 
+
+point_sender.close()
+```
+
+</details>
+
+<details>
+<summary><strong>dev_utils</strong></summary>
+
+The dev_utils module is a collection of utilities function that can help developers in any project.
+
+Usage:
+```python
+import isaac_core_dev_kit.dev_utils as core_utils
+
+# deletes the cesium cache on the local computer
+core_utils.delete_cesium_cache()
+
+# used to safely init or shutdown rclpy
+core_utils.safe_rclpy_init()
+core_utils.safe_rclpy_shutdown()
+
+# used to send a ros2 msg with new angels to set the cameras gimbal to
+core_utils.set_gimbal_angle(roll=0.0, pitch=-90.0, yaw=0.0)
+
+# used to capture the current frame from Isaac Sim, work with --sat flag
+core_utils.save_current_frame_to("./picture.png")
+```
+
+</details>
+
+<details>
+<summary><strong>full usage example</strong></summary>
+
+This is a use case example. The following code works like this: 
+1. imports the needed modules from the dev kit
+2. defines a CORE_PATH (if not running from the isaac_core_2023 repo) 
+3. initialize a ros2-IsaacSim env with deleting the cesium cache and init'ing rclpy
+4. starts a local IsaacSim session with HostIsaacManager
+5. initialize and start's a video_capture_node and a orbit_sender
+6. runs the orbit_sender once
+7. changes gimbal's angle mid run/flight
+8. run the orbit_sender another time
+9. stop's recording and saving the video
+10. cleaning up the video_capture_node and the orbit_sender
+
+```python
+from isaac_core_dev_kit.isaac_manager.host_isaac_manager import HostIsaacManager
+from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
+from isaac_core_dev_kit.core_capture.video_capture import VideoCapture
+import isaac_core_dev_kit.dev_utils as core_utils
+
+CORE_PATH = "/home/user/clones/isaac_core_2023"
+
+core_utils.delete_cesium_cache()
+core_utils.safe_rclpy_init()
+
+with HostIsaacManager(core_path=CORE_PATH, com_udp=True, show_isaac_logs=False):
+
+    video_capture_node = VideoCapture()
+    orbit_sender = OrbitSender(center_lat=32.22481, center_lon=35.25621,
+                               radius_m=1000.0, height_m=1000.0,
+                               speed_mps=30.0, duration_s=50.0)
+
+    video_capture_node.spin()
+    video_capture_node.start_capture()
+    
+    orbit_sender.run(blocking=True)
+
+    core_utils.set_gimbal_angle(-45.0, 0.0, 0.0)
+    
+    orbit_sender.run(blocking=True)
+
+    video_capture_node.stop_capture()
+    video_capture_node.save_data_to("video.mp4", 30)
+
+    orbit_sender.close()
+    video_capture_node.shutdown()
+```
+
+</details>
+
 ---
 
-## Simulation Flags
+## Simulation Flags 🚩
 
 | Flag                     | Description                                                         |
 |--------------------------|---------------------------------------------------------------------|
@@ -244,10 +533,11 @@ ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.us
 | `--distance-sensor`      | Add range sensor to simulation (output is on ros topic)             |
 | `--bbox-publisher`       | Publish bbox data for each object specified                         |
 | `--sat`                  | enables to capture current frames to and output path via a ros topic|
+| `--image-rtp`            | exports the image from ros over RTP                                 |
 
 ---
 
-## Special configurations
+## Special configurations 🔧
 under simulation/consts.py you can change:
 ```bash     
 GIMBAL_ROLL_DEG                 # gimbal roll angel
@@ -268,6 +558,11 @@ GLOBAL_POSE_TOPIC_NAME          # global pose data topic name
 LASER_TOPIC_NAME                # distance sensor topic name
 BBOXES_TOPIC_NAME               # bbox data topic name
 IMAGE_PUBLISHER_TOPIC_NAME      # image rgb topic name
+
+RTP_VIDEO_PORT                  # defines the port to export the frames over udp
+RTP_META_PORT                   # defines the port to export the metadata over udp
+
+HOST_IP                         # defines the host ip to publish over udp from 
 ```
 
 ### Gimbal Angle (Reference Image)
@@ -287,7 +582,7 @@ ros2 topic pub /isaac_core/gimbal isaac_ros2_messages/msg/Gimbal "{roll: 0.0, pi
 
 ---
 
-## ROS2 input topics
+## ROS2 input topics 📥
 These are the MAVRos topic the isaac sim would be subscribing to if you choose com-ros
 
 | Topic                                | Type                                | Description                                      |
@@ -300,7 +595,7 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 
 ------
 
-## ROS2 outputs topics
+## ROS2 outputs topics 📤
 
 | Topic                                | Type                                 | Description                 |
 |--------------------------------------|--------------------------------------|-----------------------------|
@@ -311,6 +606,20 @@ These are the MAVRos topic the isaac sim would be subscribing to if you choose c
 
 
 ---
+
+## Angles conventions
+The angles of roll, pitch, yaw expected for udp are of the conventions of NED coordinates and intrensic xyz eular angles.
+This means:
++roll will turn the "nose" of the airplain (camera) to the right (right wing down, left wing up)
++pitch will trurn the "nose" of the airplain (camera) up
++yaw will trurn the "nose" of the airplain (camera) right
+
+This is true for gimbal angles as well.
+
+Behind the scences isaac core uses ENU (this is because of cesium)
+We fix this distinction by converting NED rotations to ENU (But you don't need to take care of this).
+And mavros convts autmatically from NED to ENU
+
 
 ## Take pictures
 You can enable the take picture with the `--sat` flag
@@ -326,7 +635,7 @@ ros2 topic pub /isaac_core/sat isaac_ros2_messages/msg/SATOutput "{output_path: 
 
 
 
-## Auto completion in vscode
+## Auto completion in vscode 💡
 <details>
 <summary>Expand to show more on setup</summary>
 `.vscode` folder is unique for each machine depending on the extensions installed, in order to get the right folder follow those steps:
@@ -350,7 +659,11 @@ Now reopen vscode in this folder an wait 30 seconds ~ for auto-completion.
 </details>
 
 
-## Extension Overview
+## Extension Overview 🧩
+
+<details>
+
+<summary><strong>Extension Overview</strong></summary>
 
 The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 
@@ -483,8 +796,13 @@ The isaac core repo has some custom extension and nodes for isaac sim 2023.1.1
 
 </details>
 
+</details>
 
-## Using Bbox
+## Using Bbox 📦
+
+<details>
+
+<summary><strong>Using Bbox</strong></summary>
 
 You can enable the Bbox option with the `--bbox-publisher` flag.
 
@@ -520,8 +838,75 @@ In order to add a new object to get its bbox data, you need to follow there step
   * Notice: Make sure all your fields look like in the image, the `apply to` needs to be on stage and not selected
 - Click `Add`
 
-<img src="readme_images/bbox_semantics.png" alt="adding the correct semantics to a object" width="500"/>
+<img src="readme_images/bbox_semantics.png" alt="adding the correct semantics to a object" width="1000"/>
 </details>
 
 #### Make sure to save the .usda file after adding your object and setting it
+
+</details>
+
+## Isaac Core Debugger 🐞
+
+<details>
+
+<summary><strong>Isaac Core Debugger</strong></summary>
+
+* Allows manually sending camera pose data to Isaac Sim with GUI:
+  * Latitude, Longitude, Altitude
+  * Roll, Pitch, Yaw
+  * Publish rate and optional offsets
+
+<img src="readme_images/debugger.png" alt="Logo" width="1000"/>
+
+## Python Requirements
+
+```bash
+python3 --version  # Verify Python version (should be 3.10)
+
+cd ./debugger
+python3 -m pip install .
+```
+
+## Adding Local Bin to PATH (Bash)
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+## Adding Local Bin to PATH (Zsh)
+
+```bash
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+## Running the Debugger GUIs
+
+* Launch GUI for sending camera poses
+
+```bash
+ros-sender
+```
+or:
+```bash
+udp-sender
+```
+
+</details>
+
+## Deleting cesium cache
+
+<details>
+
+<summary><strong>Deleting cesium cache</strong></summary>
+
+* While running isaac sim overnight, some computers will have trouble opening it again after closing the overnight session.
+* That is because cesium has a cache file, that is flushed (deleted) after the isaac sim is shutdown, but for long session that file wont be deleted, and it might get so big (600-700GB), that the next time you try to open isaac sim it wont manage to open the file causing isaac sim to fail.
+* the cache file is located on .cache and can be deleted like this:
+```bash
+rm -rf ~/.cache/ov/cesium-request-cache.sqlite-wal
+```
+
+</details>
 

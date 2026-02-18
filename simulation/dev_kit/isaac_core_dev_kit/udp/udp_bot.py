@@ -33,6 +33,16 @@ class UdpBot(BaseUDPSender):
 
         self._send_current_pose()
 
+    def get_next_point(self) -> Tuple[float, float, float, float, float, float]:
+        """Returns the current point (lat, lon, alt, body roll/pitch/yaw)"""
+        
+        return (self._current_lat,
+                self._current_lon,
+                self._current_alt,
+                self._current_body_roll,
+                self._current_body_pitch,
+                self._current_body_yaw)
+
     @staticmethod
     def _normalize_angle(angle: float) -> float:
         """Normalize angle to [-pi, pi]"""

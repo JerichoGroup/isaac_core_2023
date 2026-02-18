@@ -395,7 +395,7 @@ The isaac_core_dev_kit package provides a modular interface for running, control
 From the repo's root:
 ```bash
 cd ~/clones/isaac_core_2023
-pip install ./simulation/
+pip install ./simulation/dev_kit/
 ```
 
 This Installs the package and makes the following modules available:

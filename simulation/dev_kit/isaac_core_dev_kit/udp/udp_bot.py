@@ -209,7 +209,7 @@ class UdpBot(BaseUDPSender):
                            target_pitch=self._current_world_pitch,
                            target_yaw=self._current_world_yaw,
                            duration_s=duration_s,
-                           look_at_target=True)
+                           look_at_target=False)
 
     def move_right(self, distance_m: float, duration_s: float = 1.0) -> None:
         """Moves the bot by a certain distance to the right with respect to the direction it is currently facing"""

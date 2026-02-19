@@ -8,6 +8,7 @@ import time
 from typing import Tuple
 
 from .base_udp_sender import BaseUDPSender
+from .udp_utils import lla_distance_to_m, meters_to_latlon, LLAPoint
 
 
 # ==================== the UdpBot class ====================
@@ -54,7 +55,7 @@ class UdpBot(BaseUDPSender):
 
         roll_enu = world_roll
         pitch_enu = world_pitch
-        yaw_enu = world_yaw
+        yaw_enu = self._normalize_angle(world_yaw)
 
         roll_ned = pitch_enu
         pitch_ned = roll_enu
@@ -101,12 +102,30 @@ class UdpBot(BaseUDPSender):
         start_pitch = self._current_world_pitch
         start_yaw = self._current_world_yaw
 
+        p_start = LLAPoint(start_lat, start_lon, start_alt)
+        p_target = LLAPoint(target_lat, target_lon, target_alt)
+
+        dy = lla_distance_to_m(p_start, LLAPoint(target_lat, start_lon, start_alt))
+        if target_lat < start_lat:
+            dy = -dy
+
+        dx = lla_distance_to_m(p_start, LLAPoint(start_lat, target_lon, start_alt))
+        if target_lon < start_lon:
+            dx = -dx
+
+        dz = target_alt - start_alt
+
         for i in range(1, steps + 1):
             alpha = i / steps
+            
+            x = alpha * dx
+            y = alpha * dy
+            z = start_alt + alpha * dz
 
-            lat = start_lat + alpha * (target_lat - start_lat)
-            lon = start_lon + alpha * (target_lon - start_lon)
-            alt = start_alt + alpha * (target_alt - start_alt)
+            d_lat, d_lon = meters_to_latlon(y, x, start_lat)
+            lat = start_lat + d_lat
+            lon = start_lon + d_lon
+            alt = z
 
             roll = start_roll + alpha * (target_roll - start_roll)
             pitch = start_pitch + alpha * (target_pitch - start_pitch)
@@ -144,8 +163,9 @@ class UdpBot(BaseUDPSender):
         dx = distance_m * math.cos(yaw)
         dy = distance_m * math.sin(yaw)
 
-        target_lat = self._current_lat + dy
-        target_lon = self._current_lon + dx
+        d_lat, d_lon = meters_to_latlon(dy, dx, self._current_lat)
+        target_lat = self._current_lat + d_lat
+        target_lon = self._current_lon + d_lon
 
         self.move_to_point(target_lat=target_lat,
                            target_lon=target_lon,
@@ -163,8 +183,9 @@ class UdpBot(BaseUDPSender):
         dx = distance_m * math.cos(yaw)
         dy = distance_m * math.sin(yaw)
         
-        target_lat = self._current_lat + dy
-        target_lon = self._current_lon + dx
+        d_lat, d_lon = meters_to_latlon(dy, dx, self._current_lat)
+        target_lat = self._current_lat + d_lat
+        target_lon = self._current_lon + d_lon
 
         self.move_to_point(target_lat=target_lat,
                            target_lon=target_lon,

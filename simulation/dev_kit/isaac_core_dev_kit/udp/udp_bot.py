@@ -87,12 +87,12 @@ class UdpBot(BaseUDPSender):
          self._current_body_yaw) = self.world_frame_to_body_frame(roll, pitch, yaw)
 
     def move_to_point(self, target_lat: float, target_lon: float, target_alt: float,
-                      target_roll: float, target_pitch: float, target_yaw: float, duration_s: float = 1.0) -> None:
+                      target_roll: float, target_pitch: float, target_yaw: float,
+                      duration_s: float = 1.0, look_at_target: bool = True, turn_duration_s: float = 0.5) -> None:
         """Moves the bot to a new point by smoothly transitioning from the current to the target point"""
 
         steps = max(1, int(self.send_rate_hz * duration_s))
         dt = 1.0 / self.send_rate_hz
-
         start_time = time.perf_counter()
 
         start_lat = self._current_lat
@@ -103,7 +103,6 @@ class UdpBot(BaseUDPSender):
         start_yaw = self._current_world_yaw
 
         p_start = LLAPoint(start_lat, start_lon, start_alt)
-        p_target = LLAPoint(target_lat, target_lon, target_alt)
 
         dy = lla_distance_to_m(p_start, LLAPoint(target_lat, start_lon, start_alt))
         if target_lat < start_lat:
@@ -127,9 +126,20 @@ class UdpBot(BaseUDPSender):
             lon = start_lon + d_lon
             alt = z
 
-            roll = start_roll + alpha * (target_roll - start_roll)
-            pitch = start_pitch + alpha * (target_pitch - start_pitch)
-            yaw = start_yaw + alpha * (target_yaw - start_yaw)
+            if look_at_target:
+                heading = math.atan2(dy, dx)
+                yaw = heading
+                roll = start_roll
+                pitch = start_pitch
+            else:
+                d_roll = self._normalize_angle(target_roll - start_roll)
+                d_pitch = self._normalize_angle(target_pitch - start_pitch)
+                d_yaw = self._normalize_angle(target_yaw - start_yaw)
+
+                roll = start_roll + alpha * d_roll
+                pitch = start_pitch + alpha * d_pitch
+                yaw = start_yaw + alpha * d_yaw
+                yaw = self._normalize_angle(yaw)
 
             self._current_lat = lat
             self._current_lon = lon
@@ -143,17 +153,42 @@ class UdpBot(BaseUDPSender):
             sleep_time = next_time - now
             if sleep_time > 0:
                 time.sleep(sleep_time)
+        
+        if look_at_target:
+            self.turn_to(target_roll, target_pitch, target_yaw, duration_s=turn_duration_s)
 
     def turn_to(self, target_roll: float, target_pitch: float, target_yaw: float, duration_s: float = 1.0) -> None:
         """Turns the bot to a new orientation by smoothly transitioning from the current to the target point, in world frame"""
 
-        self.move_to_point(target_lat=self._current_lat,
-                           target_lon=self._current_lon,
-                           target_alt=self._current_alt,
-                           target_roll=target_roll,
-                           target_pitch=target_pitch,
-                           target_yaw=target_yaw,
-                           duration_s=duration_s)
+        steps = max(1, int(self.send_rate_hz * duration_s))
+        dt = 1.0 / self.send_rate_hz
+        start_time = time.perf_counter()
+
+        start_roll = self._current_world_roll
+        start_pitch = self._current_world_pitch
+        start_yaw = self._current_world_yaw
+
+        delta_yaw = self._normalize_angle(target_yaw - start_yaw)
+        delta_roll = self._normalize_angle(target_roll - start_roll)
+        delta_pitch = self._normalize_angle(target_pitch - start_pitch)
+
+        for i in range(1, steps + 1):
+            alpha = i / steps
+
+            roll = start_roll + alpha * delta_roll
+            pitch = start_pitch + alpha * delta_pitch
+            yaw = start_yaw + alpha * delta_yaw
+            yaw = self._normalize_angle(yaw)
+
+            self._update_orientation_world(roll, pitch, yaw)
+            self._send_current_pose()
+
+            next_tick = start_time + i * dt
+            now = time.perf_counter()
+            sleep_time = next_tick - now
+            if sleep_time > 0:
+                time.sleep(sleep_time)
+
     
     def move_forward(self, distance_m: float, duration_s: float = 1.0) -> None:
         """Moves the bot by a certain distance in the direction it is currently facing"""
@@ -173,7 +208,8 @@ class UdpBot(BaseUDPSender):
                            target_roll=self._current_world_roll,
                            target_pitch=self._current_world_pitch,
                            target_yaw=self._current_world_yaw,
-                           duration_s=duration_s)
+                           duration_s=duration_s,
+                           look_at_target=True)
 
     def move_right(self, distance_m: float, duration_s: float = 1.0) -> None:
         """Moves the bot by a certain distance to the right with respect to the direction it is currently facing"""
@@ -193,7 +229,8 @@ class UdpBot(BaseUDPSender):
                            target_roll=self._current_world_roll,
                            target_pitch=self._current_world_pitch,
                            target_yaw=self._current_world_yaw,
-                           duration_s=duration_s)
+                           duration_s=duration_s,
+                           look_at_target=False)
 
     def move_up(self, distance_m: float, duration_s: float = 1.0) -> None:
         """Moves the bot by a certain distance up with respect to the direction it is currently facing"""
@@ -206,4 +243,5 @@ class UdpBot(BaseUDPSender):
                     target_roll=self._current_world_roll,
                     target_pitch=self._current_world_pitch,
                     target_yaw=self._current_world_yaw,
-                    duration_s=duration_s)
+                    duration_s=duration_s,
+                    look_at_target=False)

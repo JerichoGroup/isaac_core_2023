@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import math
 import time
+import numpy as np
 from typing import Tuple, Optional
+from transforms3d.euler import euler2mat, mat2euler
 
 from .base_udp_sender import BaseUDPSender
 from .udp_utils import lla_distance_to_m, meters_to_latlon, LLAPoint
@@ -54,16 +56,20 @@ class UdpBot(BaseUDPSender):
     
         return (angle_r + math.pi) % (2.0 * math.pi) - math.pi
 
-    def world_frame_to_body_frame(self, world_roll_r: float, world_pitch_r: float, world_yaw_r: float) -> Tuple[float, float, float]:
-        """Converts world-frame ENU euler angles to NED body-frame euler angles based"""
+    def world_frame_to_body_frame_r(self, roll_r: float, pitch_r: float, yaw_r: float) -> Tuple[float, float, float]:
+        """Convert world-frame ENU (rxyz) to NED body-frame (rxyz) using full rotation matrices."""
 
-        roll_enu_r = world_roll_r
-        pitch_enu_r = world_pitch_r
-        yaw_enu_r = self._normalize_angle_r(world_yaw_r)
+        R_enu = euler2mat(roll_r, pitch_r, yaw_r, axes='rxyz')
 
-        roll_ned_r = pitch_enu_r
-        pitch_ned_r = roll_enu_r
-        yaw_ned_r = -yaw_enu_r + math.pi / 2.0
+        R_enu_to_ned = np.array([
+            [0, 1, 0],
+            [1, 0, 0],
+            [0, 0,-1]
+        ])
+
+        R_ned = R_enu_to_ned @ R_enu
+
+        roll_ned_r, pitch_ned_r, yaw_ned_r = mat2euler(R_ned, axes='rxyz')
 
         yaw_ned_r = self._normalize_angle_r(yaw_ned_r)
 
@@ -88,12 +94,53 @@ class UdpBot(BaseUDPSender):
 
         (self._current_body_roll_r,
          self._current_body_pitch_r,
-         self._current_body_yaw_r) = self.world_frame_to_body_frame(roll_r, pitch_r, yaw_r)
+         self._current_body_yaw_r) = self.world_frame_to_body_frame_r(roll_r, pitch_r, yaw_r)
+        
+    def turn_to_point(self, target_lat: float, target_lon: float, target_alt: float, duration_s: float = 1.0,) -> None:
+        """Smoothly rotate in world frame to look at the given target LLA."""
+
+        start_lat = self._current_lat
+        start_lon = self._current_lon
+        start_alt = self._current_alt
+
+        p_start = LLAPoint(start_lat, start_lon, start_alt)
+
+        dy = lla_distance_to_m(p_start, LLAPoint(target_lat, start_lon, start_alt))
+        if target_lat < start_lat:
+            dy = -dy
+
+        dx = lla_distance_to_m(p_start, LLAPoint(start_lat, target_lon, start_alt))
+        if target_lon < start_lon:
+            dx = -dx
+
+        dz = target_alt - start_alt
+
+        yaw_r = math.atan2(dy, dx)
+
+        horizontal_dist = math.sqrt(dx*dx + dy*dy)
+        pitch_r = math.atan2(-dz, horizontal_dist)
+
+        yaw_r = self._normalize_angle_r(yaw_r)
+        pitch_r = self._normalize_angle_r(pitch_r)
+
+        roll_d = math.degrees(self._current_world_roll_r)
+        pitch_d = math.degrees(pitch_r)
+        yaw_d = math.degrees(yaw_r)
+
+        self.turn_to(
+            target_roll_d=roll_d,
+            target_pitch_d=pitch_d,
+            target_yaw_d=yaw_d,
+            duration_s=duration_s,
+        )
 
     def move_to_point(self, target_lat: float, target_lon: float, target_alt: float,
                       target_roll_d: float, target_pitch_d: float, target_yaw_d: float,
                       duration_s: float = 1.0, look_at_target: bool = True, turn_duration_s: float = 0.5) -> None:
         """Moves the bot to a new point by smoothly transitioning from the current to the target point"""
+
+        if look_at_target:
+            self.turn_to_point(target_lat, target_lon, target_alt, duration_s=turn_duration_s)
 
         steps = max(1, int(self.send_rate_hz * duration_s))
         dt = 1.0 / self.send_rate_hz
@@ -135,10 +182,9 @@ class UdpBot(BaseUDPSender):
             alt = z
 
             if look_at_target:
-                heading_r = math.atan2(dy, dx)
-                yaw_r = heading_r
                 roll_r = start_roll_r
                 pitch_r = start_pitch_r
+                yaw_r = start_yaw_r
             else:
                 d_roll_r = self._normalize_angle_r(target_roll_r - start_roll_r)
                 d_pitch_r = self._normalize_angle_r(target_pitch_r - start_pitch_r)

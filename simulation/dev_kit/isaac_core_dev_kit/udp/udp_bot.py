@@ -5,7 +5,9 @@ from __future__ import annotations
 
 import math
 import time
-from typing import Tuple
+import numpy as np
+from typing import Tuple, Optional
+from transforms3d.euler import euler2mat, mat2euler
 
 from .base_udp_sender import BaseUDPSender
 from .udp_utils import lla_distance_to_m, meters_to_latlon, LLAPoint
@@ -21,7 +23,6 @@ class UdpBot(BaseUDPSender):
                  udp_port: float = 33333, send_rate_hz: float = 30,
                  broadcast: bool = True, target_ip: str = "127.0.0.1"
                 ) -> None:
-        """Initialize the UdpBot with a starting po and an address"""
 
         super().__init__(udp_port=udp_port, send_rate_hz=send_rate_hz,
                          broadcast=broadcast, target_ip=target_ip)
@@ -39,8 +40,6 @@ class UdpBot(BaseUDPSender):
         self._send_current_pose()
 
     def get_next_point(self) -> Tuple[float, float, float, float, float, float]:
-        """Returns the current point (lat, lon, alt, body roll/pitch/yaw)"""
-        
         return (self._current_lat,
                 self._current_lon,
                 self._current_alt,
@@ -50,13 +49,30 @@ class UdpBot(BaseUDPSender):
 
     @staticmethod
     def _normalize_angle_r(angle_r: float) -> float:
-        """Normalize angle in radians to [-pi, pi]"""
-    
         return (angle_r + math.pi) % (2.0 * math.pi) - math.pi
 
-    def _send_current_pose(self) -> None:
-        """Send the current pose (lat, lon, alt, body roll/pitch/yaw) once."""
+    def world_frame_to_body_frame_r(self, roll_r: float, pitch_r: float, yaw_r: float):
+        """Convert world-frame ENU (rxyz) to Isaac camera body-frame (rxyz)."""
 
+        R_world = euler2mat(roll_r, pitch_r, yaw_r, axes='rxyz')
+
+        R_enu_to_cam = np.array([
+            [0, 1, 0],     # forward = north
+            [-1, 0, 0],    # left    = -east
+            [0, 0, 1]      # up      = up
+        ])
+
+        R_cam = R_enu_to_cam @ R_world
+
+        roll_b, pitch_b, yaw_b = mat2euler(R_cam, axes='rxyz')
+
+        roll_b = self._normalize_angle_r(roll_b)
+        pitch_b = self._normalize_angle_r(pitch_b)
+        yaw_b = self._normalize_angle_r(yaw_b)
+
+        return roll_b, pitch_b, yaw_b
+
+    def _send_current_pose(self) -> None:
         self.send_once(self._current_lat,
                        self._current_lon,
                        self._current_alt,
@@ -65,19 +81,15 @@ class UdpBot(BaseUDPSender):
                        self._current_body_yaw_r)
         
     def _update_orientation_world_r(self, roll_r: float, pitch_r: float, yaw_r: float) -> None:
-        """Update world-frame orientation and recompute body-frame orientation"""
-        
         self._current_world_roll_r = roll_r
         self._current_world_pitch_r = pitch_r
         self._current_world_yaw_r = yaw_r
 
-        # Match GUI behavior: body angles == world angles
-        self._current_body_roll_r = roll_r
-        self._current_body_pitch_r = pitch_r
-        self._current_body_yaw_r = yaw_r
+        (self._current_body_roll_r,
+         self._current_body_pitch_r,
+         self._current_body_yaw_r) = self.world_frame_to_body_frame_r(roll_r, pitch_r, yaw_r)
         
     def turn_to_point(self, target_lat: float, target_lon: float, target_alt: float, duration_s: float = 1.0,) -> None:
-        """Smoothly rotate in world frame to look at the given target LLA."""
 
         start_lat = self._current_lat
         start_lon = self._current_lon
@@ -117,7 +129,6 @@ class UdpBot(BaseUDPSender):
     def move_to_point(self, target_lat: float, target_lon: float, target_alt: float,
                       target_roll_d: float, target_pitch_d: float, target_yaw_d: float,
                       duration_s: float = 1.0, look_at_target: bool = True, turn_duration_s: float = 0.5) -> None:
-        """Moves the bot to a new point by smoothly transitioning from the current to the target point"""
 
         if look_at_target:
             self.turn_to_point(target_lat, target_lon, target_alt, duration_s=turn_duration_s)
@@ -192,7 +203,6 @@ class UdpBot(BaseUDPSender):
             self.turn_to(target_roll_d, target_pitch_d, target_yaw_d, duration_s=turn_duration_s)
 
     def turn_to(self, target_roll_d: float, target_pitch_d: float, target_yaw_d: float, duration_s: float = 1.0) -> None:
-        """Turns the bot to a new orientation by smoothly transitioning from the current to the target point, in world frame"""
 
         steps = max(1, int(self.send_rate_hz * duration_s))
         dt = 1.0 / self.send_rate_hz
@@ -229,7 +239,6 @@ class UdpBot(BaseUDPSender):
 
     
     def move_forward(self, distance_m: float, duration_s: float = 1.0) -> None:
-        """Moves the bot by a certain distance in the direction it is currently facing"""
 
         yaw_r = self._current_world_yaw_r
 
@@ -250,7 +259,6 @@ class UdpBot(BaseUDPSender):
                            look_at_target=False)
 
     def move_right(self, distance_m: float, duration_s: float = 1.0) -> None:
-        """Moves the bot by a certain distance to the right with respect to the direction it is currently facing"""
 
         yaw_r = self._current_world_yaw_r - math.pi / 2.0
 
@@ -271,7 +279,6 @@ class UdpBot(BaseUDPSender):
                            look_at_target=False)
 
     def move_up(self, distance_m: float, duration_s: float = 1.0) -> None:
-        """Moves the bot by a certain distance up with respect to the direction it is currently facing"""
 
         target_alt = self._current_alt + distance_m
 
@@ -285,7 +292,6 @@ class UdpBot(BaseUDPSender):
                     look_at_target=False)
     
     def turn_roll(self, delta_roll_d: float, duration_s: float = 1.0) -> None:
-        """Turns the bot by a certain angle on the roll axis in world frame"""
 
         target_roll_d = math.degrees(self._current_world_roll_r) + delta_roll_d
 
@@ -295,7 +301,6 @@ class UdpBot(BaseUDPSender):
                      duration_s=duration_s)
         
     def turn_pitch(self, delta_pitch_d: float, duration_s: float = 1.0) -> None:
-        """Turns the bot by a certain angle on the pitch axis in world frame"""
 
         target_pitch_d = math.degrees(self._current_world_pitch_r) + delta_pitch_d
 
@@ -305,7 +310,6 @@ class UdpBot(BaseUDPSender):
                      duration_s=duration_s)
 
     def turn_yaw(self, delta_yaw_d: float, duration_s: float = 1.0) -> None:
-        """Turns the bot by a certain angle on the yaw axis in world frame"""
 
         target_yaw_d = math.degrees(self._current_world_yaw_r) + delta_yaw_d
 

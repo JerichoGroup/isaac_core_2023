@@ -5,9 +5,7 @@ from __future__ import annotations
 
 import math
 import time
-import numpy as np
-from typing import Tuple, Optional
-from transforms3d.euler import euler2mat, mat2euler
+from typing import Tuple
 
 from .base_udp_sender import BaseUDPSender
 from .udp_utils import lla_distance_to_m, meters_to_latlon, LLAPoint
@@ -56,25 +54,6 @@ class UdpBot(BaseUDPSender):
     
         return (angle_r + math.pi) % (2.0 * math.pi) - math.pi
 
-    def world_frame_to_body_frame_r(self, roll_r: float, pitch_r: float, yaw_r: float) -> Tuple[float, float, float]:
-        """Convert world-frame ENU (rxyz) to NED body-frame (rxyz) using full rotation matrices."""
-
-        R_enu = euler2mat(roll_r, pitch_r, yaw_r, axes='rxyz')
-
-        R_enu_to_ned = np.array([
-            [0, 1, 0],
-            [1, 0, 0],
-            [0, 0,-1]
-        ])
-
-        R_ned = R_enu_to_ned @ R_enu
-
-        roll_ned_r, pitch_ned_r, yaw_ned_r = mat2euler(R_ned, axes='rxyz')
-
-        yaw_ned_r = self._normalize_angle_r(yaw_ned_r)
-
-        return roll_ned_r, pitch_ned_r, yaw_ned_r
-    
     def _send_current_pose(self) -> None:
         """Send the current pose (lat, lon, alt, body roll/pitch/yaw) once."""
 
@@ -92,9 +71,10 @@ class UdpBot(BaseUDPSender):
         self._current_world_pitch_r = pitch_r
         self._current_world_yaw_r = yaw_r
 
-        (self._current_body_roll_r,
-         self._current_body_pitch_r,
-         self._current_body_yaw_r) = self.world_frame_to_body_frame_r(roll_r, pitch_r, yaw_r)
+        # Match GUI behavior: body angles == world angles
+        self._current_body_roll_r = roll_r
+        self._current_body_pitch_r = pitch_r
+        self._current_body_yaw_r = yaw_r
         
     def turn_to_point(self, target_lat: float, target_lon: float, target_alt: float, duration_s: float = 1.0,) -> None:
         """Smoothly rotate in world frame to look at the given target LLA."""
@@ -229,7 +209,6 @@ class UdpBot(BaseUDPSender):
         delta_roll_r = self._normalize_angle_r(target_roll_r - start_roll_r)
         delta_pitch_r = self._normalize_angle_r(target_pitch_r - start_pitch_r)
         delta_yaw_r = self._normalize_angle_r(target_yaw_r - start_yaw_r)
-
 
         for i in range(1, steps + 1):
             alpha = i / steps

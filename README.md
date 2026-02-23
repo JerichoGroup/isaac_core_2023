@@ -409,6 +409,7 @@ from isaac_core_dev_kit.core_capture.bbox_capture import BboxCapture
 from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
 from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
 from isaac_core_dev_kit.udp.path_sender import PathSender
+from isaac_core_dev_kit.udp.udp_bot import UdpBot
 import isaac_core_dev_kit.dev_utils as core_utils
 ```
 </details>
@@ -550,6 +551,20 @@ PathSender(
     broadcast: bool = True,
     target_ip: str = "127.0.0.1"
 )
+
+# This is the UdpBot class definition and its attributes
+UdpBot(
+    start_lat: float,
+    start_lon: float,
+    start_alt: float,
+    start_roll_d: float,
+    start_pitch_d: float,
+    start_yaw_d: float,
+    udp_port: float = 33333,
+    send_rate_hz: float = 30,
+    broadcast: bool = True,
+    target_ip: str = "127.0.0.1"
+)
 ```
 
 Usage:
@@ -557,6 +572,7 @@ Usage:
 from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
 from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
 from isaac_core_dev_kit.udp.path_sender import PathSender
+from isaac_core_dev_kit.udp.udp_bot import UdpBot
 from isaac_core_dev_kit.udp.udp_utils import LLAPoint
 
 # example use case:
@@ -572,6 +588,20 @@ point_sender.join()
 point_sender.send_once(32.2245, 35.2563, 500.0, 0.0, 0.0, 0.0)  # all sender classes has a send_once method to send a single point 
 
 point_sender.close()
+
+#UdpBot usage
+my_bot = UdpBot(start_lat=32.22481, start_lon=35.25621, start_alt=1000.0,
+                start_roll_d=0.0, start_pitch_d=0.0, start_yaw_d=0.0, send_rate_hz=50)
+
+my_bot.move_to_point(32.22481, 35.25621, 900.0, 0.0, 0.0, 0.0, duration_s=5.0)
+my_bot.move_forward_backward(100.0)
+my_bot.move_right_left(100.0)
+my_bot.move_up_down(100.0)
+my_bot.turn_roll(45)
+my_bot.turn_pitch(45)
+my_bot.turn_yaw(45)
+my_bot.turn_to_point(32.22481, 35.25621, 1000.0)
+my_bot.steer(turn_radius_m=100.0, speed_ms=50.5, duration_s=0.5)
 ```
 
 </details>

@@ -9,7 +9,7 @@ from transforms3d.euler import euler2mat, mat2euler
 from transforms3d.quaternions import mat2quat, quat2mat
 
 from .base_udp_sender import BaseUDPSender
-from .udp_utils import lla_distance_to_m, meters_to_latlon, LLAPoint
+from .udp_utils import lla_distance_to_meters, meters_to_latlon_offset, LLAPoint
 
 
 # ==================== Consts ====================
@@ -36,15 +36,15 @@ class UdpBot(BaseUDPSender):
         self._current_lon = start_lon
         self._current_alt = start_alt
 
-        self._R_world = euler2mat(
+        self._world_rotation_matrix = euler2mat(
             math.radians(start_roll_d),
             math.radians(start_pitch_d),
             math.radians(start_yaw_d),
             axes=EULER_AXES
         )
 
-        self._update_from_R_world()
-        self._send_current_pose()
+        self._update_cur_rotation_from_world_rotation_matrix()
+        self._publish_current_pose()
 
     def get_next_point(self) -> Tuple[float, float, float, float, float, float]:
         """Returns the current point (lat, lon, alt, body roll/pitch/yaw)"""
@@ -56,30 +56,47 @@ class UdpBot(BaseUDPSender):
                 self._current_body_pitch_r,
                 self._current_body_yaw_r)
 
-    @staticmethod
-    def _normalize_angle_r(angle_r: float) -> float:
-        """Normalize angle in radians to [-pi, pi]"""
-
-        return (angle_r + math.pi) % (2.0 * math.pi) - math.pi
-
-    def _update_from_R_world(self) -> None:
+    def _update_cur_rotation_from_world_rotation_matrix(self) -> None:
         """Update the current roll, pitch, yaw angles from the world rotation matrix."""
 
-        roll_r, pitch_r, yaw_r = mat2euler(self._R_world, axes=EULER_AXES)
+        roll_r, pitch_r, yaw_r = mat2euler(self._world_rotation_matrix, axes=EULER_AXES)
 
-        roll_r = self._normalize_angle_r(roll_r)
-        pitch_r = self._normalize_angle_r(pitch_r)
-        yaw_r = self._normalize_angle_r(yaw_r)
+        norm_roll_r = self._normalize_angle_r(roll_r)
+        norm_pitch_r = self._normalize_angle_r(pitch_r)
+        norm_yaw_r = self._normalize_angle_r(yaw_r)
 
-        self._current_world_roll_r = roll_r
-        self._current_world_pitch_r = pitch_r
-        self._current_world_yaw_r = yaw_r
+        self._current_world_roll_r = norm_roll_r
+        self._current_world_pitch_r = norm_pitch_r
+        self._current_world_yaw_r = norm_yaw_r
 
-        self._current_body_roll_r = roll_r
-        self._current_body_pitch_r = pitch_r
-        self._current_body_yaw_r = yaw_r
+        self._current_body_roll_r = norm_roll_r
+        self._current_body_pitch_r = norm_pitch_r
+        self._current_body_yaw_r = norm_yaw_r
 
-    def _send_current_pose(self) -> None:
+    def _apply_world_axis_rotation(self, delta_r: float, axis: str, duration_s: float = 1.0):
+        """Applies a angle delta rotation around a world axis ('roll', 'pitch', 'yaw')."""
+
+        if axis == "roll":
+            delta_R = euler2mat(delta_r, 0.0, 0.0, axes=EULER_AXES)
+        elif axis == "pitch":
+            delta_R = euler2mat(0.0, delta_r, 0.0, axes=EULER_AXES)
+        elif axis == "yaw":
+            delta_R = euler2mat(0.0, 0.0, delta_r, axes=EULER_AXES)
+        else:
+            raise ValueError(f"Invalid axis '{axis}'")
+
+        target_R = delta_R @ self._world_rotation_matrix
+
+        roll_r, pitch_r, yaw_r = mat2euler(target_R, axes=EULER_AXES)
+
+        self._turn_to(
+            math.degrees(roll_r),
+            math.degrees(pitch_r),
+            math.degrees(yaw_r),
+            duration_s
+        )
+
+    def _publish_current_pose(self) -> None:
         """Send the current pose (lat, lon, alt, body roll/pitch/yaw) once."""
 
         self.send_once(self._current_lat,
@@ -89,46 +106,53 @@ class UdpBot(BaseUDPSender):
                        self._current_body_pitch_r,
                        self._current_body_yaw_r)
 
-    def _apply_world_rotation(self, R_delta):
+    def _apply_world_rotation_offset(self, rotation_matrix_delta):
         """Update world-frame orientation and recompute body-frame orientation"""
 
-        self._R_world = R_delta @ self._R_world
-        self._update_from_R_world()
+        self._world_rotation_matrix = rotation_matrix_delta @ self._world_rotation_matrix
+        self._update_cur_rotation_from_world_rotation_matrix()
 
-    def _slerp(self, R1: np.ndarray, R2: np.ndarray, t: float) -> np.ndarray:
-        """Spherical linear interpolation between two rotation matrices."""
+    def _smooth_rotation_matrixs_interpolation(self, rotation_matrix_1: np.ndarray, rotation_matrix_2: np.ndarray, rotation_progress: float) -> np.ndarray:
+        """Interpolates smoothly between two rotation matrices using quaternion SLERP."""
 
-        q1 = mat2quat(R1)
-        q2 = mat2quat(R2)
+        # Convert rotation matrices to quaternions
+        quaternion_1 = mat2quat(rotation_matrix_1)
+        quaternion_2 = mat2quat(rotation_matrix_2)
 
-        q1 = q1 / np.linalg.norm(q1)
-        q2 = q2 / np.linalg.norm(q2)
+        # Normalize quaternions and ensure the shortest path is taken
+        quaternion_1 = quaternion_1 / np.linalg.norm(quaternion_1)
+        quaternion_2 = quaternion_2 / np.linalg.norm(quaternion_2)
 
-        dot = float(np.dot(q1, q2))
+        # Compute scalar product to check if quaternions are close enough for linear interpolation
+        scalar_product = float(np.dot(quaternion_1, quaternion_2))
 
-        if dot < 0.0:
-            q2 = -q2
-            dot = -dot
+        # If scalar product is negative, flip quaternion_2 to ensure shortest path
+        if scalar_product < 0.0:
+            quaternion_2 = -quaternion_2
+            scalar_product = -scalar_product
 
-        if dot > DOT_THRESHOLD:
-            q = q1 + t * (q2 - q1)
-            q = q / np.linalg.norm(q)
+        # If the quaternions are very close, use linear interpolation
+        if scalar_product > DOT_THRESHOLD:
+            result_quaternion = quaternion_1 + rotation_progress * (quaternion_2 - quaternion_1)
+            result_quaternion = result_quaternion / np.linalg.norm(result_quaternion)
 
-            return quat2mat(q)
+            return quat2mat(result_quaternion)
 
-        theta_0 = math.acos(dot)
+        # Compute the angle between the quaternions and perform spherical interpolation
+        theta_0 = math.acos(scalar_product)
         sin_theta_0 = math.sin(theta_0)
 
-        theta = theta_0 * t
+        theta = theta_0 * rotation_progress
         sin_theta = math.sin(theta)
 
-        s0 = math.sin(theta_0 - theta) / sin_theta_0
-        s1 = sin_theta / sin_theta_0
+        sin_0 = math.sin(theta_0 - theta) / sin_theta_0
+        sin_1 = sin_theta / sin_theta_0
 
-        q = s0 * q1 + s1 * q2
-        q = q / np.linalg.norm(q)
+        # Compute the interpolated quaternion and convert back to rotation matrix
+        result_quaternion = sin_0 * quaternion_1 + sin_1 * quaternion_2
+        result_quaternion = result_quaternion / np.linalg.norm(result_quaternion)
 
-        return quat2mat(q)
+        return quat2mat(result_quaternion)
 
     def _turn_to(self, target_roll_d: float, target_pitch_d: float, target_yaw_d: float, duration_s: float = 1.0) -> None:
         """Turns the bot to a new orientation by smoothly transitioning from the current to the target point, in world frame"""
@@ -137,8 +161,8 @@ class UdpBot(BaseUDPSender):
         dt = 1.0 / self.send_rate_hz
         start_time = time.perf_counter()
 
-        R_start = self._R_world.copy()
-        R_target = euler2mat(
+        start_world_rotation_matrix = self._world_rotation_matrix.copy()
+        target_world_rotation_matrix = euler2mat(
             math.radians(target_roll_d),
             math.radians(target_pitch_d),
             math.radians(target_yaw_d),
@@ -148,9 +172,9 @@ class UdpBot(BaseUDPSender):
         for i in range(1, steps + 1):
             alpha = i / steps
 
-            self._R_world = self._slerp(R_start, R_target, alpha)
-            self._update_from_R_world()
-            self._send_current_pose()
+            self._world_rotation_matrix = self._smooth_rotation_matrixs_interpolation(start_world_rotation_matrix, target_world_rotation_matrix, alpha)
+            self._update_cur_rotation_from_world_rotation_matrix()
+            self._publish_current_pose()
 
             next_tick = start_time + i * dt
             now = time.perf_counter()
@@ -160,44 +184,17 @@ class UdpBot(BaseUDPSender):
     def turn_roll(self, delta_roll_d: float, duration_s: float = 1.0) -> None:
         """Turns the bot by a certain angle on the roll axis in world frame"""
 
-        delta_r = math.radians(delta_roll_d)
-        R_delta = euler2mat(delta_r, 0.0, 0.0, axes=EULER_AXES)
-        R_target = R_delta @ self._R_world
-
-        roll_r, pitch_r, yaw_r = mat2euler(R_target, axes=EULER_AXES)
-
-        self._turn_to(math.degrees(roll_r),
-                      math.degrees(pitch_r),
-                      math.degrees(yaw_r),
-                      duration_s)
+        self._apply_world_axis_rotation(math.radians(delta_roll_d), "roll", duration_s)
 
     def turn_pitch(self, delta_pitch_d: float, duration_s: float = 1.0) -> None:
         """Turns the bot by a certain angle on the pitch axis in world frame"""
 
-        delta_r = math.radians(delta_pitch_d)
-        R_delta = euler2mat(0.0, delta_r, 0.0, axes=EULER_AXES)
-        R_target = R_delta @ self._R_world
-
-        roll_r, pitch_r, yaw_r = mat2euler(R_target, axes=EULER_AXES)
-
-        self._turn_to(math.degrees(roll_r),
-                      math.degrees(pitch_r),
-                      math.degrees(yaw_r),
-                      duration_s)
+        self._apply_world_axis_rotation(math.radians(delta_pitch_d), "pitch", duration_s)
 
     def turn_yaw(self, delta_yaw_d: float, duration_s: float = 1.0) -> None:
         """Turns the bot by a certain angle on the yaw axis in world frame"""
 
-        delta_r = math.radians(delta_yaw_d)
-        R_delta = euler2mat(0.0, 0.0, delta_r, axes=EULER_AXES)
-        R_target = R_delta @ self._R_world
-
-        roll_r, pitch_r, yaw_r = mat2euler(R_target, axes=EULER_AXES)
-
-        self._turn_to(math.degrees(roll_r),
-                      math.degrees(pitch_r),
-                      math.degrees(yaw_r),
-                      duration_s)
+        self._apply_world_axis_rotation(math.radians(delta_yaw_d), "yaw", duration_s)
 
     def turn_to_point(self, target_lat: float, target_lon: float, target_alt: float, duration_s: float = 1.0,) -> None:
         """Smoothly rotate in world frame to look at the given target LLA."""
@@ -206,13 +203,13 @@ class UdpBot(BaseUDPSender):
         start_lon = self._current_lon
         start_alt = self._current_alt
 
-        p_start = LLAPoint(start_lat, start_lon, start_alt)
+        start_point = LLAPoint(start_lat, start_lon, start_alt)
 
-        dy = lla_distance_to_m(p_start, LLAPoint(target_lat, start_lon, start_alt))
+        dy = lla_distance_to_meters(start_point, LLAPoint(target_lat, start_lon, start_alt))
         if target_lat < start_lat:
             dy = -dy
 
-        dx = lla_distance_to_m(p_start, LLAPoint(start_lat, target_lon, start_alt))
+        dx = lla_distance_to_meters(start_point, LLAPoint(start_lat, target_lon, start_alt))
         if target_lon < start_lon:
             dx = -dx
 
@@ -220,8 +217,8 @@ class UdpBot(BaseUDPSender):
 
         yaw_r = math.atan2(dx, dy)
 
-        horizontal_dist = math.sqrt(dx * dx + dy * dy)
-        pitch_r = math.atan2(dz, horizontal_dist)
+        aerial_dist = math.sqrt(dx * dx + dy * dy)
+        pitch_r = math.atan2(dz, aerial_dist)
 
         self._turn_to(
             math.degrees(self._current_world_roll_r),
@@ -246,13 +243,13 @@ class UdpBot(BaseUDPSender):
         start_lon = self._current_lon
         start_alt = self._current_alt
 
-        p_start = LLAPoint(start_lat, start_lon, start_alt)
+        start_point = LLAPoint(start_lat, start_lon, start_alt)
 
-        dy = lla_distance_to_m(p_start, LLAPoint(target_lat, start_lon, start_alt))
+        dy = lla_distance_to_meters(start_point, LLAPoint(target_lat, start_lon, start_alt))
         if target_lat < start_lat:
             dy = -dy
 
-        dx = lla_distance_to_m(p_start, LLAPoint(start_lat, target_lon, start_alt))
+        dx = lla_distance_to_meters(start_point, LLAPoint(start_lat, target_lon, start_alt))
         if target_lon < start_lon:
             dx = -dx
 
@@ -265,12 +262,12 @@ class UdpBot(BaseUDPSender):
             y = alpha * dy
             z = start_alt + alpha * dz
 
-            d_lat, d_lon = meters_to_latlon(y, x, start_lat)
+            d_lat, d_lon = meters_to_latlon_offset(y, x, start_lat)
             self._current_lat = start_lat + d_lat
             self._current_lon = start_lon + d_lon
             self._current_alt = z
 
-            self._send_current_pose()
+            self._publish_current_pose()
 
             next_tick = start_time + i * dt
             now = time.perf_counter()
@@ -288,7 +285,7 @@ class UdpBot(BaseUDPSender):
         dx = distance_m * math.sin(yaw_r)
         dy = distance_m * math.cos(yaw_r)
 
-        d_lat, d_lon = meters_to_latlon(dy, dx, self._current_lat)
+        d_lat, d_lon = meters_to_latlon_offset(dy, dx, self._current_lat)
         target_lat = self._current_lat + d_lat
         target_lon = self._current_lon + d_lon
 
@@ -309,7 +306,7 @@ class UdpBot(BaseUDPSender):
         dx = distance_m * math.cos(yaw_r)
         dy = -distance_m * math.sin(yaw_r)
 
-        d_lat, d_lon = meters_to_latlon(dy, dx, self._current_lat)
+        d_lat, d_lon = meters_to_latlon_offset(dy, dx, self._current_lat)
         target_lat = self._current_lat + d_lat
         target_lon = self._current_lon + d_lon
 
@@ -349,25 +346,30 @@ class UdpBot(BaseUDPSender):
             yaw_rate = speed_ms / turn_radius_m
 
         for i in range(steps):
-
             distance = speed_ms * dt
 
             dx = distance * math.sin(self._current_world_yaw_r)
             dy = distance * math.cos(self._current_world_yaw_r)
 
-            d_lat, d_lon = meters_to_latlon(dy, dx, self._current_lat)
+            d_lat, d_lon = meters_to_latlon_offset(dy, dx, self._current_lat)
             self._current_lat += d_lat
             self._current_lon += d_lon
 
             if yaw_rate != 0.0:
                 delta_yaw_r = yaw_rate * dt
-                R_delta = euler2mat(0.0, 0.0, delta_yaw_r, axes='rxyz')
-                self._R_world = R_delta @ self._R_world
-                self._update_from_R_world()
+                delta_world_rotation_matrix = euler2mat(0.0, 0.0, delta_yaw_r, axes=EULER_AXES)
+                self._world_rotation_matrix = delta_world_rotation_matrix @ self._world_rotation_matrix
+                self._update_cur_rotation_from_world_rotation_matrix()
 
-            self._send_current_pose()
+            self._publish_current_pose()
 
             next_tick = start_time + (i + 1) * dt
             now = time.perf_counter()
             if next_tick > now:
                 time.sleep(next_tick - now)
+
+    @staticmethod
+    def _normalize_angle_r(angle_r: float) -> float:
+        """Normalize angle in radians to [-pi, pi]"""
+
+        return (angle_r + math.pi) % (2.0 * math.pi) - math.pi

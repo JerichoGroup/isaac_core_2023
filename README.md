@@ -6,6 +6,7 @@ This can be used to simulate areal unmaned vehicles.
 <br>
 This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 <br>
+
 <img src="readme_images/isaac_core_example.png" alt="Logo" width="1000"/>
 
 ---
@@ -15,12 +16,12 @@ This tool is based on NVIDIA's **Isaac Sim 2023** and includes ros2 integration
 1. [System Requirements️](#system-requirements)
 1. [Docker Workflow (Optional)](#docker-workflow-optional-)
 1. [Running the Simulation](#running-the-simulation-)
-1. [Using isaac_core_dev_kit](#Using-isaac_core_dev_kit)
 1. [Simulation Flags](#simulation-flags-)
 1. [Special configurations](#special-configurations-)
 1. [ROS2 input topics](#ros2-input-topics-)
 1. [ROS2 outputs topics](#ros2-outputs-topics-)  
 1. [Take pictures](#take-pictures-)
+1. [Using isaac_core_dev_kit](#Using-isaac_core_dev_kit-)
 1. [Auto completion in vscode](#auto-completion-in-vscode-)
 1. [Extension Overview](#extension-overview-)
 1. [Using Bbox](#using-bbox-)
@@ -255,7 +256,138 @@ xhost +
 ISAACSIM_PYTHON ./simulation/main_sim.py --usd-path $PWD/usd/maps/earth/earth.usda --com-ros
 ```
 
-## Using isaac_core_dev_kit
+---
+
+## Simulation Flags 🚩
+
+The simulation flags are divided into three logical groups:
+
+### Camera (Required – choose one)
+
+You must select exactly one backend for controlling the camera pose.
+
+| Flag                     | Description                                               |
+|--------------------------|-----------------------------------------------------------|
+| `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ROS    |
+| `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using UDP    |
+
+
+### Optional Plugins (Can combine freely)
+
+The following plugins are optional and may be enabled together in any combination.
+
+| Flag                     | Description                                                            |
+|--------------------------|------------------------------------------------------------------------|
+| `--usd-path <file.usda>` | Load a specific USDA scene file                                        |
+| `--headless`             | Run Isaac Sim without GUI                                              |
+| `--distance-sensor`      | Add a range sensor to the simulation (output published on a ROS topic) |
+| `--bbox-publisher`       | Publish bounding box data for specified objects                        |
+| `--image-rtp`            | Stream camera images from ROS over RTP                                 |
+| `--sat`                  | Capture frames and publish the output path via a ROS topic             |
+
+
+---
+
+
+## Special configurations 🔧
+under simulation/consts.py you can change:
+```bash     
+GIMBAL_ROLL_DEG                 # gimbal roll angel
+GIMBAL_PITCH_DEG                # gimbal pitch angel
+GIMBAL_YAW_DEG                  # gimbal yaw angel
+RESOLUTION_WIDTH                # frame width resolution
+RESOLUTION_HEIGHT               # frame height resolution
+CAMERA_FOV                      # camera's FOV           
+FOCAL_LENGTH                    # camera's focal length
+
+TILESETS_HTTP_SERVER_URL        # cesium server address
+
+LASER_MIN_RANGE                 # distance sensor min range
+LASER_MAX_RANGE                 # distance sensor max range
+
+MAX_OUTPUTS_ROS_HRZ             # data topic publish frequency       
+GLOBAL_POSE_TOPIC_NAME          # global pose data topic name
+LASER_TOPIC_NAME                # distance sensor topic name
+BBOXES_TOPIC_NAME               # bbox data topic name
+IMAGE_PUBLISHER_TOPIC_NAME      # image rgb topic name
+
+RTP_VIDEO_PORT                  # defines the port to export the frames over udp
+RTP_META_PORT                   # defines the port to export the metadata over udp
+
+HOST_IP                         # defines the host ip to publish over udp from 
+```
+
+### Gimbal Angle (Reference Image)
+
+The gimbal angle is based on the following photo:
+
+<img src="readme_images/gimbal_angle_example.png" alt="Gimbal Angle Reference" width="500"/>
+
+There is always a gimbal subscriber that is subscribed to `/isaac_core/gimbal` that updates the gimbal angel values while "in the air".
+
+The isaac sim expects msgs there with values for gimbal roll, pitch, yaw, and it update the gimbal live.
+
+here is a bash command to publish a msg on a topic for manual usage (adjust the values):
+```bash
+ros2 topic pub /isaac_core/gimbal isaac_ros2_messages/msg/Gimbal "{roll: 0.0, pitch: 0.0, yaw: 0.0}"
+```
+
+---
+
+## ROS2 input topics 📥
+These are the MAVRos topic the isaac sim would be subscribing to if you choose com-ros
+
+| Topic                                | Type                                | Description                                      |
+|--------------------------------------|-------------------------------------|--------------------------------------------------|
+| `/mavros/global_position/global`     | `sensor_msgs/NavSatFix`             | Read LLA from MAVRos                             |
+| `/mavros/local_position/pose`        | `geometry_msgs/PoseStamped`         | Read orientaion from MAVRos                      |
+| `/isaac_core/sat`                    | `isaac_ros2_messages/msg/SATOutput` | wait for an output path to save frame            |
+| `/isaac_core/gimbal`                 | `isaac_ros2_messages/msg/Gimbal`    | Read gimbal angels and adjust gimbal dynamically |
+
+
+------
+
+## ROS2 outputs topics 📤
+
+| Topic                                | Type                                 | Description                 |
+|--------------------------------------|--------------------------------------|-----------------------------|
+| `/isaac_core/global_pose`            | `geometry_msgs/GeoPoseStamped`       | Camera's global position (overriding quaternions with RPY, x=roll, y=pitch, z=yaw, w=not used)    |
+| `/isaac_core/distance_sensor`        | `sensor_msgs/Range`                  | Simulated laser range data  |
+| `/isaac_core/camera/image_rgb`       | `sensor_msgs/Image`                  | Camera feed from simulation |
+| `/isaac_core/bbox`                   | `isaac_ros2_messages/msg/FrameBboxes`| BBOX data per object        |
+
+
+---
+
+## Angles conventions
+The angles of roll, pitch, yaw expected for udp are of the conventions of NED coordinates and intrensic xyz eular angles.
+This means:
++roll will turn the "nose" of the airplain (camera) to the right (right wing down, left wing up)
++pitch will trurn the "nose" of the airplain (camera) up
++yaw will trurn the "nose" of the airplain (camera) right
+
+This is true for gimbal angles as well.
+
+Behind the scences isaac core uses ENU (this is because of cesium)
+We fix this distinction by converting NED rotations to ENU (But you don't need to take care of this).
+And mavros convts autmatically from NED to ENU
+
+
+## Take pictures
+You can enable the take picture with the `--sat` flag
+
+Then the topic `/isaac_core/sat` will expect msg's that their content is a file path.
+
+If the isaac sim process have permission for that path it will save there a png of the current frame.
+
+here is a bash command to publish a msg on a topic for manual usage:
+```bash
+ros2 topic pub /isaac_core/sat isaac_ros2_messages/msg/SATOutput "{output_path: '<your path>'}"
+```
+
+---
+
+## Using isaac_core_dev_kit ⚙️
 The isaac_core_dev_kit package provides a modular interface for running, controlling, and capturing data from Isaac Sim - based simulation. It is designed to be used in other projects without needed to fork or branch the original isaac_core repo.
 <details>
 <summary><strong>Installation</strong></summary>
@@ -263,7 +395,7 @@ The isaac_core_dev_kit package provides a modular interface for running, control
 From the repo's root:
 ```bash
 cd ~/clones/isaac_core_2023
-pip install ./simulation/
+pip install ./simulation/dev_kit/
 ```
 
 This Installs the package and makes the following modules available:
@@ -277,6 +409,7 @@ from isaac_core_dev_kit.core_capture.bbox_capture import BboxCapture
 from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
 from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
 from isaac_core_dev_kit.udp.path_sender import PathSender
+from isaac_core_dev_kit.udp.udp_bot import UdpBot
 import isaac_core_dev_kit.dev_utils as core_utils
 ```
 </details>
@@ -418,6 +551,20 @@ PathSender(
     broadcast: bool = True,
     target_ip: str = "127.0.0.1"
 )
+
+# This is the UdpBot class definition and its attributes
+UdpBot(
+    start_lat: float,
+    start_lon: float,
+    start_alt: float,
+    start_roll_d: float,
+    start_pitch_d: float,
+    start_yaw_d: float,
+    udp_port: float = 33333,
+    send_rate_hz: float = 30,
+    broadcast: bool = True,
+    target_ip: str = "127.0.0.1"
+)
 ```
 
 Usage:
@@ -425,6 +572,7 @@ Usage:
 from isaac_core_dev_kit.udp.one_point_sender import OnePointSender
 from isaac_core_dev_kit.udp.orbit_sender import OrbitSender
 from isaac_core_dev_kit.udp.path_sender import PathSender
+from isaac_core_dev_kit.udp.udp_bot import UdpBot
 from isaac_core_dev_kit.udp.udp_utils import LLAPoint
 
 # example use case:
@@ -440,6 +588,20 @@ point_sender.join()
 point_sender.send_once(32.2245, 35.2563, 500.0, 0.0, 0.0, 0.0)  # all sender classes has a send_once method to send a single point 
 
 point_sender.close()
+
+#UdpBot usage
+my_bot = UdpBot(start_lat=32.22481, start_lon=35.25621, start_alt=1000.0,
+                start_roll_d=0.0, start_pitch_d=0.0, start_yaw_d=0.0, send_rate_hz=50)
+
+my_bot.move_to_point(32.22481, 35.25621, 900.0, 0.0, 0.0, 0.0, duration_s=5.0)
+my_bot.move_forward_backward(100.0)
+my_bot.move_right_left(100.0)
+my_bot.move_up_down(100.0)
+my_bot.turn_roll(45)
+my_bot.turn_pitch(45)
+my_bot.turn_yaw(45)
+my_bot.turn_to_point(32.22481, 35.25621, 1000.0)
+my_bot.steer(turn_radius_m=100.0, speed_ms=50.5, duration_s=0.5)
 ```
 
 </details>
@@ -519,120 +681,6 @@ with HostIsaacManager(core_path=CORE_PATH, com_udp=True, show_isaac_logs=False):
 ```
 
 </details>
-
----
-
-## Simulation Flags 🚩
-
-| Flag                     | Description                                                         |
-|--------------------------|---------------------------------------------------------------------|
-| `--usd-path <file.usda>` | Load a specific USDA scene file                                     |
-| `--headless`             | Run Isaac Sim without GUI                                           |
-| `--com-ros`              | Expect lat, lon, alt, roll, pith, yaw inputs using ros              |
-| `--com-udp`              | Expect lat, lon, alt, roll, pith, yaw inputs using udp              |
-| `--distance-sensor`      | Add range sensor to simulation (output is on ros topic)             |
-| `--bbox-publisher`       | Publish bbox data for each object specified                         |
-| `--sat`                  | enables to capture current frames to and output path via a ros topic|
-| `--image-rtp`            | exports the image from ros over RTP                                 |
-
----
-
-## Special configurations 🔧
-under simulation/consts.py you can change:
-```bash     
-GIMBAL_ROLL_DEG                 # gimbal roll angel
-GIMBAL_PITCH_DEG                # gimbal pitch angel
-GIMBAL_YAW_DEG                  # gimbal yaw angel
-RESOLUTION_WIDTH                # frame width resolution
-RESOLUTION_HEIGHT               # frame height resolution
-CAMERA_FOV                      # camera's FOV           
-FOCAL_LENGTH                    # camera's focal length
-
-TILESETS_HTTP_SERVER_URL        # cesium server address
-
-LASER_MIN_RANGE                 # distance sensor min range
-LASER_MAX_RANGE                 # distance sensor max range
-
-MAX_OUTPUTS_ROS_HRZ             # data topic publish frequency       
-GLOBAL_POSE_TOPIC_NAME          # global pose data topic name
-LASER_TOPIC_NAME                # distance sensor topic name
-BBOXES_TOPIC_NAME               # bbox data topic name
-IMAGE_PUBLISHER_TOPIC_NAME      # image rgb topic name
-
-RTP_VIDEO_PORT                  # defines the port to export the frames over udp
-RTP_META_PORT                   # defines the port to export the metadata over udp
-
-HOST_IP                         # defines the host ip to publish over udp from 
-```
-
-### Gimbal Angle (Reference Image)
-
-The gimbal angle is based on the following photo:
-
-<img src="readme_images/gimbal_angle_example.png" alt="Gimbal Angle Reference" width="500"/>
-
-There is always a gimbal subscriber that is subscribed to `/isaac_core/gimbal` that updates the gimbal angel values while "in the air".
-
-The isaac sim expects msgs there with values for gimbal roll, pitch, yaw, and it update the gimbal live.
-
-here is a bash command to publish a msg on a topic for manual usage (adjust the values):
-```bash
-ros2 topic pub /isaac_core/gimbal isaac_ros2_messages/msg/Gimbal "{roll: 0.0, pitch: 0.0, yaw: 0.0}"
-```
-
----
-
-## ROS2 input topics 📥
-These are the MAVRos topic the isaac sim would be subscribing to if you choose com-ros
-
-| Topic                                | Type                                | Description                                      |
-|--------------------------------------|-------------------------------------|--------------------------------------------------|
-| `/mavros/global_position/global`     | `sensor_msgs/NavSatFix`             | Read LLA from MAVRos                             |
-| `/mavros/local_position/pose`        | `geometry_msgs/PoseStamped`         | Read orientaion from MAVRos                      |
-| `/isaac_core/sat`                    | `isaac_ros2_messages/msg/SATOutput` | wait for an output path to save frame            |
-| `/isaac_core/gimbal`                 | `isaac_ros2_messages/msg/Gimbal`    | Read gimbal angels and adjust gimbal dynamically |
-
-
-------
-
-## ROS2 outputs topics 📤
-
-| Topic                                | Type                                 | Description                 |
-|--------------------------------------|--------------------------------------|-----------------------------|
-| `/isaac_core/global_pose`            | `geometry_msgs/GeoPoseStamped`       | Camera's global position (overriding quaternions with RPY, x=roll, y=pitch, z=yaw, w=not used)    |
-| `/isaac_core/distance_sensor`       | `sensor_msgs/Range`                  | Simulated laser range data  |
-| `/isaac_core/camera/image_rgb`       | `sensor_msgs/Image`                  | Camera feed from simulation |
-| `/isaac_core/bbox`                   | `isaac_ros2_messages/msg/FrameBboxes`| BBOX data per object        |
-
-
----
-
-## Angles conventions
-The angles of roll, pitch, yaw expected for udp are of the conventions of NED coordinates and intrensic xyz eular angles.
-This means:
-+roll will turn the "nose" of the airplain (camera) to the right (right wing down, left wing up)
-+pitch will trurn the "nose" of the airplain (camera) up
-+yaw will trurn the "nose" of the airplain (camera) right
-
-This is true for gimbal angles as well.
-
-Behind the scences isaac core uses ENU (this is because of cesium)
-We fix this distinction by converting NED rotations to ENU (But you don't need to take care of this).
-And mavros convts autmatically from NED to ENU
-
-
-## Take pictures
-You can enable the take picture with the `--sat` flag
-
-Then the topic `/isaac_core/sat` will expect msg's that their content is a file path.
-
-If the isaac sim process have permission for that path it will save there a png of the current frame.
-
-here is a bash command to publish a msg on a topic for manual usage:
-```bash
-ros2 topic pub /isaac_core/sat isaac_ros2_messages/msg/SATOutput "{output_path: '<your path>'}"
-```
-
 
 
 ## Auto completion in vscode 💡
